@@ -13,12 +13,14 @@ export interface UserData {
   role: string;
 }
 
+// User service handles base user operations, specific user types (medecin/etudiant) 
+// are handled by their respective services
+
 export const userService = {
   getAll: async () => {
     const response = await fetch(`${BASE_URL}/users`, { headers: withAuthHeader().headers });
     return response.json();
   },
-
   create: async (data: Omit<UserData, 'id' | 'enabled'>) => {
     const response = await fetch(`${BASE_URL}/users`, { ...withAuthHeader(),
       method: 'POST',

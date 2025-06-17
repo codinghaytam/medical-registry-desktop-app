@@ -3,45 +3,43 @@ import { withAuthHeader } from './authService';
 
 const BASE_URL = 'https://walrus-app-j9qyk.ondigitalocean.app';
 
-export type Profession = 'PARODENTAIRE' | 'ORTHODENTAIRE';
-
-export interface MedecinData {
-  pwd: string;
+export interface EtudiantData {
   id: string;
-  profession: Profession;
-  isSpecialiste: boolean;
+  niveau: number;
   userId: string;
   user?: {
     id: string;
     username: string;
     email: string;
-    name: string;
+    firstName: string;
+    lastName: string;
     role: string;
   };
 }
 
-export interface CreateMedecinData {
+export interface CreateEtudiantData {
   username: string;
   firstName: string;
   lastName: string;
   email: string;
-  profession: Profession;
-  isSpecialiste: boolean;
   pwd: string;
+  role: string;
+  niveau: number;
 }
 
-export const medecinService = {  getAll: async () => {
-    const response = await fetch(`${BASE_URL}/medecin`, { headers: withAuthHeader().headers });
+export const etudiantService = {
+  getAll: async () => {
+    const response = await fetch(`${BASE_URL}/etudiant`, { headers: withAuthHeader().headers });
     return response.json();
   },
 
   getById: async (id: string) => {
-    const response = await fetch(`${BASE_URL}/medecin/${id}`, { headers: withAuthHeader().headers });
+    const response = await fetch(`${BASE_URL}/etudiant/${id}`, { headers: withAuthHeader().headers });
     return response.json();
   },
-  
-  create: async (data: CreateMedecinData) => {
-    const response = await fetch(`${BASE_URL}/medecin`, {
+
+  create: async (data: CreateEtudiantData) => {
+    const response = await fetch(`${BASE_URL}/etudiant`, {
       ...withAuthHeader(),
       method: 'POST',
       body: JSON.stringify(data),
@@ -49,14 +47,17 @@ export const medecinService = {  getAll: async () => {
         'Content-Type': 'application/json',
       },
     });
+    
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.error || 'Failed to create doctor');
+      throw new Error(error.error || 'Failed to create student');
     }
+    
     return response.json();
   },
-  update: async (id: string, data: Partial<CreateMedecinData>) => {
-    const response = await fetch(`${BASE_URL}/medecin/${id}`, {
+
+  update: async (id: string, data: Partial<CreateEtudiantData>) => {
+    const response = await fetch(`${BASE_URL}/etudiant/${id}`, {
       ...withAuthHeader(),
       method: 'PUT',
       body: JSON.stringify(data),
@@ -68,7 +69,7 @@ export const medecinService = {  getAll: async () => {
   },
 
   delete: async (id: string) => {
-    await fetch(`${BASE_URL}/medecin/${id}`, {
+    await fetch(`${BASE_URL}/etudiant/${id}`, {
       ...withAuthHeader(),
       method: 'DELETE',
     });

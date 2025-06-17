@@ -82,7 +82,6 @@ const Medecins: React.FC = () => {
       }
     } catch (error: any) {
       console.error('Error fetching medecins:', error);
-      setNetworkError(error.message || 'Failed to load doctors. Please try again.');
       setMedecins([]);
     } finally {
       setIsLoading(false);
