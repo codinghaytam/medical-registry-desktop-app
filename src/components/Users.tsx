@@ -7,7 +7,7 @@ import {
   DialogTitle, DialogContent, DialogActions, FormControl, InputLabel,
   Select, SelectChangeEvent, CircularProgress, Tooltip, Switch, FormControlLabel
 } from '@mui/material';
-import { Search, Plus, MoreVertical, Edit, Trash2, User, RefreshCw } from 'lucide-react';
+import { Search, Plus, MoreVertical, Edit, Trash2, User, RefreshCw, Phone } from 'lucide-react';
 import { userService, UserData } from '../services/userService';
 import { medecinService, Profession } from '../services/medecinService';
 import { etudiantService } from '../services/etudiantService';
@@ -36,6 +36,8 @@ const Users: React.FC = () => {
     isSpecialiste: false,
     // Additional field for ETUDIANT role
     niveau: 1,
+    // Phone field for all user types
+    phone: '',
   });
   const [users, setUsers] = useState<UserData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -54,8 +56,51 @@ const Users: React.FC = () => {
     isSpecialiste: false,
     // Additional field for ETUDIANT role
     niveau: 1,
+    // Phone field for all user types
+    phone: '',
   });
+  const [phoneError, setPhoneError] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Phone number validation function for Moroccan numbers
+  const validatePhone = (phone: string): string => {
+    // Empty check - this validation is separate from the required attribute
+    if (!phone.trim()) {
+      return "Phone number is required";
+    }
+
+    // Moroccan phone number validation (9 digits)
+    // Typical formats: 6XXXXXXXX, 7XXXXXXXX, 5XXXXXXXX
+    const phoneRegex = /^[567]\d{8}$/;
+
+    if (!phoneRegex.test(phone)) {
+      return "Invalid Moroccan phone format. Use 9 digits starting with 5, 6, or 7";
+    }
+
+    return ''; // No error
+  };
+
+  // Handle phone input changes with validation
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    
+    // Update the phone value
+    if (name === 'phone' && openEditDialog) {
+      setEditFormData(prev => ({
+        ...prev,
+        phone: value
+      }));
+    } else {
+      setNewUser(prev => ({
+        ...prev,
+        phone: value
+      }));
+    }
+    
+    // Validate and set error
+    const error = validatePhone(value);
+    setPhoneError(error);
+  };
 
   const fetchUsers = async () => {
     setIsLoading(true);
@@ -103,9 +148,16 @@ const Users: React.FC = () => {
 
   const handleOpenEditDialog = (userId: string) => {
     const user = users.find(u => u.id === userId);
+    console.log('Editing user:', user);
     if (!user) return;
 
     setUserToEdit(user);
+    
+    // Strip +212 prefix from phone number if present
+    let phoneNumber = user.phone || '';
+    if (phoneNumber.startsWith('+212')) {
+      phoneNumber = phoneNumber.substring(4); // Remove +212 prefix
+    }
     
     // Initialize form with current user data
     setEditFormData({
@@ -119,6 +171,7 @@ const Users: React.FC = () => {
       profession: 'PARODENTAIRE',
       isSpecialiste: false,
       niveau: 1,
+      phone: phoneNumber, // Initialize phone field with current value without country code
     });
 
     // Load role-specific data
@@ -202,6 +255,13 @@ const Users: React.FC = () => {
     event.preventDefault();
     if (!userToEdit) return;
     
+    // Validate phone number before submitting
+    const phoneValidationError = validatePhone(editFormData.phone);
+    if (phoneValidationError) {
+      setPhoneError(phoneValidationError);
+      return;
+    }
+    
     setIsSubmitting(true);
     setError(null);
 
@@ -209,11 +269,15 @@ const Users: React.FC = () => {
       const { id, password, ...data } = editFormData;
       
       // Prepare a base update object
+      // Prepend +212 to the phone number for Moroccan format
+      const formattedPhone = data.phone ? `+212${data.phone}` : '';
+      
       const updateData = {
         username: data.email,  // Always use email as username
         email: data.email,
         firstName: data.firstName,
         lastName: data.lastName,
+        phone: formattedPhone,  // Include formatted phone with country code
         ...(password ? { password } : {}),  // Only include password if provided
       };
 
@@ -263,6 +327,7 @@ const Users: React.FC = () => {
       profession: 'PARODENTAIRE',
       isSpecialiste: false,
       niveau: 1,
+      phone: '', // Reset phone field
     });
   };
 
@@ -284,14 +349,8 @@ const Users: React.FC = () => {
     }
   };
 
-  const handleEditInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = event.target;
-    
-    setEditFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
+  // handleEditInputChange is now handled by handlePhoneChange for phone
+  // and handleEditChange for other inputs
 
   const handleRoleChange = (event: SelectChangeEvent) => {
     setNewUser(prev => ({
@@ -324,17 +383,29 @@ const Users: React.FC = () => {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    
+    // Validate phone number before submitting
+    const phoneValidationError = validatePhone(newUser.phone);
+    if (phoneValidationError) {
+      setPhoneError(phoneValidationError);
+      return;
+    }
+    
     setIsSubmitting(true);
     setError(null);
     
     try {
       // Always use email as username
+      // Prepend +212 to the phone number for Moroccan format
+      const formattedPhone = newUser.phone ? `+212${newUser.phone}` : '';
+      
       const baseUserData = {
         username: newUser.email,
         firstName: newUser.firstName,
         lastName: newUser.lastName,
         email: newUser.email,
         pwd: newUser.password,
+        phone: formattedPhone, // Include formatted phone number with country code
       };
       
       if (newUser.role === 'MEDECIN') {
@@ -429,12 +500,18 @@ const Users: React.FC = () => {
 
   const filteredUsers = React.useMemo(() => {
     if (!Array.isArray(users)) return [];
-    return users.filter(user => 
-      user.firstName?.toLowerCase().includes(searchQuery?.toLowerCase() || '') ||
-      user.lastName?.toLowerCase().includes(searchQuery?.toLowerCase() || '') ||
-      user.email?.toLowerCase().includes(searchQuery?.toLowerCase() || '') ||
-      user.username?.toLowerCase().includes(searchQuery?.toLowerCase() || '')
-    );
+    return users.filter(user => {
+      // For phone search, remove the +212 prefix from stored phone numbers to match user input format
+      const phoneForSearch = user.phone?.startsWith('+212') 
+        ? user.phone.substring(4)  // Remove +212 prefix for comparison
+        : user.phone || '';
+        
+      return user.firstName?.toLowerCase().includes(searchQuery?.toLowerCase() || '') ||
+        user.lastName?.toLowerCase().includes(searchQuery?.toLowerCase() || '') ||
+        user.email?.toLowerCase().includes(searchQuery?.toLowerCase() || '') ||
+        user.username?.toLowerCase().includes(searchQuery?.toLowerCase() || '') ||
+        phoneForSearch.includes(searchQuery || ''); // Improved phone search
+    });
   }, [users, searchQuery]);
 
   return (
@@ -530,6 +607,7 @@ const Users: React.FC = () => {
               <TableRow>
                 <TableCell>Name</TableCell>
                 <TableCell>Email</TableCell>
+                <TableCell>Phone</TableCell>
                 <TableCell>Role</TableCell>
                 <TableCell>Username</TableCell>
                 <TableCell align="right">Actions</TableCell>
@@ -538,14 +616,14 @@ const Users: React.FC = () => {
             <TableBody>
               {isLoading && users.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} align="center">
+                  <TableCell colSpan={7} align="center">
                     <CircularProgress size={24} sx={{ mr: 1 }} />
                     Loading users...
                   </TableCell>
                 </TableRow>
               ) : filteredUsers.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} align="center">
+                  <TableCell colSpan={7} align="center">
                     <Typography variant="body1" sx={{ py: 2 }}>
                       {networkError ? "Couldn't load users due to a network error" : "No users found"}
                     </Typography>
@@ -563,6 +641,16 @@ const Users: React.FC = () => {
                         </Box>
                       </TableCell>
                       <TableCell>{user.email}</TableCell>
+                      <TableCell>
+                        {user.phone ? (
+                          <Typography variant="body2">
+                            <span style={{ color: 'gray' }}>+212 </span>
+                            {user.phone.startsWith('+212') 
+                              ? user.phone.substring(4) 
+                              : user.phone}
+                          </Typography>
+                        ) : ''}
+                      </TableCell>
                       <TableCell>{user.role || 'No roles'}</TableCell>
                       <TableCell>{user.username}</TableCell>
                       <TableCell align="right">
@@ -725,6 +813,29 @@ const Users: React.FC = () => {
               disabled={isSubmitting}
               sx={{ mb: 2 }}
             />
+            <TextField
+              fullWidth
+              label="Phone Number"
+              name="phone"
+              value={newUser.phone}
+              onChange={handlePhoneChange}
+              required
+              disabled={isSubmitting}
+              error={!!phoneError}
+              helperText={phoneError || "Moroccan format: 6XXXXXXXX (9 digits)"}
+              sx={{ mb: 2 }}
+              placeholder="6XXXXXXXX"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <Phone size={16} style={{ marginRight: '4px' }} />
+                      +212
+                    </Box>
+                  </InputAdornment>
+                ),
+              }}
+            />
             <FormControl fullWidth sx={{ mb: 2 }}>
               <InputLabel>Role</InputLabel>
               <Select
@@ -866,6 +977,30 @@ const Users: React.FC = () => {
               onChange={handleEditChange}
               disabled={isSubmitting}
               sx={{ mb: 2 }}
+            />
+            
+            <TextField
+              fullWidth
+              label="Phone Number"
+              name="phone"
+              value={editFormData.phone}
+              onChange={handlePhoneChange}
+              required
+              disabled={isSubmitting}
+              error={!!phoneError}
+              helperText={phoneError || "Moroccan format: 6XXXXXXXX (9 digits)"}
+              sx={{ mb: 2 }}
+              placeholder="6XXXXXXXX"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <Phone size={16} style={{ marginRight: '4px' }} />
+                      +212
+                    </Box>
+                  </InputAdornment>
+                ),
+              }}
             />
             
             {/* Role is shown but disabled for editing */}
