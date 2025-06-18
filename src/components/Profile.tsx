@@ -87,13 +87,36 @@ export const Profile: React.FC = () => {
   useEffect(() => {
     loadUserData();
   }, []);
-  
-  const loadUserData = () => {
+    const loadUserData = () => {
     try {
       const storedUser = localStorage.getItem("user");
       if (storedUser) {
         const parsedUser = JSON.parse(storedUser);
-        setUserData(parsedUser);
+        
+        // Force re-render by creating a new object
+        setUserData({...parsedUser});
+        
+        // If we've already opened the edit form, update it with new data
+        if (openEditDialog && parsedUser.user) {
+          const user = parsedUser.user;
+          
+          // Strip +212 prefix from phone number if present
+          let phoneNumber = user.phone || '';
+          if (phoneNumber.startsWith('+212')) {
+            phoneNumber = phoneNumber.substring(4);
+          }
+          
+          setEditFormData(prev => ({
+            ...prev,
+            firstName: user.firstName || '',
+            lastName: user.lastName || '',
+            email: user.email || '',
+            phone: phoneNumber,
+            profession: user.profession || 'PARODENTAIRE',
+            isSpecialiste: user.isSpecialiste || false,
+            niveau: user.niveau || 1,
+          }));
+        }
       }
     } catch (error) {
       console.error("Failed to parse user data from localStorage:", error);
@@ -154,6 +177,7 @@ export const Profile: React.FC = () => {
     if (phoneNumber.startsWith('+212')) {
       phoneNumber = phoneNumber.substring(4); // Remove +212 prefix
     }
+    console.log(userInfo)
     
     // Initialize form with current user data
     setEditFormData({
@@ -256,11 +280,42 @@ export const Profile: React.FC = () => {
       } else {
         await userService.update(userInfo.id, updateData);
       }
+        // Update the localStorage with the new user data
+      try {
+        // First get existing user data from localStorage
+        const storedUserData = JSON.parse(localStorage.getItem("user") || "{}");
+        
+        // Update the user object with new values
+        if (storedUserData.user) {
+          // Create updated user object with proper name concatenation
+          const updatedUser = {
+            ...storedUserData.user,
+            firstName: data.firstName,
+            lastName: data.lastName,
+            name: `${data.firstName} ${data.lastName}`.trim(),
+            email: data.email,
+            phone: formattedPhone,
+          };
+          
+          // Add role-specific fields
+          if (userRole === 'MEDECIN') {
+            updatedUser.profession = data.profession;
+            updatedUser.isSpecialiste = data.isSpecialiste;
+          } else if (userRole === 'ETUDIANT') {
+            updatedUser.niveau = data.niveau;
+          }
+          
+          // Save the updated user data back to localStorage
+          localStorage.setItem("user", JSON.stringify({ ...storedUserData, user: updatedUser }));
+        }
+      } catch (err) {
+        console.error("Failed to update localStorage:", err);
+      }
       
       // Show success message
       setSuccess("Profile updated successfully!");
       
-      // Reload user data from localStorage after update
+      // Reload user data to update the UI
       loadUserData();
       
       // Close dialog
@@ -294,10 +349,10 @@ export const Profile: React.FC = () => {
               Edit Profile
             </Button>
           </Grid>
-          
-          <Grid item xs={12}>
+            <Grid item xs={12}>
             <Typography variant="h4" align="center" gutterBottom>
-              {userInfo.name}
+              {/* Always reconstruct name from firstName and lastName for consistency */}
+              {`${userInfo.firstName || ''} ${userInfo.lastName || ''}`.trim() || userInfo.name || 'N/A'}
             </Typography>
           </Grid>
           <Grid item xs={12} md={6}>
@@ -310,9 +365,18 @@ export const Profile: React.FC = () => {
           </Grid>
           <Grid item xs={12} md={6}>
             <Card sx={{ p: 2 }}>
-              <Typography variant="subtitle1">Phone</Typography>
-              <Typography variant="body1" color="text.secondary">
-                {userInfo.phone}
+              <Typography variant="subtitle1">Phone</Typography>              <Typography variant="body1" color="text.secondary">
+                {userInfo.phone && userInfo.phone !== "Not provided" ? (
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    {userInfo.phone.startsWith('+212') 
+                      ? <>
+                          <Typography component="span" color="text.secondary" sx={{ mr: 0.5 }}>+212</Typography>
+                          <Typography component="span">{userInfo.phone.substring(4)}</Typography>
+                        </>
+                      : userInfo.phone
+                    }
+                  </Box>
+                ) : "Not provided"}
               </Typography>
             </Card>
           </Grid>

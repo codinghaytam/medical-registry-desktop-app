@@ -67,9 +67,10 @@ export default function LoginPage() {
           const medecinResponse = await fetch("https://walrus-app-j9qyk.ondigitalocean.app/medecin/email/" + email, {method:"GET"});
           if (medecinResponse.ok) {
             const medecinData = await medecinResponse.json();
+            
             // Store with proper structure to avoid "user.role" undefined error
             localStorage.setItem("user", JSON.stringify({ 
-              user: { ...medecinData, role: "MEDECIN" } 
+              user: { ...medecinData, role: "MEDECIN", firstName: medecinData.firstName || '', lastName: medecinData.lastName || '' } 
             }));
             window.location.href = "http://localhost:1420";
             return;
@@ -91,7 +92,7 @@ export default function LoginPage() {
           if (adminResponse.ok) {
             const adminData = await adminResponse.json();
             localStorage.setItem("user", JSON.stringify({ 
-              user: { ...adminData, role: "ADMIN" } 
+              user: { ...adminData, role: "ADMIN", firstName: adminData.keycloakDetails.firstName || '', lastName: adminData.keycloakDetails.lastName || '' } 
             }));
             window.location.href = "http://localhost:1420";
             return;
