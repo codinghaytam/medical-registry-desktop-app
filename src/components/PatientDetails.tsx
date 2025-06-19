@@ -43,6 +43,7 @@ import { format } from 'date-fns';
 import { patientService, PatientData } from '../services/patientService';
 import { consultationService } from '../services/consultationService';
 import { seanceService } from '../services/seanceService';
+import { authService } from '../services/authService';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -145,11 +146,13 @@ const PatientDetails: React.FC = () => {
   useEffect(() => {
     // Fetch enumeration values for dropdowns
     const fetchEnums = async () => {
-      try {
+      try {        const token = authService.getToken()?.access_token;
+        const headers = { "Authorization": `Bearer ${token}` };
+        
         const [motifsResponse, masticationsResponse, hygienesResponse] = await Promise.all([
-          fetch('https://walrus-app-j9qyk.ondigitalocean.app/enum/motif-consultation').then(res => res.json()),
-          fetch('https://walrus-app-j9qyk.ondigitalocean.app/enum/type-mastication').then(res => res.json()),
-          fetch('https://walrus-app-j9qyk.ondigitalocean.app/enum/hygiene-bucco-dentaire').then(res => res.json()),
+          fetch('https://walrus-app-j9qyk.ondigitalocean.app/enum/motif-consultation', { headers }).then(res => res.json()),
+          fetch('https://walrus-app-j9qyk.ondigitalocean.app/enum/type-mastication', { headers }).then(res => res.json()),
+          fetch('https://walrus-app-j9qyk.ondigitalocean.app/enum/hygiene-bucco-dentaire', { headers }).then(res => res.json()),
         ]);
         
         setMotifs(motifsResponse);
@@ -163,11 +166,15 @@ const PatientDetails: React.FC = () => {
     fetchEnums();
   }, []);
 
-  useEffect(() => {
-    // Additional effect to fetch médecins for the consultation and séance creation forms
+  useEffect(() => {    // Additional effect to fetch médecins for the consultation and séance creation forms
     const fetchMedecins = async () => {
       try {
-        const response = await fetch('https://walrus-app-j9qyk.ondigitalocean.app/medecin');
+        const token = authService.getToken()?.access_token;
+        const response = await fetch('https://walrus-app-j9qyk.ondigitalocean.app/medecin', {
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        });
         const medecinsData = await response.json();
         setMedecins(medecinsData);
       } catch (error) {

@@ -91,9 +91,9 @@ export const userService = {  getAll: async () => {
     
     return result;
   },
-
   delete: async (id: string) => {
-    await fetch(`${BASE_URL}/users/${id}`, { ...withAuthHeader(),
+    await fetch(`${BASE_URL}/users/${id}`, {
+      ...withAuthHeader(),
       method: 'DELETE',
     });
   },

@@ -14,7 +14,7 @@ export interface ReevaluationData {
 
 export const reevaluationService = {
   getAll: async () => {
-    const response = await fetch(`${BASE_URL}/reevaluation`);
+    const response = await fetch(`${BASE_URL}/reevaluation`, { headers: withAuthHeader().headers });
     return response.json();
   },
 
@@ -24,7 +24,7 @@ export const reevaluationService = {
   },
 
   getBySeanceId: async (seanceId: string) => {
-    const response = await fetch(`${BASE_URL}/reevaluation`);
+    const response = await fetch(`${BASE_URL}/reevaluation`, { headers: withAuthHeader().headers });
     const reevaluations = await response.json();
     return reevaluations.filter((reeval: any) => reeval.seanceId === seanceId);
   },
@@ -105,7 +105,8 @@ export const reevaluationService = {
   },
 
   delete: async (id: string) => {
-    await fetch(`${BASE_URL}/reevaluation/${id}`, { ...withAuthHeader(),
+    await fetch(`${BASE_URL}/reevaluation/${id}`, {
+      ...withAuthHeader(),
       method: 'DELETE',
     });
   }

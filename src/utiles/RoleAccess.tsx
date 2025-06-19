@@ -1,15 +1,15 @@
 // Role types
 export type UserRole = 'ADMIN' | 'MEDECIN' | 'ETUDIANT';
 
-// Get user role from localStorage
+// Get user role from sessionStorage
 export const getUserRole = (): UserRole => {
   try {
-    const userString = localStorage.getItem('user');
+    const userString = sessionStorage.getItem('user');
     if (!userString) return 'ETUDIANT';
     
     const userData = JSON.parse(userString);
     
-    // Check for stored role directly from localStorage first (most reliable)
+    // Check for stored role directly from sessionStorage first (most reliable)
     const storedRole = userData.user.role;
     if (storedRole && (storedRole === 'ADMIN' || storedRole === 'MEDECIN' || storedRole === 'ETUDIANT')) {
       return storedRole as UserRole;
@@ -95,9 +95,8 @@ export const hasFullAccess = (): boolean => {
 
 // Debug function to check role detection and data structure
 export const debugUserRole = (): any => {
-  try {
-    const userString = localStorage.getItem('user');
-    if (!userString) return { error: 'No user data in localStorage' };
+  try {    const userString = sessionStorage.getItem('user');
+    if (!userString) return { error: 'No user data in sessionStorage' };
     
     const userData = JSON.parse(userString);
     const detectedRole = getUserRole();
@@ -114,7 +113,7 @@ export const debugUserRole = (): any => {
       detectedRole,
       userData,
       roleChecks,
-      storedRole: localStorage.getItem('userRole'),
+      storedRole: sessionStorage.getItem('userRole'),
       canEditPermission: canEdit(),
       hasFullAccessPermission: hasFullAccess()
     };

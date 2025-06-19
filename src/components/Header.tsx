@@ -31,6 +31,7 @@ const Header: React.FC<HeaderProps> = ({ handleDrawerToggle }) => {
         borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)'
       }}
     >
+      
       <Toolbar>
         {isMobile && (
           <IconButton
@@ -44,7 +45,17 @@ const Header: React.FC<HeaderProps> = ({ handleDrawerToggle }) => {
           </IconButton>
         )}
 
-
+        {/* Logo */}
+        <Box sx={{ display: 'flex', alignItems: 'center', ml: isMobile ? 0 : 2 }}>
+          <img 
+            src="/medica-name.svg" 
+            alt="Medica Logo" 
+            style={{ 
+              height: '45px',
+              width: 'auto',
+            }} 
+          />
+        </Box>
 
         <Box sx={{ flexGrow: 1 }} />
 
@@ -56,14 +67,14 @@ const Header: React.FC<HeaderProps> = ({ handleDrawerToggle }) => {
             <Box sx={{ ml: 1, display: { xs: 'none', sm: 'block' } }}>
               <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
                 {(() => {
-                  const userData = JSON.parse(localStorage.getItem("user") || "{}");
+                  const userData = JSON.parse(sessionStorage.getItem("user") || "{}");
                   let userRole;
-                  if (JSON.parse(localStorage.getItem("user") as string)?.user!=null)
+                  if (JSON.parse(sessionStorage.getItem("user") as string)?.user!=null)
                   {
-                    userRole = JSON.parse(localStorage.getItem("user") as string)?.user.role;
+                    userRole = JSON.parse(sessionStorage.getItem("user") as string)?.user.role;
                   }else
                   {
-                    userRole = JSON.parse(localStorage.getItem("user") as string)?.role;
+                    userRole = JSON.parse(sessionStorage.getItem("user") as string)?.role;
 
                   }
                   console.log(userData.user.name)
@@ -83,14 +94,14 @@ const Header: React.FC<HeaderProps> = ({ handleDrawerToggle }) => {
               </Typography>
               <Typography variant="caption" color="text.secondary">
                 {(() => {
-                  const userData = JSON.parse(localStorage.getItem("user") || "{}");
+                  const userData = JSON.parse(sessionStorage.getItem("user") || "{}");
                   let userRole;
-                  if (JSON.parse(localStorage.getItem("user") as string)?.user!=null)
+                  if (JSON.parse(sessionStorage.getItem("user") as string)?.user!=null)
                   {
-                    userRole = JSON.parse(localStorage.getItem("user") as string)?.user.role;
+                    userRole = JSON.parse(sessionStorage.getItem("user") as string)?.user.role;
                   }else
                   {
-                    userRole = JSON.parse(localStorage.getItem("user") as string)?.role;
+                    userRole = JSON.parse(sessionStorage.getItem("user") as string)?.role;
 
                   }                  
                   if (userRole === 'MEDECIN' && userData.user?.profession) {

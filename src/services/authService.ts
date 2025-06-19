@@ -27,10 +27,10 @@ class AuthService {
     }
   }
 
-  // Get token from localStorage
+  // Get token from sessionStorage
   getToken(): AuthToken | null {
-    const accessToken = localStorage.getItem('access_token');
-    const refreshToken = localStorage.getItem('refresh_token');
+    const accessToken = sessionStorage.getItem('access_token');
+    const refreshToken = sessionStorage.getItem('refresh_token');
     if (!accessToken || !refreshToken) return null;
 
     return {
@@ -43,10 +43,10 @@ class AuthService {
     };
   }
 
-  // Set token in localStorage and update expiry times
+  // Set token in sessionStorage and update expiry times
   setToken(token: AuthToken): void {
-    localStorage.setItem('access_token', token.access_token);
-    localStorage.setItem('refresh_token', token.refresh_token);
+    sessionStorage.setItem('access_token', token.access_token);
+    sessionStorage.setItem('refresh_token', token.refresh_token);
     this.setTokenExpiry(token);
     this.scheduleTokenRefresh();
   }
@@ -60,9 +60,9 @@ class AuthService {
 
   // Log out user by clearing token and related data
   logout(): void {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('user');
+    sessionStorage.removeItem('access_token');
+    sessionStorage.removeItem('refresh_token');
+    sessionStorage.removeItem('user');
     this.tokenExpiryTime = null;
     this.refreshTokenExpiryTime = null;
     if (this.refreshTokenTimeoutId) {

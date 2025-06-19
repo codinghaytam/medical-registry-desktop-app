@@ -227,9 +227,8 @@ const Consultations: React.FC = () => {
       let consultationsArray = Array.isArray(consultationsData) ? consultationsData : [];
       
       // If user is MEDECIN, filter consultations to only show their own
-      if (userRole === 'MEDECIN') {
-        // Get current medecin ID from localStorage or some other means
-        const currentMedecinId = JSON.parse(localStorage.getItem('user') || '{}').id;
+      if (userRole === 'MEDECIN') {        // Get current medecin ID from sessionStorage
+        const currentMedecinId = JSON.parse(sessionStorage.getItem('user') || '{}').id;
         if (currentMedecinId) {
           consultationsArray = consultationsArray.filter(
             consultation => consultation.medecinId === currentMedecinId
@@ -305,7 +304,7 @@ const Consultations: React.FC = () => {
     
     // If user is MEDECIN, force the medecinId to be the current user's ID
     if (userRole === 'MEDECIN') {
-      const userData = JSON.parse(localStorage.getItem('user') || '{}');
+      const userData = JSON.parse(sessionStorage.getItem('user') || '{}');
       const currentMedecinId = userData.user?.id;
       if (currentMedecinId) {
         newConsultation.medecinId = currentMedecinId;
@@ -323,7 +322,7 @@ const Consultations: React.FC = () => {
         
         // If user is MEDECIN, filter consultations again
         if (userRole === 'MEDECIN') {
-          const currentMedecinId = JSON.parse(localStorage.getItem('user') || '{}').user?.id;
+          const currentMedecinId = JSON.parse(sessionStorage.getItem('user') || '{}').user?.id;
           if (currentMedecinId) {
             const filteredConsultations = updatedConsultations.filter(
               (consultation: ConsultationState) => consultation.medecinId === currentMedecinId
@@ -422,7 +421,7 @@ const Consultations: React.FC = () => {
     
     // If user is MEDECIN, force the medecinId to be the current user's ID
     if (userRole === 'MEDECIN') {
-      const userData = JSON.parse(localStorage.getItem('user') || '{}');
+      const userData = JSON.parse(sessionStorage.getItem('user') || '{}');
       const currentMedecinId = userData.user?.id;
       if (currentMedecinId) {
         newDiagnosis.medecinId = currentMedecinId;
@@ -441,7 +440,7 @@ const Consultations: React.FC = () => {
           
           // Filter if needed
           if (userRole === 'MEDECIN') {
-            const currentMedecinId = JSON.parse(localStorage.getItem('user') || '{}').user?.id;
+            const currentMedecinId = JSON.parse(sessionStorage.getItem('user') || '{}').user?.id;
             if (currentMedecinId) {
               const filteredConsultations = updatedConsultations.filter(
                 (consultation: ConsultationState) => consultation.medecinId === currentMedecinId
@@ -470,7 +469,7 @@ const Consultations: React.FC = () => {
   const handleOpenIntegratedDialog = () => {
     // Set default medecin if user is a medecin
     if (userRole === 'MEDECIN') {
-      const currentMedecinId = JSON.parse(localStorage.getItem('user') || '').id;
+      const currentMedecinId = JSON.parse(sessionStorage.getItem('user') || '').id;
       if (currentMedecinId) {
         setIntegratedForm(prev => ({
           ...prev,
@@ -566,7 +565,7 @@ const Consultations: React.FC = () => {
     
     // If user is MEDECIN, force the medecinId to be the current user's ID
     if (userRole === 'MEDECIN') {
-      const userData = JSON.parse(localStorage.getItem('user') || '{}');
+      const userData = JSON.parse(sessionStorage.getItem('user') || '{}');
       const currentMedecinId = userData.user?.id;
       if (currentMedecinId) {
         integratedForm.medecinId = currentMedecinId;
@@ -606,7 +605,7 @@ const Consultations: React.FC = () => {
         
         // Filter if needed for MEDECIN users
         if (userRole === 'MEDECIN') {
-          const currentMedecinId = JSON.parse(localStorage.getItem('user') || '{}').user?.id;
+          const currentMedecinId = JSON.parse(sessionStorage.getItem('user') || '{}').user?.id;
           if (currentMedecinId) {
             const filteredConsultations = updatedConsultations.filter(
               (consultation: ConsultationState) => consultation.medecinId === currentMedecinId
@@ -818,7 +817,7 @@ const Consultations: React.FC = () => {
                               <IconButton 
                                 size="small" 
                                 onClick={() => handleOpenDiagnosisDialog(consultation.id)}
-                                disabled={userRole === 'MEDECIN' && consultation.medecinId !== JSON.parse(localStorage.getItem('user') || '').id}
+                                disabled={userRole === 'MEDECIN' && consultation.medecinId !== JSON.parse(sessionStorage.getItem('user') || '').id}
                                 sx={{ mr: 1 }}
                               >
                                 <Plus size={18} />
@@ -828,7 +827,7 @@ const Consultations: React.FC = () => {
                               size="small" 
                               onClick={(event) => handleMenuClick(event, consultation.id)}
                               // For MEDECIN, only allow actions on their own consultations
-                              disabled={userRole === 'MEDECIN' && consultation.medecinId !== JSON.parse(localStorage.getItem('user') || '').id}
+                              disabled={userRole === 'MEDECIN' && consultation.medecinId !== JSON.parse(sessionStorage.getItem('user') || '').id}
                             >
                               <MoreVertical size={18} />
                             </IconButton>

@@ -4,6 +4,7 @@ import Dashboard from './components/Dashboard';
 import Users from './components/Users';
 import { ThemeProvider } from './context/ThemeContext';
 import ThemeSignInPage from './components/Sign-up-page';
+import PasswordReset from './components/PasswordReset';
 import { ProtectedRoutes } from './utiles/ProtectedRoutes';
 import Patients from './components/Patients';
 import Consultations from './components/Consultation';
@@ -18,6 +19,7 @@ function App() {
       <Router>
         <Routes>
           <Route path='/login' element={<ThemeSignInPage />}/>
+          <Route path='/reset-password' element={<PasswordReset />}/>
           <Route path='logout' element={<Logout/>}/>
           <Route element={<ProtectedRoutes/>}>
             <Route path="/" element={<Layout />}>

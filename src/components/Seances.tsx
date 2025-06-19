@@ -174,7 +174,7 @@ const Seances: React.FC = () => {
       let filteredSeances = [...seancesData]; // Create a copy to prevent mutation issues
       
       if (userRole === 'MEDECIN') {
-        const userData = JSON.parse(localStorage.getItem('user') || '{}');
+        const userData = JSON.parse(sessionStorage.getItem('user') || '{}');
         const currentMedecinId = userData.user?.id;
         
         if (currentMedecinId) {
@@ -285,12 +285,11 @@ const Seances: React.FC = () => {
     if (userRole !== 'MEDECIN' || !Array.isArray(patients)) {
       return patients; // Admin sees all patients
     }
-    
-    // Get current médecin's profession from localStorage
+      // Get current médecin's profession from sessionStorage
     try {
-      const userString = localStorage.getItem('user');
+      const userString = sessionStorage.getItem('user');
       if (!userString) {
-        console.log('No user data found in localStorage');
+        console.log('No user data found in sessionStorage');
         return patients;
       }
       
@@ -333,7 +332,7 @@ const Seances: React.FC = () => {
       resetForm();
       // If user is MEDECIN, force the medecinId to be the current user's ID
       if (userRole === 'MEDECIN') {
-        const userData = JSON.parse(localStorage.getItem('user') || '{}');
+        const userData = JSON.parse(sessionStorage.getItem('user') || '{}');
         const currentMedecinId = userData.user?.id;
         if (currentMedecinId) {
           setNewSeance(prev => ({
@@ -949,7 +948,7 @@ const Seances: React.FC = () => {
                                       isLoading || 
                                       seance.type !== 'REEVALUATION' ||
                                       (userRole === 'MEDECIN' && seance.medecinId !== (function() {
-                                        const userData = JSON.parse(localStorage.getItem('user') || '{}');
+                                        const userData = JSON.parse(sessionStorage.getItem('user') || '{}');
                                         return userData.user?.id;
                                       })())
                                     }
@@ -977,9 +976,8 @@ const Seances: React.FC = () => {
                                 <IconButton 
                                   size="small"
                                   color="error"
-                                  onClick={() => handleConfirmDeleteSeance(seance.id!)}
-                                  disabled={isLoading || (userRole === 'MEDECIN' && seance.medecinId !== (function() {
-                                    const userData = JSON.parse(localStorage.getItem('user') || '{}');
+                                  onClick={() => handleConfirmDeleteSeance(seance.id!)}                                  disabled={isLoading || (userRole === 'MEDECIN' && seance.medecinId !== (function() {
+                                    const userData = JSON.parse(sessionStorage.getItem('user') || '{}');
                                     return userData.user?.id;
                                   })())}
                                 >
@@ -1359,7 +1357,7 @@ const Seances: React.FC = () => {
                     // For MEDECIN, only show their own seances
                     seancesWithoutReevaluation
                       .filter(s => userRole !== 'MEDECIN' || s.medecinId === (function() {
-                                      const userData = JSON.parse(localStorage.getItem('user') || '{}');
+                                      const userData = JSON.parse(sessionStorage.getItem('user') || '{}');
                                       return userData.user?.id;
                                     })())
                       .map(seance => (

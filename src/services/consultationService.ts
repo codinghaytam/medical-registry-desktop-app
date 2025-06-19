@@ -1,4 +1,5 @@
 import { fetch } from '@tauri-apps/plugin-http';
+import { withAuthHeader } from './authService';
 
 const BASE_URL = 'https://walrus-app-j9qyk.ondigitalocean.app';
 
@@ -15,10 +16,9 @@ export interface DiagnosisData {
   medecinId: string;
 }
 
-export const consultationService = {
-  getAll: async () => {
+export const consultationService = {  getAll: async () => {
     try {
-      const response = await fetch(`${BASE_URL}/consultation`);
+      const response = await fetch(`${BASE_URL}/consultation`, { headers: withAuthHeader().headers });
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw Object.assign(new Error(errorData.error || `Failed with status: ${response.status}`), { 
@@ -32,13 +32,14 @@ export const consultationService = {
       throw error;
     }
   },
-
   create: async (data: ConsultationData) => {
     try {
       const response = await fetch(`${BASE_URL}/consultation`, {
+        ...withAuthHeader(),
         method: 'POST',
         body: JSON.stringify(data),
         headers: {
+          ...withAuthHeader().headers,
           'Content-Type': 'application/json',
         },
       });
@@ -57,13 +58,14 @@ export const consultationService = {
       throw error;
     }
   },
-
   update: async (id: string, data: Partial<ConsultationData>) => {
     try {
       const response = await fetch(`${BASE_URL}/consultation/${id}`, {
+        ...withAuthHeader(),
         method: 'PUT',
         body: JSON.stringify(data),
         headers: {
+          ...withAuthHeader().headers,
           'Content-Type': 'application/json',
         },
       });
@@ -82,10 +84,10 @@ export const consultationService = {
       throw error;
     }
   },
-
   delete: async (id: string) => {
     try {
       const response = await fetch(`${BASE_URL}/consultation/${id}`, {
+        ...withAuthHeader(),
         method: 'DELETE',
       });
       
@@ -103,13 +105,14 @@ export const consultationService = {
       throw error;
     }
   },
-
   addDiagnosis: async (consultationId: string, data: DiagnosisData) => {
     try {
       const response = await fetch(`${BASE_URL}/consultation/${consultationId}/diagnosis`, {
+        ...withAuthHeader(),
         method: 'POST',
         body: JSON.stringify(data),
         headers: {
+          ...withAuthHeader().headers,
           'Content-Type': 'application/json',
         },
       });
@@ -128,13 +131,14 @@ export const consultationService = {
       throw error;
     }
   },
-
   updateDiagnosis: async (diagnosisId: string, data: Partial<DiagnosisData>) => {
     try {
       const response = await fetch(`${BASE_URL}/consultation/diagnosis/${diagnosisId}`, {
+        ...withAuthHeader(),
         method: 'PUT',
         body: JSON.stringify(data),
         headers: {
+          ...withAuthHeader().headers,
           'Content-Type': 'application/json',
         },
       });
@@ -153,10 +157,9 @@ export const consultationService = {
       throw error;
     }
   },
-
   getById: async (id: string) => {
     try {
-      const response = await fetch(`${BASE_URL}/consultation/${id}`);
+      const response = await fetch(`${BASE_URL}/consultation/${id}`, { headers: withAuthHeader().headers });
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -172,10 +175,9 @@ export const consultationService = {
       throw error;
     }
   },
-
   getByPatientId: async (patientId: string) => {
     try {
-      const response = await fetch(`${BASE_URL}/consultation`);
+      const response = await fetch(`${BASE_URL}/consultation`, { headers: withAuthHeader().headers });
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));

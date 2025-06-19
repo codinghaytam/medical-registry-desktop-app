@@ -1,4 +1,4 @@
-import { Button, TextField, Box, Typography, Container, CircularProgress, Alert } from '@mui/material';
+import { Button, TextField, Box, Typography, Container, CircularProgress, Alert, Link } from '@mui/material';
 import { fetch } from '@tauri-apps/plugin-http';
 import { useState, FormEvent } from 'react';
 
@@ -42,9 +42,8 @@ export default function LoginPage() {
       
       const rawText = await response.text();
       const data = JSON.parse(rawText);
-      
-      localStorage.setItem('access_token', data.access_token);
-      localStorage.setItem('refresh_token', data.refresh_token);
+        sessionStorage.setItem('access_token', data.access_token);
+      sessionStorage.setItem('refresh_token', data.refresh_token);
       
       // First, check user type/role from a central endpoint
       try {
@@ -61,15 +60,18 @@ export default function LoginPage() {
         
         const userData = await userResponse.json();
         const userRole = userData.role;
-        
-        // Fetch specific user data based on role
+          // Fetch specific user data based on role
         if (userRole === "MEDECIN") {
-          const medecinResponse = await fetch("https://walrus-app-j9qyk.ondigitalocean.app/medecin/email/" + email, {method:"GET"});
+          const medecinResponse = await fetch("https://walrus-app-j9qyk.ondigitalocean.app/medecin/email/" + email, {
+            method: "GET",
+            headers: {
+              "Authorization": `Bearer ${data.access_token}`
+            }
+          });
           if (medecinResponse.ok) {
             const medecinData = await medecinResponse.json();
-            
-            // Store with proper structure to avoid "user.role" undefined error
-            localStorage.setItem("user", JSON.stringify({ 
+              // Store with proper structure to avoid "user.role" undefined error
+            sessionStorage.setItem("user", JSON.stringify({ 
               user: { ...medecinData, role: "MEDECIN", firstName: medecinData.firstName || '', lastName: medecinData.lastName || '' } 
             }));
             window.location.href = "http://localhost:1420";
@@ -77,10 +79,15 @@ export default function LoginPage() {
           }
         } 
         else if (userRole === "ETUDIANT") {
-          const etudiantResponse = await fetch("https://walrus-app-j9qyk.ondigitalocean.app/etudiant/email/" + email, {method:"GET"});
+          const etudiantResponse = await fetch("https://walrus-app-j9qyk.ondigitalocean.app/etudiant/email/" + email, {
+            method: "GET",
+            headers: {
+              "Authorization": `Bearer ${data.access_token}`
+            }
+          });
           if (etudiantResponse.ok) {
             const etudiantData = await etudiantResponse.json();
-            localStorage.setItem("user", JSON.stringify({ 
+            sessionStorage.setItem("user", JSON.stringify({ 
               user: { ...etudiantData, role: "ETUDIANT" } 
             }));
             window.location.href = "http://localhost:1420";
@@ -88,10 +95,15 @@ export default function LoginPage() {
           }
         } 
         else if (userRole === "ADMIN") {
-          const adminResponse = await fetch("https://walrus-app-j9qyk.ondigitalocean.app/admin/email/" + email, {method:"GET"});
+          const adminResponse = await fetch("https://walrus-app-j9qyk.ondigitalocean.app/admin/email/" + email, {
+            method: "GET",
+            headers: {
+              "Authorization": `Bearer ${data.access_token}`
+            }
+          });
           if (adminResponse.ok) {
             const adminData = await adminResponse.json();
-            localStorage.setItem("user", JSON.stringify({ 
+            sessionStorage.setItem("user", JSON.stringify({ 
               user: { ...adminData, role: "ADMIN", firstName: adminData.keycloakDetails.firstName || '', lastName: adminData.keycloakDetails.lastName || '' } 
             }));
             window.location.href = "http://localhost:1420";
@@ -100,16 +112,21 @@ export default function LoginPage() {
         } 
         else {
           throw new Error("Unknown user role");
-        }
-      } catch (e) {
+        }      } catch (e) {
         console.error("Error determining user role:", e);
         
         // Fallback to the previous approach if the central endpoint fails
         try {
           // Try to fetch user data based on email - this might be a medecin
-          const medecinData = await (await fetch("https://walrus-app-j9qyk.ondigitalocean.app/medecin/email/" + email, {method:"GET"})).json();
-          if (medecinData) {
-            localStorage.setItem("user", JSON.stringify({ 
+          const medecinResponse = await fetch("https://walrus-app-j9qyk.ondigitalocean.app/medecin/email/" + email, {
+            method: "GET",
+            headers: {
+              "Authorization": `Bearer ${data.access_token}`
+            }
+          });
+          if (medecinResponse.ok) {
+            const medecinData = await medecinResponse.json();
+            sessionStorage.setItem("user", JSON.stringify({ 
               user: { ...medecinData, role: "MEDECIN" } 
             }));
             window.location.href = "http://localhost:1420";
@@ -120,9 +137,15 @@ export default function LoginPage() {
         }
         
         try {
-          const etudiantData = await (await fetch("https://walrus-app-j9qyk.ondigitalocean.app/etudiant/email/" + email, {method:"GET"})).json();
-          if (etudiantData) {
-            localStorage.setItem("user", JSON.stringify({ 
+          const etudiantResponse = await fetch("https://walrus-app-j9qyk.ondigitalocean.app/etudiant/email/" + email, {
+            method: "GET",
+            headers: {
+              "Authorization": `Bearer ${data.access_token}`
+            }
+          });
+          if (etudiantResponse.ok) {
+            const etudiantData = await etudiantResponse.json();
+            sessionStorage.setItem("user", JSON.stringify({ 
               user: { ...etudiantData, role: "ETUDIANT" } 
             }));
             window.location.href = "http://localhost:1420";
@@ -133,13 +156,21 @@ export default function LoginPage() {
         }
         
         try {
-          const adminData = await (await fetch("https://walrus-app-j9qyk.ondigitalocean.app/admin/email/" + email, {method:"GET"})).json();
-          if (adminData) {
-            localStorage.setItem("user", JSON.stringify({ 
-              user: { ...adminData, role: "ADMIN" } 
-            }));
-            window.location.href = "http://localhost:1420";
-            return;
+          const adminResponse = await fetch("https://walrus-app-j9qyk.ondigitalocean.app/admin/email/" + email, {
+            method: "GET",
+            headers: {
+              "Authorization": `Bearer ${data.access_token}`
+            }
+          });
+          if (adminResponse.ok) {
+            const adminData = await adminResponse.json();
+            if (adminData) {
+              sessionStorage.setItem("user", JSON.stringify({ 
+                user: { ...adminData, role: "ADMIN" } 
+              }));
+              window.location.href = "http://localhost:1420";
+              return;
+            }
           }
         } catch (e) {
           console.log("Could not determine user role");
@@ -152,6 +183,10 @@ export default function LoginPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleForgotPassword = () => {
+    window.location.href = "/reset-password";
   };
 
   return (
@@ -229,6 +264,17 @@ export default function LoginPage() {
                   'Sign In'
                 )}
               </Button>
+              
+              <Box sx={{ textAlign: 'center', mt: 1 }}>
+                <Link 
+                  component="button" 
+                  variant="body2" 
+                  onClick={handleForgotPassword}
+                  sx={{ cursor: 'pointer' }}
+                >
+                  Forgot password?
+                </Link>
+              </Box>
             </Box>
           </>
         )}

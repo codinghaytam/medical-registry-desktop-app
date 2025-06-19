@@ -48,6 +48,7 @@ import {
 import { fetch } from '@tauri-apps/plugin-http';
 import { patientService, PatientData } from '../services/patientService';
 import { getUserRole } from '../utiles/RoleAccess';
+import { authService } from '../services/authService';
 
 // Define feedback type for consistent notification styling
 type FeedbackType = 'success' | 'error' | 'info';
@@ -116,7 +117,7 @@ const Patients: React.FC = () => {
   useEffect(() => {
     if (userRole === 'MEDECIN') {
       try {
-        const userString = localStorage.getItem('user');
+        const userString = sessionStorage.getItem('user');
         if (userString) {
           const userData = JSON.parse(userString);
           
@@ -322,12 +323,16 @@ const Patients: React.FC = () => {
       let medecinId = '';
       
       if (userRole === 'MEDECIN') {
-        const userData = JSON.parse(localStorage.getItem('user') || '{}');
+        const userData = JSON.parse(sessionStorage.getItem('user') || '{}');
         medecinId = userData.id || userData.user?.id;
       } else {
         // For ADMIN, we need to choose a medecin with ORTHODONTAIRE profession
-        // This would be better with a dropdown selection, but for simplicity we'll use the first available
-        const response = await fetch('https://walrus-app-j9qyk.ondigitalocean.app/medecin');
+        // This would be better with a dropdown selection, but for simplicity we'll use the first available        const token = authService.getToken()?.access_token;
+        const response = await fetch('https://walrus-app-j9qyk.ondigitalocean.app/medecin', {
+          headers: {
+            "Authorization": `Bearer ${authService.getToken()?.access_token}`
+          }
+        });
         const medecins = await response.json();
         const orthodontist = medecins.find((m: any) => m.profession === 'ORTHODONTAIRE');
         
@@ -415,11 +420,13 @@ const Patients: React.FC = () => {
 
   useEffect(() => {
     const fetchEnums = async () => {
-      try {
+      try {        const token = authService.getToken()?.access_token;
+        const headers = { "Authorization": `Bearer ${token}` };
+        
         const [motifsResponse, masticationsResponse, hygienesResponse] = await Promise.all([
-          fetch('https://walrus-app-j9qyk.ondigitalocean.app/enum/motif-consultation').then(res => res.json()),
-          fetch('https://walrus-app-j9qyk.ondigitalocean.app/enum/type-mastication').then(res => res.json()),
-          fetch('https://walrus-app-j9qyk.ondigitalocean.app/enum/hygiene-bucco-dentaire').then(res => res.json())
+          fetch('https://walrus-app-j9qyk.ondigitalocean.app/enum/motif-consultation', { headers }).then(res => res.json()),
+          fetch('https://walrus-app-j9qyk.ondigitalocean.app/enum/type-mastication', { headers }).then(res => res.json()),
+          fetch('https://walrus-app-j9qyk.ondigitalocean.app/enum/hygiene-bucco-dentaire', { headers }).then(res => res.json())
         ]);
         
         setMotifs(motifsResponse);

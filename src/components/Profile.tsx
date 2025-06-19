@@ -88,8 +88,7 @@ export const Profile: React.FC = () => {
     loadUserData();
   }, []);
     const loadUserData = () => {
-    try {
-      const storedUser = localStorage.getItem("user");
+    try {      const storedUser = sessionStorage.getItem("user");
       if (storedUser) {
         const parsedUser = JSON.parse(storedUser);
         
@@ -119,15 +118,13 @@ export const Profile: React.FC = () => {
         }
       }
     } catch (error) {
-      console.error("Failed to parse user data from localStorage:", error);
+      console.error("Failed to parse user data from sessionStorage:", error);
     }
   };
 
   if (!userData) return <Typography>Loading profile...</Typography>;
-
   // Determine user role and data structure
-  const userRole = localStorage.getItem('userRole') || 
-                 (userData.user?.role || userData.role || "");
+  const userRole = sessionStorage.getItem('userRole') || (userData.user?.role || userData.role || "");
   
   // Extract user info based on role
   const getUserInfo = () => {
@@ -279,11 +276,10 @@ export const Profile: React.FC = () => {
         });
       } else {
         await userService.update(userInfo.id, updateData);
-      }
-        // Update the localStorage with the new user data
+      }        // Update the sessionStorage with the new user data
       try {
-        // First get existing user data from localStorage
-        const storedUserData = JSON.parse(localStorage.getItem("user") || "{}");
+        // First get existing user data from sessionStorage
+        const storedUserData = JSON.parse(sessionStorage.getItem("user") || "{}");
         
         // Update the user object with new values
         if (storedUserData.user) {
@@ -305,11 +301,11 @@ export const Profile: React.FC = () => {
             updatedUser.niveau = data.niveau;
           }
           
-          // Save the updated user data back to localStorage
-          localStorage.setItem("user", JSON.stringify({ ...storedUserData, user: updatedUser }));
+          // Save the updated user data back to sessionStorage
+          sessionStorage.setItem("user", JSON.stringify({ ...storedUserData, user: updatedUser }));
         }
       } catch (err) {
-        console.error("Failed to update localStorage:", err);
+        console.error("Failed to update sessionStorage:", err);
       }
       
       // Show success message

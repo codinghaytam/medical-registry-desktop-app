@@ -64,8 +64,8 @@ const Dashboard: React.FC = () => {
   const fetchMedecinPatients = async () => {
     setIsLoading(true);
     try {
-      // Get the medecin ID from localStorage
-      const medecinId = JSON.parse(localStorage.getItem('user') || '{}').user.id;
+      // Get the medecin ID from sessionStorage
+      const medecinId = JSON.parse(sessionStorage.getItem('user') || '{}').user.id;
       
       if (!medecinId) {
         console.error('Medecin ID not found in local storage');

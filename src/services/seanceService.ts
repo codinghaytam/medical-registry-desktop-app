@@ -1,5 +1,6 @@
 import { fetch } from '@tauri-apps/plugin-http';
 import { reevaluationService, ReevaluationData } from './reevaluationService';
+import { withAuthHeader } from './authService';
 
 const BASE_URL = 'https://walrus-app-j9qyk.ondigitalocean.app';
 
@@ -31,19 +32,16 @@ export interface MedecinData {
   };
 }
 
-export const seanceService = {
-  getAll: async () => {
-    const response = await fetch(`${BASE_URL}/seance`);
+export const seanceService = {  getAll: async () => {
+    const response = await fetch(`${BASE_URL}/seance`, { headers: withAuthHeader().headers });
     return response.json();
   },
-
   getById: async (id: string) => {
-    const response = await fetch(`${BASE_URL}/seance/${id}`);
+    const response = await fetch(`${BASE_URL}/seance/${id}`, { headers: withAuthHeader().headers });
     return response.json();
   },
-
   getByPatientId: async (patientId: string) => {
-    const response = await fetch(`${BASE_URL}/seance`);
+    const response = await fetch(`${BASE_URL}/seance`, { headers: withAuthHeader().headers });
     const seances = await response.json();
     return seances.filter((seance: any) => seance.patient?.id === patientId);
   },
@@ -80,11 +78,12 @@ export const seanceService = {
     try {
       
       
-      
-      const response = await fetch(`${BASE_URL}/seance`, {
+        const response = await fetch(`${BASE_URL}/seance`, {
+        ...withAuthHeader(),
         method: 'POST',
         body: JSON.stringify(formattedData),
         headers: {
+          ...withAuthHeader().headers,
           'Content-Type': 'application/json',
         },
       });
@@ -154,14 +153,15 @@ export const seanceService = {
         return reevaluationService.update(data.Reevaluation.id, reevalData);
       } else {
         return reevaluationService.create(reevalData);
-      }
-    }
+      }    }
     
     // For non-reevaluation types, just update the seance
     const response = await fetch(`${BASE_URL}/seance/${id}`, {
+      ...withAuthHeader(),
       method: 'PUT',
       body: JSON.stringify(formattedData),
       headers: {
+        ...withAuthHeader().headers,
         'Content-Type': 'application/json',
       },
     });
@@ -192,9 +192,9 @@ export const seanceService = {
         // Continue with deleting the seance even if reevaluation delete fails
       }
     }
-    
-    // Now delete the seance
+      // Now delete the seance
     await fetch(`${BASE_URL}/seance/${id}`, {
+      ...withAuthHeader(),
       method: 'DELETE',
     });
   }

@@ -1,6 +1,6 @@
 import {Navigate} from 'react-router-dom'
 
 export const Logout = () => {
-    localStorage.clear()
+    sessionStorage.clear()
     return <Navigate to="/login" />;
 };
