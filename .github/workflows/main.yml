@@ -1,0 +1,48 @@
+name: Tauri Build
+
+on:
+  push:
+    tags: ['v*']  # Trigger on version tags
+  workflow_dispatch:  # Allow manual triggers
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        platform: [macos-latest, ubuntu-latest, windows-latest]
+    
+    runs-on: ${{ matrix.platform }}
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        profile: minimal
+        override: true
+
+    - name: Install Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Install Tauri CLI
+      run: npm install @tauri-apps/cli
+
+    - name: Build Tauri app
+      run: npm run tauri build
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: tauri-build-${{ matrix.platform }}
+        path: src-tauri/target/release/
+        if-no-files-found: error
