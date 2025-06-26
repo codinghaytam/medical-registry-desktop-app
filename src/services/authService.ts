@@ -69,7 +69,8 @@ class AuthService {
       window.clearTimeout(this.refreshTokenTimeoutId);
       this.refreshTokenTimeoutId = null;
     }
-    window.location.href = '/login';
+    // Use postMessage to communicate logout to the app
+    window.postMessage({ type: 'LOGOUT' }, '*');
   }
 
   // Check if token is expired

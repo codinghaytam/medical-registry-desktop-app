@@ -17,6 +17,9 @@
         }
         ,{
           "url": "http://*:*"
+        },
+        {
+          "url": "tauri://localhost"
         }
       ]
     },

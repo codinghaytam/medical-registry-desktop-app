@@ -1034,9 +1034,8 @@ const Seances: React.FC = () => {
                                           p: 1,
                                           display: 'inline-block'
                                         }}
-                                      >
-                                        <img
-                                          src={`http://localhost:3000${getReevaluationForSeance(seance.id!)?.sondagePhoto}`}
+                                      >                                        <img
+                                          src={`https://walrus-app-j9qyk.ondigitalocean.app${getReevaluationForSeance(seance.id!)?.sondagePhoto}`}
                                           alt="Sondage"
                                           style={{ maxWidth: '100%', maxHeight: '300px' }}
                                         />

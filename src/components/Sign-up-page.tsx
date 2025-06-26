@@ -1,10 +1,12 @@
 import { Button, TextField, Box, Typography, Container, CircularProgress, Alert, Link } from '@mui/material';
 import { fetch } from '@tauri-apps/plugin-http';
 import { useState, FormEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   // The client auth was automatically running on page load, which isn't ideal for role handling
   // Now we only authenticate when user explicitly submits credentials
@@ -67,17 +69,16 @@ export default function LoginPage() {
             headers: {
               "Authorization": `Bearer ${data.access_token}`
             }
-          });
-          if (medecinResponse.ok) {
+          });          if (medecinResponse.ok) {
             const medecinData = await medecinResponse.json();
-              // Store with proper structure to avoid "user.role" undefined error
+            // Store with proper structure to avoid "user.role" undefined error
             sessionStorage.setItem("user", JSON.stringify({ 
               user: { ...medecinData, role: "MEDECIN", firstName: medecinData.firstName || '', lastName: medecinData.lastName || '' } 
             }));
-            window.location.href = "http://localhost:1420";
+            navigate('/', { replace: true });
             return;
           }
-        } 
+        }
         else if (userRole === "ETUDIANT") {
           const etudiantResponse = await fetch("https://walrus-app-j9qyk.ondigitalocean.app/etudiant/email/" + email, {
             method: "GET",
@@ -90,10 +91,10 @@ export default function LoginPage() {
             sessionStorage.setItem("user", JSON.stringify({ 
               user: { ...etudiantData, role: "ETUDIANT" } 
             }));
-            window.location.href = "http://localhost:1420";
+            navigate('/', { replace: true });
             return;
           }
-        } 
+        }
         else if (userRole === "ADMIN") {
           const adminResponse = await fetch("https://walrus-app-j9qyk.ondigitalocean.app/admin/email/" + email, {
             method: "GET",
@@ -102,17 +103,16 @@ export default function LoginPage() {
             }
           });
           if (adminResponse.ok) {
-            const adminData = await adminResponse.json();
-            sessionStorage.setItem("user", JSON.stringify({ 
+            const adminData = await adminResponse.json();            sessionStorage.setItem("user", JSON.stringify({ 
               user: { ...adminData, role: "ADMIN", firstName: adminData.keycloakDetails.firstName || '', lastName: adminData.keycloakDetails.lastName || '' } 
             }));
-            window.location.href = "http://localhost:1420";
+            navigate('/', { replace: true });
             return;
-          }
-        } 
+          }        } 
         else {
           throw new Error("Unknown user role");
-        }      } catch (e) {
+        }
+      } catch (e) {
         console.error("Error determining user role:", e);
         
         // Fallback to the previous approach if the central endpoint fails
@@ -123,13 +123,12 @@ export default function LoginPage() {
             headers: {
               "Authorization": `Bearer ${data.access_token}`
             }
-          });
-          if (medecinResponse.ok) {
+          });          if (medecinResponse.ok) {
             const medecinData = await medecinResponse.json();
             sessionStorage.setItem("user", JSON.stringify({ 
               user: { ...medecinData, role: "MEDECIN" } 
             }));
-            window.location.href = "http://localhost:1420";
+            navigate('/', { replace: true });
             return;
           }
         } catch (e) {
@@ -142,13 +141,12 @@ export default function LoginPage() {
             headers: {
               "Authorization": `Bearer ${data.access_token}`
             }
-          });
-          if (etudiantResponse.ok) {
+          });          if (etudiantResponse.ok) {
             const etudiantData = await etudiantResponse.json();
             sessionStorage.setItem("user", JSON.stringify({ 
               user: { ...etudiantData, role: "ETUDIANT" } 
             }));
-            window.location.href = "http://localhost:1420";
+            navigate('/', { replace: true });
             return;
           }
         } catch (e) {
@@ -164,11 +162,10 @@ export default function LoginPage() {
           });
           if (adminResponse.ok) {
             const adminData = await adminResponse.json();
-            if (adminData) {
-              sessionStorage.setItem("user", JSON.stringify({ 
+            if (adminData) {              sessionStorage.setItem("user", JSON.stringify({ 
                 user: { ...adminData, role: "ADMIN" } 
               }));
-              window.location.href = "http://localhost:1420";
+              navigate('/', { replace: true });
               return;
             }
           }

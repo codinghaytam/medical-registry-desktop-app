@@ -193,12 +193,7 @@ const PatientDetails: React.FC = () => {
     navigate('/patients');
   };
 
-  const handleEditClick = () => {
-    if (patient) {
-      setEditPatientData({...patient});
-      setIsEditDialogOpen(true);
-    }
-  };
+  
 
   const handleEditDialogClose = () => {
     setIsEditDialogOpen(false);
@@ -471,14 +466,7 @@ const PatientDetails: React.FC = () => {
         <Typography variant="h4" sx={{ fontWeight: 'bold', flexGrow: 1 }}>
           Patient Details
         </Typography>
-        <Button 
-          variant="contained" 
-          startIcon={<Edit />}
-          sx={{ mr: 1 }}
-          onClick={handleEditClick}
-        >
-          Edit Patient
-        </Button>
+        
       </Box>
 
       {/* Patient overview card */}

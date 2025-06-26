@@ -1,4 +1,4 @@
-import { Button, TextField, Box, Typography, Container, CircularProgress, Alert, Link } from '@mui/material';
+import { Button, TextField, Box, Typography, Container, CircularProgress, Alert } from '@mui/material';
 import { useState, FormEvent, useEffect } from 'react';
 import { fetch } from '@tauri-apps/plugin-http';
 import { useSearchParams } from 'react-router-dom';
@@ -10,7 +10,7 @@ export default function PasswordReset() {
   const [success, setSuccess] = useState(false);
   const [step, setStep] = useState('request'); // 'request', 'verify', 'change', 'complete'
   const [email, setEmail] = useState('');
-  const [verificationStatus, setVerificationStatus] = useState<{
+  const [, setVerificationStatus] = useState<{
     emailVerified: boolean;
     userEnabled: boolean;
   } | null>(null);

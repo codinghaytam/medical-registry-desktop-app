@@ -20,7 +20,6 @@ import {
   LogOut, 
   ChevronLeft,
   Calendar,
-  User,
   FileText,
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
@@ -76,13 +75,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, handleDrawerToggle }) => {
       icon: <Calendar size={22} />, 
       path: '/sceance',
       allowedRoles: ['ADMIN', 'MEDECIN', 'ETUDIANT'] 
-    },
-    { 
-      text: 'Médecins', 
-      icon: <User size={22} />, 
-      path: '/medecins',
-      allowedRoles: ['ADMIN'] 
-    },
+    }
     
   ];
 
