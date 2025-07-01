@@ -544,7 +544,7 @@ const Users: React.FC = () => {
       
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
         <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-          Users
+          Utilisateurs
         </Typography>
         <Box sx={{ display: 'flex', gap: 1 }}>
           <Tooltip title="Refresh users list">
@@ -863,8 +863,8 @@ const Users: React.FC = () => {
                     required
                     disabled={isSubmitting}
                   >
-                    <MenuItem value="PARODONTAIRE">PARODONTAIRE</MenuItem>
-                    <MenuItem value="ORTHODONTAIRE">ORTHODONTAIRE</MenuItem>
+                    <MenuItem value="PARODONTAIRE">Parodontie</MenuItem>
+                    <MenuItem value="ORTHODONTAIRE">Orthodontie</MenuItem>
                   </Select>
                 </FormControl>
                 
@@ -1029,8 +1029,8 @@ const Users: React.FC = () => {
                     required
                     disabled={isSubmitting}
                   >
-                    <MenuItem value="PARODENTAIRE">PARODENTAIRE</MenuItem>
-                    <MenuItem value="ORTHODENTAIRE">ORTHODENTAIRE</MenuItem>
+                    <MenuItem value="PARODENTAIRE">Parodontie</MenuItem>
+                    <MenuItem value="ORTHODENTAIRE">Orthodontie</MenuItem>
                   </Select>
                 </FormControl>
                 

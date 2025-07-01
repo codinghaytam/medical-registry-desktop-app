@@ -53,7 +53,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, handleDrawerToggle }) => {
       allowedRoles: ['ADMIN', 'MEDECIN', 'ETUDIANT']
     },
     { 
-      text: 'Users', 
+      text: 'Utilisateurs', 
       icon: <Users size={22} />, 
       path: '/users',
       allowedRoles: ['ADMIN'] 

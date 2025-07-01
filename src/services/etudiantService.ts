@@ -29,12 +29,12 @@ export interface CreateEtudiantData {
 
 export const etudiantService = {
   getAll: async () => {
-    const response = await fetch(`${BASE_URL}/etudiant`, { headers: withAuthHeader().headers });
+    const response = await fetch(`${BASE_URL}/etudiant`, { ...withAuthHeader() });
     return response.json();
   },
 
   getById: async (id: string) => {
-    const response = await fetch(`${BASE_URL}/etudiant/${id}`, { headers: withAuthHeader().headers });
+    const response = await fetch(`${BASE_URL}/etudiant/${id}`, { ...withAuthHeader() });
     return response.json();
   },
 

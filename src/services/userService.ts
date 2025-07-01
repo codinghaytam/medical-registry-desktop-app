@@ -13,13 +13,15 @@ export interface UserData {
   name?: string; // Added name field to match API structure
   role: string;
   phone?: string; // Added phone field
+  pwd?: string; // Added password field to match API structure
 }
 
 // User service handles base user operations, specific user types (medecin/etudiant) 
 // are handled by their respective services
 
-export const userService = {  getAll: async () => {
-    const response = await fetch(`${BASE_URL}/users`, { headers: withAuthHeader().headers });
+export const userService = {
+  getAll: async () => {
+    const response = await fetch(`${BASE_URL}/users`, { ...withAuthHeader() });
     const users = await response.json();
     
     // Map the data to extract firstName and lastName from name attribute
@@ -37,20 +39,47 @@ export const userService = {  getAll: async () => {
       }
       return user;
     });
-  },  create: async (data: Omit<UserData, 'id' | 'enabled'>) => {
+  },
+
+  create: async (data: Omit<UserData, 'id'>) => {
     // Create a copy of the data for modification
     const createData = { ...data };
     
-    // Combine firstName and lastName into name if they exist
-    if (createData.firstName || createData.lastName) {
-      createData.name = `${createData.firstName || ''} ${createData.lastName || ''}`.trim();
+    // Backend expects firstName and lastName fields, not name
+    // Remove name field if it exists to avoid confusion
+    delete createData.name;
+    
+    // Ensure firstName and lastName are provided
+    if (!createData.firstName && !createData.lastName && data.name) {
+      // If name is provided but not firstName/lastName, split it
+      const nameParts = data.name.split(' ');
+      createData.firstName = nameParts[0] || '';
+      createData.lastName = nameParts.slice(1).join(' ') || '';
     }
     
-    const response = await fetch(`${BASE_URL}/users`, { ...withAuthHeader(),
+    // Ensure we have default values for required fields
+    if (!createData.firstName) createData.firstName = '';
+    if (!createData.lastName) createData.lastName = '';
+    
+    const response = await fetch(`${BASE_URL}/users`, {
+      ...withAuthHeader(),
       method: 'POST',
       body: JSON.stringify(createData),
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        ...withAuthHeader().headers,
+        'Content-Type': 'application/json',
+      },
     });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Create user failed:', {
+        status: response.status,
+        statusText: response.statusText,
+        body: errorText
+      });
+      throw new Error(`Failed to create user: ${response.status} ${response.statusText}`);
+    }
     
     const result = await response.json();
     
@@ -67,18 +96,35 @@ export const userService = {  getAll: async () => {
     // Create a copy of the data for modification
     const updatedData = { ...data };
     
-    // Combine firstName and lastName into name if they exist
-    if (updatedData.firstName || updatedData.lastName) {
-      updatedData.name = `${updatedData.firstName || ''} ${updatedData.lastName || ''}`.trim();
+    // Remove name field to avoid confusion with backend logic
+    delete updatedData.name;
+    
+    // Ensure firstName and lastName are provided if name was given
+    if (!updatedData.firstName && !updatedData.lastName && data.name) {
+      const nameParts = data.name.split(' ');
+      updatedData.firstName = nameParts[0] || '';
+      updatedData.lastName = nameParts.slice(1).join(' ') || '';
     }
     
-    const response = await fetch(`${BASE_URL}/users/${id}`, { ...withAuthHeader(),
+    const response = await fetch(`${BASE_URL}/users/${id}`, {
+      ...withAuthHeader(),
       method: 'PUT',
       body: JSON.stringify(updatedData),
       headers: {
+        ...withAuthHeader().headers,
         'Content-Type': 'application/json',
       },
     });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Update user failed:', {
+        status: response.status,
+        statusText: response.statusText,
+        body: errorText
+      });
+      throw new Error(`Failed to update user: ${response.status} ${response.statusText}`);
+    }
     
     const result = await response.json();
     
@@ -98,8 +144,63 @@ export const userService = {  getAll: async () => {
     });
   },
 
+  getById: async (id: string): Promise<UserData> => {
+    const response = await fetch(`${BASE_URL}/users/${id}`, { 
+      ...withAuthHeader()
+    });
+    const user = await response.json();
+    
+    // Map the data to extract firstName and lastName from name attribute
+    if (user.name) {
+      const nameParts = user.name.split(' ');
+      user.firstName = nameParts[0] || '';
+      user.lastName = nameParts.slice(1).join(' ') || '';
+    }
+    
+    return user;
+  },
+
+  getByEmail: async (email: string): Promise<UserData> => {
+    const response = await fetch(`${BASE_URL}/users/email/${email}`, { 
+      ...withAuthHeader()
+    });
+    const user = await response.json();
+    
+    // Map the data to extract firstName and lastName from name attribute
+    if (user.name) {
+      const nameParts = user.name.split(' ');
+      user.firstName = nameParts[0] || '';
+      user.lastName = nameParts.slice(1).join(' ') || '';
+    }
+    
+    return user;
+  },
+
+  getByRole: async (role: string): Promise<UserData[]> => {
+    const response = await fetch(`${BASE_URL}/users/role/${role}`, { 
+      ...withAuthHeader()
+    });
+    const users = await response.json();
+    
+    // Map the data to extract firstName and lastName from name attribute
+    return users.map((user: any) => {
+      if (user.name) {
+        const nameParts = user.name.split(' ');
+        const firstName = nameParts[0] || '';
+        const lastName = nameParts.slice(1).join(' ') || '';
+        
+        return {
+          ...user,
+          firstName,
+          lastName
+        };
+      }
+      return user;
+    });
+  },
+
   getMedecins: async (): Promise<MedecinData[]> => {
-    const response = await fetch(`${BASE_URL}/medecin`, { headers: withAuthHeader().headers });
+    const response = await fetch(`${BASE_URL}/users/medecins`, { ...withAuthHeader() });
     return response.json();
   }
 };

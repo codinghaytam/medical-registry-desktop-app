@@ -948,8 +948,8 @@ const Patients: React.FC = () => {
                       label="Département"
                       disabled={isLoading}
                     >
-                      <MenuItem value="PARODONTAIRE">Parodontaire</MenuItem>
-                      <MenuItem value="ORTHODONTAIRE">Orthodontaire</MenuItem>
+                      <MenuItem value="PARODONTAIRE">Parodontie</MenuItem>
+                      <MenuItem value="ORTHODONTAIRE">Orthodontie</MenuItem>
                     </Select>
                   </FormControl>
                 )}

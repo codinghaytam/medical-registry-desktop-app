@@ -61,6 +61,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { getUserRole, canOnlyView } from '../utiles/RoleAccess';
 import RoleBasedAccess from '../utiles/RoleBasedAccess';
+import { medecinService } from '../services/medecinService';
 
 // Define feedback type for consistent notification styling
 type FeedbackType = 'success' | 'error' | 'info';
@@ -134,7 +135,7 @@ const Seances: React.FC = () => {
       const results = await Promise.allSettled([
         seanceService.getAll(),
         patientService.getAll(),
-        userService.getMedecins(),
+        medecinService.getAll(),
         reevaluationService.getAll()
       ]);
       
@@ -1168,9 +1169,9 @@ const Seances: React.FC = () => {
                     medecins.map((medecin) => (
                       <MenuItem key={medecin.id} value={medecin.id}>
                         {medecin.userInfo ? 
-                          `${medecin.userInfo.firstName} ${medecin.userInfo.lastName}` : 
+                          `${medecin.user.firstName} ${medecin.user.lastName}` : 
                           (medecin.user && medecin.user.name) ? medecin.user.name : 'Unknown'} 
-                        - {medecin.profession}
+                        - {(medecin.profession==='PARODONTAIRE' ? 'Parodontie' : 'Orthodontie')}
                       </MenuItem>
                     ))
                   ) : (

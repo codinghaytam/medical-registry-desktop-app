@@ -31,12 +31,12 @@ export interface CreateMedecinData {
 }
 
 export const medecinService = {  getAll: async () => {
-    const response = await fetch(`${BASE_URL}/medecin`, { headers: withAuthHeader().headers });
+    const response = await fetch(`${BASE_URL}/medecin`, { ...withAuthHeader() });
     return response.json();
   },
 
   getById: async (id: string) => {
-    const response = await fetch(`${BASE_URL}/medecin/${id}`, { headers: withAuthHeader().headers });
+    const response = await fetch(`${BASE_URL}/medecin/${id}`, { ...withAuthHeader() });
     return response.json();
   },
   
