@@ -196,7 +196,7 @@ export const authService = new AuthService();
  * @param options - The fetch options to modify
  * @returns Modified fetch options with authorization header
  */
-export const withAuthHeader = (options: RequestInit = {}): RequestInit => {
+export const  withAuthHeader = (options: RequestInit = {}): RequestInit => {
   const token = authService.getToken();
   if (token?.access_token) {
     const headers = new Headers(options.headers || {});
