@@ -82,7 +82,7 @@ const Header: React.FC<HeaderProps> = ({ handleDrawerToggle }) => {
                   if (userRole === 'MEDECIN' && userData.user?.user?.name) {
                     return `Dr. ${userData.user.user.name}`;
                   } else if (userRole === 'MEDECIN' && userData.user?.user?.profession) {
-                    return userData.user.profession;
+                    return (userData.user.profession=== 'PARODONTAIRE' ? 'Parodontiste' : 'Orthodontiste');
                   } else if (userRole === 'ETUDIANT' && userData.user?.user?.name) {
                     return userData.user.user.name;
                   } else if (userRole === 'ADMIN' && userData.user.name) {
@@ -105,7 +105,7 @@ const Header: React.FC<HeaderProps> = ({ handleDrawerToggle }) => {
 
                   }                  
                   if (userRole === 'MEDECIN' && userData.user?.profession) {
-                    return userData.user.profession;
+                    return (userData.user.profession === 'PARODONTAIRE' ? 'Parodontiste' : 'Orthodontiste');
                   } else {
                     return userRole || "User";
                   }

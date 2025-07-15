@@ -378,9 +378,9 @@ export const Profile: React.FC = () => {
           </Grid>
           <Grid item xs={12} md={6}>
             <Card sx={{ p: 2 }}>
-              <Typography variant="subtitle1">Specialty</Typography>
+              <Typography variant="subtitle1">Specialité</Typography>
               <Typography variant="body1" color="text.secondary">
-                {userInfo.profession}
+                {(userInfo.profession=== 'PARODONTAIRE')? 'Parodontiste' : 'Orthodontiste'}
                 {userRole === 'MEDECIN' && userInfo.isSpecialiste && " (Specialist)"}
               </Typography>
             </Card>
@@ -455,7 +455,7 @@ export const Profile: React.FC = () => {
             <TextField
               fullWidth
               label="Phone Number"
-              name="phone"
+              name="Téléphone"
               value={editFormData.phone}
               onChange={handlePhoneChange}
               disabled={isSubmitting}
@@ -479,15 +479,16 @@ export const Profile: React.FC = () => {
             {userRole === 'MEDECIN' && (
               <>
                 <FormControl fullWidth sx={{ mb: 2 }}>
-                  <InputLabel>Profession</InputLabel>                  <MuiSelect
+                  <InputLabel>Profession</InputLabel>                  
+                  <MuiSelect
                     value={editFormData.profession}
                     label="Profession"
                     onChange={handleEditProfessionChange}
                     required
                     disabled={isSubmitting}
                   >
-                    <MenuItem value="PARODENTAIRE">PARODENTAIRE</MenuItem>
-                    <MenuItem value="ORTHODENTAIRE">ORTHODENTAIRE</MenuItem>
+                    <MenuItem value="PARODENTAIRE">Parodontiste</MenuItem>
+                    <MenuItem value="ORTHODENTAIRE">Orthodontiste</MenuItem>
                   </MuiSelect>
                 </FormControl>
                 

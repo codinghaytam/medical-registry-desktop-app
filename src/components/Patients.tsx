@@ -575,7 +575,7 @@ const Patients: React.FC = () => {
 
       {userRole === 'MEDECIN' && userProfession && (
         <Alert severity="info" sx={{ mb: 2 }}>
-          You are viewing patients in the {(userProfession=="PARODONTAIRE")? "Parodontist":"Orthodontist"} department based on your profession.
+          You are viewing patients in the {(userProfession=="PARODONTAIRE")? "Parodontiste":"Orthodontiste"} department based on your profession.
         </Alert>
       )}
 
@@ -780,7 +780,7 @@ const Patients: React.FC = () => {
                 <path d="M17 8L21 12M21 12L17 16M21 12H3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </IconButton>
-            Transfer to Orthodontaire
+            Transfer to Orthodontiste
           </MenuItem>
         )}
         {/* Add transfer option - show for ORTHODONTAIRE patients to transfer to PARODONTAIRE */}
@@ -794,7 +794,7 @@ const Patients: React.FC = () => {
                 <path d="M7 8L3 12M3 12L7 16M3 12H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </IconButton>
-            Transfer to Parodontaire
+            Transfer to Parodontiste
           </MenuItem>
         )}
         <MenuItem 
@@ -847,12 +847,7 @@ const Patients: React.FC = () => {
           Confirm Patient Transfer
         </DialogTitle>
         <DialogContent>
-          <Typography id="transfer-dialog-description" paragraph>
-            Are you sure you want to transfer this patient from the Parodontaire department to the Orthodontaire department?
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            This action will move the patient to the Orthodontaire department and create a transfer record. The transfer may require approval.
-          </Typography>
+
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseTransferDialog} color="primary">
