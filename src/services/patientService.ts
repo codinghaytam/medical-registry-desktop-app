@@ -139,5 +139,29 @@ export const patientService = {  getAll: async () => {
       console.error(`Error transferring patient ${id} to Orthodontaire:`, error);
       throw error;
     }
+  },
+
+  // New function to transfer patient from ORTHODONTAIRE to PARODONTAIRE
+  transferOrthoToParo: async (id: string, medecinId: string) => {
+    try {
+      const response = await fetchWithAuth(`${BASE_URL}/patient/Ortho-Paro/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ medecinId }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw Object.assign(new Error(errorData.error || `Failed with status: ${response.status}`), { 
+          response,
+          status: response.status
+        });
+      }
+      return response.json();
+    } catch (error) {
+      console.error(`Error transferring patient ${id} to Parodontaire:`, error);
+      throw error;
+    }
   }
 };

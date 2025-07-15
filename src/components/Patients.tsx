@@ -70,6 +70,9 @@ const Patients: React.FC = () => {
   // Add states for transfer functionality
   const [openTransferDialog, setOpenTransferDialog] = useState(false);
   const [patientToTransfer, setPatientToTransfer] = useState<string | null>(null);
+  // Add states for Ortho to Paro transfer functionality
+  const [openTransferOrthoToParoDialog, setOpenTransferOrthoToParoDialog] = useState(false);
+  const [patientToTransferOrthoToParo, setPatientToTransferOrthoToParo] = useState<string | null>(null);
   const [patients, setPatients] = useState<any[]>([]);
   const [Motifs, setMotifs] = useState<string[]>([]);
   const [typeMastications, setTypeMastications] = useState<string[]>([]);
@@ -370,6 +373,73 @@ const Patients: React.FC = () => {
     }
   };
 
+  // Show transfer confirmation dialog for Ortho to Paro
+  const handleConfirmTransferOrthoToParo = (id: string) => {
+    setPatientToTransferOrthoToParo(id);
+    setOpenTransferOrthoToParoDialog(true);
+    handleMenuClose();
+  };
+
+  // Close transfer confirmation dialog for Ortho to Paro
+  const handleCloseTransferOrthoToParoDialog = () => {
+    setOpenTransferOrthoToParoDialog(false);
+    setPatientToTransferOrthoToParo(null);
+  };
+
+  // Proceed with Ortho to Paro transfer after confirmation
+  const handleConfirmedTransferOrthoToParo = async () => {
+    if (!patientToTransferOrthoToParo) return;
+    
+    setIsLoading(true);
+    setError(null);
+    try {
+      // Get current user's ID (for medecin) or the first parodontaire medecin for admin
+      let medecinId = '';
+      
+      if (userRole === 'MEDECIN') {
+        const userData = JSON.parse(sessionStorage.getItem('user') || '{}');
+        medecinId = userData.id || userData.user?.id;
+      } else {
+        // For ADMIN, we need to choose a medecin with PARODONTAIRE profession
+        const response = await fetchWithAuth(`${BASE_URL}/medecin`, {
+          headers: {
+            "Authorization": `Bearer ${authService.getToken()?.access_token}`
+          }
+        });
+        const medecins = await response.json();
+        const parodontist = medecins.find((m: any) => m.profession === 'PARODONTAIRE');
+        
+        if (parodontist) {
+          medecinId = parodontist.id;
+        } else {
+          throw new Error('No parodontist found in the system. Please add one first.');
+        }
+      }
+      
+      if (!medecinId) {
+        throw new Error('Could not determine the médecin ID for transfer');
+      }
+      
+      // Call the transfer service
+      await patientService.transferOrthoToParo(patientToTransferOrthoToParo, medecinId);
+      showFeedback('Patient transferred to Parodontaire department successfully');
+      
+      // Refresh patients list after transfer
+      const success = await fetchPatients();
+      if (!success) {
+        showFeedback('Patient transferred, but unable to refresh the list', 'info');
+      }
+    } catch (error: any) {
+      console.error('Failed to transfer patient:', error);
+      showFeedback(error.message || "Failed to transfer patient", 'error');
+      setNetworkError(error.message || "Failed to transfer patient");
+    } finally {
+      setIsLoading(false);
+      setOpenTransferOrthoToParoDialog(false);
+      setPatientToTransferOrthoToParo(null);
+    }
+  };
+
   // Function to fetch patients data
   const fetchPatients = async (): Promise<boolean> => {
     setIsLoading(true);
@@ -490,14 +560,7 @@ const Patients: React.FC = () => {
           <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
             Patients
           </Typography>
-          {userRole === 'MEDECIN' && userProfession && (
-            <Chip 
-              label={`${userProfession.replace(/_/g, ' ').toLowerCase()} department`}
-              color="primary"
-              size="small"
-              sx={{ mt: 1 }}
-            />
-          )}
+          
         </Box>
         <Button 
           variant="contained" 
@@ -512,7 +575,7 @@ const Patients: React.FC = () => {
 
       {userRole === 'MEDECIN' && userProfession && (
         <Alert severity="info" sx={{ mb: 2 }}>
-          You are viewing patients in the {userProfession.replace(/_/g, ' ').toLowerCase()} department based on your profession.
+          You are viewing patients in the {(userProfession=="PARODONTAIRE")? "Parodontist":"Orthodontist"} department based on your profession.
         </Alert>
       )}
 
@@ -706,7 +769,7 @@ const Patients: React.FC = () => {
           <Edit size={16} style={{ marginRight: 8 }} />
           Edit
         </MenuItem>
-        {/* Add transfer option - only show for PARODONTAIRE patients */}
+        {/* Add transfer option - show for PARODONTAIRE patients to transfer to ORTHODONTAIRE */}
         {selectedUserId && patients.find(p => p.id === selectedUserId)?.State === 'PARODONTAIRE' && (
           <MenuItem 
             onClick={() => selectedUserId && handleConfirmTransfer(selectedUserId)}
@@ -718,6 +781,20 @@ const Patients: React.FC = () => {
               </svg>
             </IconButton>
             Transfer to Orthodontaire
+          </MenuItem>
+        )}
+        {/* Add transfer option - show for ORTHODONTAIRE patients to transfer to PARODONTAIRE */}
+        {selectedUserId && patients.find(p => p.id === selectedUserId)?.State === 'ORTHODONTAIRE' && (
+          <MenuItem 
+            onClick={() => selectedUserId && handleConfirmTransferOrthoToParo(selectedUserId)}
+            sx={{ color: 'primary.main' }}
+          >
+            <IconButton size="small" color="primary" sx={{ mr: 1, p: 0 }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M7 8L3 12M3 12L7 16M3 12H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </IconButton>
+            Transfer to Parodontaire
           </MenuItem>
         )}
         <MenuItem 
@@ -784,6 +861,39 @@ const Patients: React.FC = () => {
           <Button 
             onClick={handleConfirmedTransfer} 
             color="secondary" 
+            variant="contained"
+            disabled={isLoading}
+          >
+            {isLoading ? 'Processing...' : 'Transfer'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Add transfer confirmation dialog for Ortho to Paro */}
+      <Dialog
+        open={openTransferOrthoToParoDialog}
+        onClose={handleCloseTransferOrthoToParoDialog}
+        aria-labelledby="transfer-ortho-paro-dialog-title"
+        aria-describedby="transfer-ortho-paro-dialog-description"
+      >
+        <DialogTitle id="transfer-ortho-paro-dialog-title">
+          Confirm Patient Transfer
+        </DialogTitle>
+        <DialogContent>
+          <Typography id="transfer-ortho-paro-dialog-description" paragraph>
+            Are you sure you want to transfer this patient from the Orthodontaire department to the Parodontaire department?
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            This action will move the patient to the Parodontaire department and create a transfer record. The transfer may require approval.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseTransferOrthoToParoDialog} color="primary">
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleConfirmedTransferOrthoToParo} 
+            color="primary" 
             variant="contained"
             disabled={isLoading}
           >

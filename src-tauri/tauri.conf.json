@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Medica",
+  "productName": "Name not set yet",
   "version": "1.0.0",
   "identifier": "com.medica.app",
   "build": {
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "Medica",
+        "title": "Name not set yet",
         "width": 800,
         "height": 600
       }
