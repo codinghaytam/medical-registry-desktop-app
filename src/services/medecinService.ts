@@ -1,7 +1,6 @@
-import { fetch } from '@tauri-apps/plugin-http';
-import { withAuthHeader } from './authService';
+import { fetchWithAuth } from './authService';
 
-const BASE_URL = 'https://walrus-app-j9qyk.ondigitalocean.app';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export type Profession = 'PARODENTAIRE' | 'ORTHODENTAIRE';
 
@@ -31,18 +30,17 @@ export interface CreateMedecinData {
 }
 
 export const medecinService = {  getAll: async () => {
-    const response = await fetch(`${BASE_URL}/medecin`, { ...withAuthHeader() });
+    const response = await fetchWithAuth(`${BASE_URL}/medecin`);
     return response.json();
   },
 
   getById: async (id: string) => {
-    const response = await fetch(`${BASE_URL}/medecin/${id}`, { ...withAuthHeader() });
+    const response = await fetchWithAuth(`${BASE_URL}/medecin/${id}`);
     return response.json();
   },
   
   create: async (data: CreateMedecinData) => {
-    const response = await fetch(`${BASE_URL}/medecin`, {
-      ...withAuthHeader(),
+    const response = await fetchWithAuth(`${BASE_URL}/medecin`, {
       method: 'POST',
       body: JSON.stringify(data),
       headers: {
@@ -56,8 +54,7 @@ export const medecinService = {  getAll: async () => {
     return response.json();
   },
   update: async (id: string, data: Partial<CreateMedecinData>) => {
-    const response = await fetch(`${BASE_URL}/medecin/${id}`, {
-      ...withAuthHeader(),
+    const response = await fetchWithAuth(`${BASE_URL}/medecin/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
       headers: {
@@ -68,8 +65,7 @@ export const medecinService = {  getAll: async () => {
   },
 
   delete: async (id: string) => {
-    await fetch(`${BASE_URL}/medecin/${id}`, {
-      ...withAuthHeader(),
+    await fetchWithAuth(`${BASE_URL}/medecin/${id}`, {
       method: 'DELETE',
     });
   }

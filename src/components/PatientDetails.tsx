@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { fetchWithAuth } from '../services/authService';
+
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 import {
   Box,
   Typography,
@@ -150,9 +154,9 @@ const PatientDetails: React.FC = () => {
         const headers = { "Authorization": `Bearer ${token}` };
         
         const [motifsResponse, masticationsResponse, hygienesResponse] = await Promise.all([
-          fetch('https://walrus-app-j9qyk.ondigitalocean.app/enum/motif-consultation', { headers }).then(res => res.json()),
-          fetch('https://walrus-app-j9qyk.ondigitalocean.app/enum/type-mastication', { headers }).then(res => res.json()),
-          fetch('https://walrus-app-j9qyk.ondigitalocean.app/enum/hygiene-bucco-dentaire', { headers }).then(res => res.json()),
+          fetchWithAuth(`${BASE_URL}/enum/motif-consultation`, { headers }).then(res => res.json()),
+          fetchWithAuth(`${BASE_URL}/enum/type-mastication`, { headers }).then(res => res.json()),
+          fetchWithAuth(`${BASE_URL}/enum/hygiene-bucco-dentaire`, { headers }).then(res => res.json()),
         ]);
         
         setMotifs(motifsResponse);
@@ -170,7 +174,7 @@ const PatientDetails: React.FC = () => {
     const fetchMedecins = async () => {
       try {
         const token = authService.getToken()?.access_token;
-        const response = await fetch('https://walrus-app-j9qyk.ondigitalocean.app/medecin', {
+        const response = await fetchWithAuth(`${BASE_URL}/medecin`, {
           headers: {
             "Authorization": `Bearer ${token}`
           }

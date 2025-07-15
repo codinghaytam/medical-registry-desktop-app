@@ -1,8 +1,8 @@
 import { fetch } from '@tauri-apps/plugin-http';
 
-const AUTH_URL = 'https://jellyfish-app-pwtvy.ondigitalocean.app/realms/myRealm/protocol/openid-connect/token';
-const CLIENT_ID = 'medical-registry';
-const CLIENT_SECRET = 'zw5hWC3WH11PKIcrPEBJanlawTxHg9H8';
+const AUTH_URL = `${import.meta.env.VITE_KEYCLOAK_URL}/realms/${import.meta.env.VITE_KEYCLOAK_REALM}/protocol/openid-connect/token`;
+const CLIENT_ID = import.meta.env.VITE_KEYCLOAK_CLIENT_ID;
+const CLIENT_SECRET = import.meta.env.VITE_KEYCLOAK_CLIENT_SECRET;
 
 export interface AuthToken {
   access_token: string;
@@ -58,7 +58,39 @@ class AuthService {
     this.refreshTokenExpiryTime = currentTime + (token.refresh_expires_in * 1000);
   }
 
-  // Log out user by clearing token and related data
+  // Log out user from Keycloak and clear local data
+  async logoutFromKeycloak(): Promise<void> {
+    try {
+      const token = this.getToken();
+      
+      if (token?.refresh_token) {
+        // Call Keycloak logout endpoint - correct path structure
+        const keycloakLogoutUrl = `${import.meta.env.VITE_KEYCLOAK_URL}/realms/${import.meta.env.VITE_KEYCLOAK_REALM}/protocol/openid-connect/logout`;
+        
+        const formData = new URLSearchParams();
+        formData.append('client_id', CLIENT_ID);
+        formData.append('refresh_token', token.refresh_token);
+        
+        await fetch(keycloakLogoutUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: formData.toString(),
+        });
+        
+        console.log('Successfully logged out from Keycloak');
+      }
+    } catch (error) {
+      console.error('Error during Keycloak logout:', error);
+      // Continue with local logout even if Keycloak logout fails
+    } finally {
+      // Always perform local cleanup
+      this.logout();
+    }
+  }
+
+  // Log out user by clearing token and related data (local cleanup only)
   logout(): void {
     sessionStorage.removeItem('access_token');
     sessionStorage.removeItem('refresh_token');
@@ -204,6 +236,34 @@ export const  withAuthHeader = (options: RequestInit = {}): RequestInit => {
     return { ...options, headers: Object.fromEntries(headers.entries()) };
   }
   return options;
+};
+
+/**
+ * Enhanced fetch function that automatically handles 401/403 errors
+ * @param url - The URL to fetch
+ * @param options - Fetch options
+ * @returns Promise<Response>
+ */
+export const fetchWithAuth = async (url: string, options: RequestInit = {}): Promise<Response> => {
+  const response = await fetch(url, withAuthHeader(options));
+  
+  if (response.status === 401 || response.status === 403) {
+    // Perform proper Keycloak logout (async, but don't wait for it to complete)
+    authService.logoutFromKeycloak().catch(error => {
+      console.error('Error during automatic logout:', error);
+    });
+    
+    // Redirect to login page immediately
+    window.location.href = '/login';
+    
+    // Throw error to prevent further processing
+    throw Object.assign(new Error('Session expired. Redirecting to login...'), { 
+      response,
+      status: response.status
+    });
+  }
+  
+  return response;
 };
 
 export default authService;

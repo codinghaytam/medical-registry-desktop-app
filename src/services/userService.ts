@@ -1,8 +1,7 @@
-import { fetch } from '@tauri-apps/plugin-http';
 import { MedecinData } from './seanceService';
-import { withAuthHeader } from './authService';
+import { fetchWithAuth } from './authService';
 
-const BASE_URL = 'https://walrus-app-j9qyk.ondigitalocean.app';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export interface UserData {
   id: string;
@@ -21,7 +20,7 @@ export interface UserData {
 
 export const userService = {
   getAll: async () => {
-    const response = await fetch(`${BASE_URL}/users`, { ...withAuthHeader() });
+    const response = await fetchWithAuth(`${BASE_URL}/users`);
     const users = await response.json();
     
     // Map the data to extract firstName and lastName from name attribute
@@ -61,12 +60,10 @@ export const userService = {
     if (!createData.firstName) createData.firstName = '';
     if (!createData.lastName) createData.lastName = '';
     
-    const response = await fetch(`${BASE_URL}/users`, {
-      ...withAuthHeader(),
+    const response = await fetchWithAuth(`${BASE_URL}/users`, {
       method: 'POST',
       body: JSON.stringify(createData),
       headers: {
-        ...withAuthHeader().headers,
         'Content-Type': 'application/json',
       },
     });
@@ -106,12 +103,10 @@ export const userService = {
       updatedData.lastName = nameParts.slice(1).join(' ') || '';
     }
     
-    const response = await fetch(`${BASE_URL}/users/${id}`, {
-      ...withAuthHeader(),
+    const response = await fetchWithAuth(`${BASE_URL}/users/${id}`, {
       method: 'PUT',
       body: JSON.stringify(updatedData),
       headers: {
-        ...withAuthHeader().headers,
         'Content-Type': 'application/json',
       },
     });
@@ -138,16 +133,13 @@ export const userService = {
     return result;
   },
   delete: async (id: string) => {
-    await fetch(`${BASE_URL}/users/${id}`, {
-      ...withAuthHeader(),
+    await fetchWithAuth(`${BASE_URL}/users/${id}`, {
       method: 'DELETE',
     });
   },
 
   getById: async (id: string): Promise<UserData> => {
-    const response = await fetch(`${BASE_URL}/users/${id}`, { 
-      ...withAuthHeader()
-    });
+    const response = await fetchWithAuth(`${BASE_URL}/users/${id}`);
     const user = await response.json();
     
     // Map the data to extract firstName and lastName from name attribute
@@ -161,9 +153,7 @@ export const userService = {
   },
 
   getByEmail: async (email: string): Promise<UserData> => {
-    const response = await fetch(`${BASE_URL}/users/email/${email}`, { 
-      ...withAuthHeader()
-    });
+    const response = await fetchWithAuth(`${BASE_URL}/users/email/${email}`);
     const user = await response.json();
     
     // Map the data to extract firstName and lastName from name attribute
@@ -177,9 +167,7 @@ export const userService = {
   },
 
   getByRole: async (role: string): Promise<UserData[]> => {
-    const response = await fetch(`${BASE_URL}/users/role/${role}`, { 
-      ...withAuthHeader()
-    });
+    const response = await fetchWithAuth(`${BASE_URL}/users/role/${role}`);
     const users = await response.json();
     
     // Map the data to extract firstName and lastName from name attribute
@@ -200,7 +188,7 @@ export const userService = {
   },
 
   getMedecins: async (): Promise<MedecinData[]> => {
-    const response = await fetch(`${BASE_URL}/users/medecins`, { ...withAuthHeader() });
+    const response = await fetchWithAuth(`${BASE_URL}/users/medecins`);
     return response.json();
   }
 };

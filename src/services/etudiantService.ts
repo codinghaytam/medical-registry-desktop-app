@@ -1,7 +1,6 @@
-import { fetch } from '@tauri-apps/plugin-http';
-import { withAuthHeader } from './authService';
+import { fetchWithAuth } from './authService';
 
-const BASE_URL = 'https://walrus-app-j9qyk.ondigitalocean.app';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export interface EtudiantData {
   id: string;
@@ -29,18 +28,17 @@ export interface CreateEtudiantData {
 
 export const etudiantService = {
   getAll: async () => {
-    const response = await fetch(`${BASE_URL}/etudiant`, { ...withAuthHeader() });
+    const response = await fetchWithAuth(`${BASE_URL}/etudiant`);
     return response.json();
   },
 
   getById: async (id: string) => {
-    const response = await fetch(`${BASE_URL}/etudiant/${id}`, { ...withAuthHeader() });
+    const response = await fetchWithAuth(`${BASE_URL}/etudiant/${id}`);
     return response.json();
   },
 
   create: async (data: CreateEtudiantData) => {
-    const response = await fetch(`${BASE_URL}/etudiant`, {
-      ...withAuthHeader(),
+    const response = await fetchWithAuth(`${BASE_URL}/etudiant`, {
       method: 'POST',
       body: JSON.stringify(data),
       headers: {
@@ -57,8 +55,7 @@ export const etudiantService = {
   },
 
   update: async (id: string, data: Partial<CreateEtudiantData>) => {
-    const response = await fetch(`${BASE_URL}/etudiant/${id}`, {
-      ...withAuthHeader(),
+    const response = await fetchWithAuth(`${BASE_URL}/etudiant/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
       headers: {
@@ -69,8 +66,7 @@ export const etudiantService = {
   },
 
   delete: async (id: string) => {
-    await fetch(`${BASE_URL}/etudiant/${id}`, {
-      ...withAuthHeader(),
+    await fetchWithAuth(`${BASE_URL}/etudiant/${id}`, {
       method: 'DELETE',
     });
   }

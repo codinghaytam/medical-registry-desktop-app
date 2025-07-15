@@ -32,6 +32,7 @@ import RoleBasedAccess from '../utiles/RoleBasedAccess';
 import { getUserRole } from '../utiles/RoleAccess';
 import { consultationService } from '../services/consultationService';
 import { patientService } from '../services/patientService';
+import { useAuthErrorHandler } from '../utiles/useAuthErrorHandler';
 
 // Register ChartJS components
 ChartJS.register(
@@ -49,6 +50,7 @@ ChartJS.register(
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const userRole = getUserRole();
+  const { handleError } = useAuthErrorHandler();
   const [medecinPatients, setMedecinPatients] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [page, setPage] = useState(0);
@@ -96,6 +98,11 @@ const Dashboard: React.FC = () => {
       setMedecinPatients(filteredPatients);
     } catch (error) {
       console.error('Error fetching medecin patients:', error);
+      // Handle authentication errors
+      if (!handleError(error)) {
+        // If not an auth error, log the error but don't break the UI
+        console.error('Non-auth error in dashboard:', error);
+      }
     } finally {
       setIsLoading(false);
     }

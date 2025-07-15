@@ -3,6 +3,8 @@ import { useState, FormEvent, useEffect } from 'react';
 import { fetch } from '@tauri-apps/plugin-http';
 import { useSearchParams } from 'react-router-dom';
 
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 export default function PasswordReset() {
   const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
@@ -40,7 +42,7 @@ export default function PasswordReset() {
       console.log(`Requesting password reset for email: ${emailInput}`);
       
       // Call the email verification endpoint to initiate password reset
-      const response = await fetch(`https://walrus-app-j9qyk.ondigitalocean.app/verify-email/${emailInput}`, {
+      const response = await fetch(`${BASE_URL}/verify-email/${emailInput}`, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json" 
@@ -96,7 +98,7 @@ export default function PasswordReset() {
       // Or modify the backend to accept a token instead for reset flows
       const token = searchParams.get('token');
       
-      const response = await fetch(`https://walrus-app-j9qyk.ondigitalocean.app/password-change/${email}`, {
+      const response = await fetch(`${BASE_URL}/password-change/${email}`, {
         method: "PUT",
         headers: { 
           "Content-Type": "application/json" 
@@ -127,7 +129,7 @@ export default function PasswordReset() {
     setError(null);
     
     try {
-      const response = await fetch(`https://walrus-app-j9qyk.ondigitalocean.app/verify-email/${email}/status`);
+      const response = await fetch(`${BASE_URL}/verify-email/${email}/status`);
       
       if (!response.ok) {
         const errorData = await response.json();
@@ -154,7 +156,7 @@ export default function PasswordReset() {
     setError(null);
     
     try {
-      const response = await fetch(`https://walrus-app-j9qyk.ondigitalocean.app/verify-email/${email}/resend`, {
+      const response = await fetch(`${BASE_URL}/verify-email/${email}/resend`, {
         method: "PUT",
         headers: { 
           "Content-Type": "application/json" 

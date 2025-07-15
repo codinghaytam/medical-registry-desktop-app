@@ -55,7 +55,6 @@ import { format } from 'date-fns';
 import { patientService } from '../services/patientService';
 import { seanceService, SeanceData } from '../services/seanceService';
 import { reevaluationService, ReevaluationData } from '../services/reevaluationService';
-import { userService } from '../services/userService';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -1036,7 +1035,7 @@ const Seances: React.FC = () => {
                                           display: 'inline-block'
                                         }}
                                       >                                        <img
-                                          src={`https://walrus-app-j9qyk.ondigitalocean.app${getReevaluationForSeance(seance.id!)?.sondagePhoto}`}
+                                          src={`${import.meta.env.VITE_API_BASE_URL}${getReevaluationForSeance(seance.id!)?.sondagePhoto}`}
                                           alt="Sondage"
                                           style={{ maxWidth: '100%', maxHeight: '300px' }}
                                         />

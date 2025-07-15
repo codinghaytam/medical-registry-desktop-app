@@ -1,7 +1,6 @@
-import { fetch } from '@tauri-apps/plugin-http';
-import { withAuthHeader } from './authService';
+import { fetchWithAuth } from './authService';
 
-const BASE_URL = 'https://walrus-app-j9qyk.ondigitalocean.app';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export interface ConsultationData {
   date: string;
@@ -18,7 +17,7 @@ export interface DiagnosisData {
 
 export const consultationService = {  getAll: async () => {
     try {
-      const response = await fetch(`${BASE_URL}/consultation`, { headers: withAuthHeader().headers });
+      const response = await fetchWithAuth(`${BASE_URL}/consultation`);
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw Object.assign(new Error(errorData.error || `Failed with status: ${response.status}`), { 
@@ -34,12 +33,10 @@ export const consultationService = {  getAll: async () => {
   },
   create: async (data: ConsultationData) => {
     try {
-      const response = await fetch(`${BASE_URL}/consultation`, {
-        ...withAuthHeader(),
+      const response = await fetchWithAuth(`${BASE_URL}/consultation`, {
         method: 'POST',
         body: JSON.stringify(data),
         headers: {
-          ...withAuthHeader().headers,
           'Content-Type': 'application/json',
         },
       });
@@ -60,12 +57,10 @@ export const consultationService = {  getAll: async () => {
   },
   update: async (id: string, data: Partial<ConsultationData>) => {
     try {
-      const response = await fetch(`${BASE_URL}/consultation/${id}`, {
-        ...withAuthHeader(),
+      const response = await fetchWithAuth(`${BASE_URL}/consultation/${id}`, {
         method: 'PUT',
         body: JSON.stringify(data),
         headers: {
-          ...withAuthHeader().headers,
           'Content-Type': 'application/json',
         },
       });
@@ -86,8 +81,7 @@ export const consultationService = {  getAll: async () => {
   },
   delete: async (id: string) => {
     try {
-      const response = await fetch(`${BASE_URL}/consultation/${id}`, {
-        ...withAuthHeader(),
+      const response = await fetchWithAuth(`${BASE_URL}/consultation/${id}`, {
         method: 'DELETE',
       });
       
@@ -107,12 +101,10 @@ export const consultationService = {  getAll: async () => {
   },
   addDiagnosis: async (consultationId: string, data: DiagnosisData) => {
     try {
-      const response = await fetch(`${BASE_URL}/consultation/${consultationId}/diagnosis`, {
-        ...withAuthHeader(),
+      const response = await fetchWithAuth(`${BASE_URL}/consultation/${consultationId}/diagnosis`, {
         method: 'POST',
         body: JSON.stringify(data),
         headers: {
-          ...withAuthHeader().headers,
           'Content-Type': 'application/json',
         },
       });
@@ -133,12 +125,10 @@ export const consultationService = {  getAll: async () => {
   },
   updateDiagnosis: async (diagnosisId: string, data: Partial<DiagnosisData>) => {
     try {
-      const response = await fetch(`${BASE_URL}/consultation/diagnosis/${diagnosisId}`, {
-        ...withAuthHeader(),
+      const response = await fetchWithAuth(`${BASE_URL}/consultation/diagnosis/${diagnosisId}`, {
         method: 'PUT',
         body: JSON.stringify(data),
         headers: {
-          ...withAuthHeader().headers,
           'Content-Type': 'application/json',
         },
       });
@@ -159,7 +149,7 @@ export const consultationService = {  getAll: async () => {
   },
   getById: async (id: string) => {
     try {
-      const response = await fetch(`${BASE_URL}/consultation/${id}`, { headers: withAuthHeader().headers });
+      const response = await fetchWithAuth(`${BASE_URL}/consultation/${id}`);
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -177,7 +167,7 @@ export const consultationService = {  getAll: async () => {
   },
   getByPatientId: async (patientId: string) => {
     try {
-      const response = await fetch(`${BASE_URL}/consultation`, { headers: withAuthHeader().headers });
+      const response = await fetchWithAuth(`${BASE_URL}/consultation`);
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));

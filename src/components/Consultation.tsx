@@ -52,10 +52,10 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { patientService, HygieneBuccoDentaire, MotifConsultation, TypeMastication } from '../services/patientService';
-import { userService } from '../services/userService';
 import { consultationService, ConsultationData, DiagnosisData } from '../services/consultationService';
 import { getUserRole, canEdit, canOnlyView } from '../utiles/RoleAccess';
 import RoleBasedAccess from '../utiles/RoleBasedAccess';
+import { medecinService } from '../services/medecinService';
 
 interface Diagnosis {
   id?: string;
@@ -216,7 +216,7 @@ const Consultations: React.FC = () => {
     try {
       const [patientsData, medecinsData, consultationsData] = await Promise.all([
         patientService.getAll(),
-        userService.getMedecins(),
+        medecinService.getAll(),
         consultationService.getAll()
       ]);
       
@@ -990,7 +990,8 @@ const Consultations: React.FC = () => {
                   >
                     {Array.isArray(medecins) && medecins.map((medecin) => (
                       <MenuItem key={medecin.id} value={medecin.id}>
-                        {medecin.user?.name}- {medecin.profession}
+                        {medecin.user?.name}- {(medecin.profession== 'PARODONTAIRE')?'Parodontie':'Orthodontie'}
+
                       </MenuItem>
                     ))}
                   </Select>
@@ -1058,7 +1059,7 @@ const Consultations: React.FC = () => {
                   >
                     {Array.isArray(medecins) && medecins.map((medecin) => (
                       <MenuItem key={medecin.id} value={medecin.id}>
-                        {medecin.user?.name} - {medecin.profession}
+                        {medecin.user?.name} - {(medecin.profession == 'PARODONTAIRE') ? 'Parodontie' : 'Orthodontie'}
                       </MenuItem>
                     ))}
                   </Select>
@@ -1303,7 +1304,7 @@ const Consultations: React.FC = () => {
                         >
                           {Array.isArray(medecins) && medecins.map((medecin) => (
                             <MenuItem key={medecin.id} value={medecin.id}>
-                              {medecin.user?.name} - {medecin.profession}
+                              {medecin.user?.name} - {(medecin.profession === 'PARODONTAIRE') ? 'Parodontie' : 'Orthodontie'}
                             </MenuItem>
                           ))}
                         </Select>
@@ -1390,7 +1391,7 @@ const Consultations: React.FC = () => {
                             >
                               {Array.isArray(medecins) && medecins.map((medecin) => (
                                 <MenuItem key={medecin.id} value={medecin.id}>
-                                  {medecin.user?.name} - {medecin.profession}
+                                  {medecin.user?.name} - {(medecin.profession === 'PARODONTAIRE') ? 'Parodontie' : 'Orthodontie'}
                                 </MenuItem>
                               ))}
                             </Select>

@@ -1,7 +1,6 @@
-import { fetch } from '@tauri-apps/plugin-http';
-import { withAuthHeader } from './authService';
+import { fetchWithAuth } from './authService';
 
-const BASE_URL = 'https://walrus-app-j9qyk.ondigitalocean.app';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export type MotifConsultation = 'ESTHETIQUE' | 'FONCTIONNELLE' | 'ADRESSE_PAR_CONFRERE';
 export type HygieneBuccoDentaire = 'BONNE' | 'MOYENNE' | 'MAUVAISE';
@@ -26,7 +25,7 @@ export interface PatientData {
 
 export const patientService = {  getAll: async () => {
     try {
-      const response = await fetch(`${BASE_URL}/patient`, { headers: withAuthHeader().headers });
+      const response = await fetchWithAuth(`${BASE_URL}/patient`);
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw Object.assign(new Error(errorData.error || `Failed with status: ${response.status}`), { 
@@ -42,7 +41,7 @@ export const patientService = {  getAll: async () => {
   },
   getById: async (id: string) => {
     try {
-      const response = await fetch(`${BASE_URL}/patient/${id}`, { headers: withAuthHeader().headers });
+      const response = await fetchWithAuth(`${BASE_URL}/patient/${id}`);
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw Object.assign(new Error(errorData.error || `Failed with status: ${response.status}`), { 
@@ -58,12 +57,10 @@ export const patientService = {  getAll: async () => {
   },
   create: async (data: PatientData) => {
     try {
-      const response = await fetch(`${BASE_URL}/patient`, {
-        ...withAuthHeader(),
+      const response = await fetchWithAuth(`${BASE_URL}/patient`, {
         method: 'POST',
         body: JSON.stringify(data),
         headers: {
-          ...withAuthHeader().headers,
           'Content-Type': 'application/json',
         }
       });
@@ -82,12 +79,10 @@ export const patientService = {  getAll: async () => {
   },
   update: async (id: string, data: Partial<PatientData>) => {
     try {
-      const response = await fetch(`${BASE_URL}/patient/${id}`, {
-        ...withAuthHeader(),
+      const response = await fetchWithAuth(`${BASE_URL}/patient/${id}`, {
         method: 'PUT',
         body: JSON.stringify(data),
         headers: {
-          ...withAuthHeader().headers,
           'Content-Type': 'application/json',
         },
       });
@@ -106,8 +101,7 @@ export const patientService = {  getAll: async () => {
   },
   delete: async (id: string) => {
     try {
-      const response = await fetch(`${BASE_URL}/patient/${id}`, {
-        ...withAuthHeader(),
+      const response = await fetchWithAuth(`${BASE_URL}/patient/${id}`, {
         method: 'DELETE',
       });
       if (!response.ok) {
@@ -126,12 +120,10 @@ export const patientService = {  getAll: async () => {
     // New function to transfer patient from PARODONTAIRE to ORTHODONTAIRE
   transferParoToOrtho: async (id: string, medecinId: string) => {
     try {
-      const response = await fetch(`${BASE_URL}/patient/Paro-Ortho/${id}`, {
-        ...withAuthHeader(),
+      const response = await fetchWithAuth(`${BASE_URL}/patient/Paro-Ortho/${id}`, {
         method: 'PUT',
         body: JSON.stringify({ medecinId }),
         headers: {
-          ...withAuthHeader().headers,
           'Content-Type': 'application/json',
         },
       });

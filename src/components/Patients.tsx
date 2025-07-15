@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import useInterval from '../utiles/useInterval'
 import { useNavigate } from 'react-router-dom';
+import { fetchWithAuth } from '../services/authService';
+
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 import { 
   Box, 
   Typography, 
@@ -45,7 +49,6 @@ import {
   AlertCircle,
   X
 } from 'lucide-react';
-import { fetch } from '@tauri-apps/plugin-http';
 import { patientService, PatientData } from '../services/patientService';
 import { getUserRole } from '../utiles/RoleAccess';
 import { authService } from '../services/authService';
@@ -328,7 +331,7 @@ const Patients: React.FC = () => {
       } else {
         // For ADMIN, we need to choose a medecin with ORTHODONTAIRE profession
         // This would be better with a dropdown selection, but for simplicity we'll use the first available        const token = authService.getToken()?.access_token;
-        const response = await fetch('https://walrus-app-j9qyk.ondigitalocean.app/medecin', {
+        const response = await fetchWithAuth(`${BASE_URL}/medecin`, {
           headers: {
             "Authorization": `Bearer ${authService.getToken()?.access_token}`
           }
@@ -424,9 +427,9 @@ const Patients: React.FC = () => {
         const headers = { "Authorization": `Bearer ${token}` };
         
         const [motifsResponse, masticationsResponse, hygienesResponse] = await Promise.all([
-          fetch('https://walrus-app-j9qyk.ondigitalocean.app/enum/motif-consultation', { headers }).then(res => res.json()),
-          fetch('https://walrus-app-j9qyk.ondigitalocean.app/enum/type-mastication', { headers }).then(res => res.json()),
-          fetch('https://walrus-app-j9qyk.ondigitalocean.app/enum/hygiene-bucco-dentaire', { headers }).then(res => res.json())
+          fetchWithAuth(`${BASE_URL}/enum/motif-consultation`, { headers }).then(res => res.json()),
+          fetchWithAuth(`${BASE_URL}/enum/type-mastication`, { headers }).then(res => res.json()),
+          fetchWithAuth(`${BASE_URL}/enum/hygiene-bucco-dentaire`, { headers }).then(res => res.json())
         ]);
         
         setMotifs(motifsResponse);

@@ -1,7 +1,7 @@
 import { fetch } from '@tauri-apps/plugin-http';
 import { withAuthHeader } from './authService';
 
-const BASE_URL = 'https://walrus-app-j9qyk.ondigitalocean.app';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export interface ReevaluationData {
   id?: string;

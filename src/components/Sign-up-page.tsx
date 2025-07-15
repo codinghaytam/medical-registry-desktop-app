@@ -25,11 +25,10 @@ export default function LoginPage() {
     const urlencoded = new URLSearchParams();
     urlencoded.append("grant_type", "password");
     urlencoded.append("client_id", import.meta.env.VITE_KEYCLOAK_CLIENT_ID);
-    urlencoded.append("scope", import.meta.env.VITE_KEYCLOAK_SCOPE);
+    urlencoded.append("scope", "email");
     urlencoded.append("username", email);
     urlencoded.append("password", password);
     urlencoded.append("client_secret", import.meta.env.VITE_KEYCLOAK_CLIENT_SECRET);
-
     try {
       const response = await fetch(`${import.meta.env.VITE_KEYCLOAK_URL}/realms/${import.meta.env.VITE_KEYCLOAK_REALM}/protocol/openid-connect/token`, {
         method: "POST",
@@ -39,7 +38,7 @@ export default function LoginPage() {
       });
 
       if (!response.ok) {
-        throw new Error(`Invalid credentials: ${response.status}`);
+        throw new Error(`Invalid credentials: ${response.status} ${await response.text()}`);
       }
       
       const rawText = await response.text();
@@ -49,7 +48,7 @@ export default function LoginPage() {
       
       // First, check user type/role from a central endpoint
       try {
-        const userResponse = await fetch("https://walrus-app-j9qyk.ondigitalocean.app/users/email/" + email, {
+        const userResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/users/email/${email}`, {
           method: "GET",
           headers: {
             "Authorization": `Bearer ${data.access_token}`
@@ -62,9 +61,9 @@ export default function LoginPage() {
         
         const userData = await userResponse.json();
         const userRole = userData.role;
-          // Fetch specific user data based on role
+        // Fetch specific user data based on role
         if (userRole === "MEDECIN") {
-          const medecinResponse = await fetch("https://walrus-app-j9qyk.ondigitalocean.app/medecin/email/" + email, {
+          const medecinResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/medecin/email/${email}`, {
             method: "GET",
             headers: {
               "Authorization": `Bearer ${data.access_token}`
@@ -80,7 +79,7 @@ export default function LoginPage() {
           }
         }
         else if (userRole === "ETUDIANT") {
-          const etudiantResponse = await fetch("https://walrus-app-j9qyk.ondigitalocean.app/etudiant/email/" + email, {
+          const etudiantResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/etudiant/email/${email}`, {
             method: "GET",
             headers: {
               "Authorization": `Bearer ${data.access_token}`
@@ -96,7 +95,7 @@ export default function LoginPage() {
           }
         }
         else if (userRole === "ADMIN") {
-          const adminResponse = await fetch("https://walrus-app-j9qyk.ondigitalocean.app/admin/email/" + email, {
+          const adminResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/admin/email/${email}`, {
             method: "GET",
             headers: {
               "Authorization": `Bearer ${data.access_token}`
@@ -118,7 +117,7 @@ export default function LoginPage() {
         // Fallback to the previous approach if the central endpoint fails
         try {
           // Try to fetch user data based on email - this might be a medecin
-          const medecinResponse = await fetch("https://walrus-app-j9qyk.ondigitalocean.app/medecin/email/" + email, {
+          const medecinResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/medecin/email/${email}`, {
             method: "GET",
             headers: {
               "Authorization": `Bearer ${data.access_token}`
@@ -136,7 +135,7 @@ export default function LoginPage() {
         }
         
         try {
-          const etudiantResponse = await fetch("https://walrus-app-j9qyk.ondigitalocean.app/etudiant/email/" + email, {
+          const etudiantResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/etudiant/email/${email}`, {
             method: "GET",
             headers: {
               "Authorization": `Bearer ${data.access_token}`
@@ -154,7 +153,7 @@ export default function LoginPage() {
         }
         
         try {
-          const adminResponse = await fetch("https://walrus-app-j9qyk.ondigitalocean.app/admin/email/" + email, {
+          const adminResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/admin/email/${email}`, {
             method: "GET",
             headers: {
               "Authorization": `Bearer ${data.access_token}`
@@ -176,7 +175,7 @@ export default function LoginPage() {
       }
     } catch (err) {
       console.error("Request error:", err);
-      setError(err instanceof Error ? err.message : 'Login failed');
+      setError('Login failed');
     } finally {
       setLoading(false);
     }
