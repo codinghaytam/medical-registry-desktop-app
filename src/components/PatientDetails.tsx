@@ -332,7 +332,7 @@ const PatientDetails: React.FC = () => {
     if (selectedMedecin.profession === 'PARODONTAIRE') {
       setFilteredSeanceTypes(['DETARTRAGE', 'SURFACAGE', 'REEVALUATION']);
     } else if (selectedMedecin.profession === 'ORTHODONTAIRE') {
-      setFilteredSeanceTypes(['ACTIVATION', 'RECOLLAGE']);
+      setFilteredSeanceTypes(['ACTIVATION', 'DEBUT_DE_TRAITEMENT','FIN_DE_TRAITEMENT','SUIVI_POST_TRAITEMENT']);
     } else {
       // If médecin has no specific profession, show all types
       setFilteredSeanceTypes(seanceTypes);

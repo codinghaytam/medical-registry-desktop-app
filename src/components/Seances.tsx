@@ -758,12 +758,12 @@ const Seances: React.FC = () => {
     if (!medecinId || !Array.isArray(medecins)) return [];
     
     const selectedMedecin = medecins.find(medecin => medecin.id === medecinId);
-    if (!selectedMedecin) {return ['DETARTRAGE', 'SURFACAGE', 'REEVALUATION','ACTIVATION', 'RECOLLAGE'];}
+    if (!selectedMedecin) {return ['DETARTRAGE', 'SURFACAGE', 'REEVALUATION','ACTIVATION', 'DEBUT_DE_TRAITEMENT','FIN_DE_TRAITEMENT','SUIVI_POST_TRAITEMENT'];}
     
     if (selectedMedecin.profession === 'PARODONTAIRE') {
       return ['DETARTRAGE', 'SURFACAGE', 'REEVALUATION'];
     } else if (selectedMedecin.profession === 'ORTHODONTAIRE') {
-      return ['ACTIVATION', 'RECOLLAGE'];
+      return ['ACTIVATION', 'DEBUT_DE_TRAITEMENT','FIN_DE_TRAITEMENT','SUIVI_POST_TRAITEMENT'];
     }
     
     return [];
