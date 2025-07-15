@@ -905,7 +905,17 @@ const Seances: React.FC = () => {
                       <TableRow
                         sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                       >
-                        <TableCell>{seance.type}</TableCell>
+                        <TableCell>
+                          {
+                          seance.type=== 'REEVALUATION' ? 'Réévaluation' :
+                          seance.type === 'DETARTRAGE' ? 'Détartrage':
+                          seance.type === 'SURFACAGE' ? 'Surfacage':
+                          seance.type === 'ACTIVATION' ? 'Activation' :
+                          seance.type === 'DEBUT_DE_TRAITEMENT' ? 'Début de traitement' :
+                          seance.type === 'FIN_DE_TRAITEMENT' ? 'Fin de traitement' :
+                          seance.type === 'SUIVI_POST_TRAITEMENT' ? 'Suivi post-traitement'
+                          : seance.type
+                          }</TableCell>
                         <TableCell>
                           <Box sx={{ display: 'flex', alignItems: 'center' }}>
                             <Calendar size={14} style={{ marginRight: 8 }} />
@@ -1192,7 +1202,16 @@ const Seances: React.FC = () => {
                   {newSeance.medecinId && Array.isArray(medecins) && medecins.length > 0 ? (
                     getFilteredSeanceTypes(newSeance.medecinId).map(type => (
                       <MenuItem key={type} value={type}>
-                        {type}
+                        {
+                          type === 'DETARTRAGE' ? 'Détartrage' :
+                          type === 'SURFACAGE' ? 'Surfacage' :
+                          type === 'REEVALUATION' ? 'Réévaluation' :
+                          type === 'ACTIVATION' ? 'Activation' :
+                          type === 'DEBUT_DE_TRAITEMENT' ? 'Début de traitement' :
+                          type === 'FIN_DE_TRAITEMENT' ? 'Fin de traitement' :
+                          type === 'SUIVI_POST_TRAITEMENT' ? 'Suivi post-traitement' :
+                          type
+                        }
                       </MenuItem>
                     ))
                   ) : (
