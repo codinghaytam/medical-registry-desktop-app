@@ -63,7 +63,7 @@ export const Profile: React.FC = () => {
     const phoneRegex = /^[567]\d{8}$/;
 
     if (!phoneRegex.test(phone)) {
-      return "Invalid Moroccan phone format. Use 9 digits starting with 5, 6, or 7";
+      return "Format de téléphone marocain invalide. Utilisez 9 chiffres commençant par 5, 6 ou 7";
     }
 
     return ''; // No error
@@ -122,7 +122,7 @@ export const Profile: React.FC = () => {
     }
   };
 
-  if (!userData) return <Typography>Loading profile...</Typography>;
+  if (!userData) return <Typography>Chargement du profil...</Typography>;
   // Determine user role and data structure
   const userRole = sessionStorage.getItem('userRole') || (userData.user?.role || userData.role || "");
   
@@ -131,36 +131,36 @@ export const Profile: React.FC = () => {
     if (userRole === 'MEDECIN') {
       return {
         id: userData.user?.id || userData.id || "",
-        name: userData.user?.user?.name || userData.user?.name || "N/A",
+        name: userData.user?.user?.name || userData.user?.name || "Non disponible",
         firstName: userData.user?.firstName || userData.user?.user?.firstName || "",
         lastName: userData.user?.lastName || userData.user?.user?.lastName || "",
-        email: userData.user?.user?.email || userData.user?.email || "N/A",
-        phone: userData.user?.tel || "Not provided",
-        profession: userData.user?.profession || "Not provided",
+        email: userData.user?.user?.email || userData.user?.email || "Non disponible",
+        phone: userData.user?.tel || "Non renseigné",
+        profession: userData.user?.profession || "Non renseigné",
         isSpecialiste: userData.user?.isSpecialiste || false,
-        licenseNumber: userData.user?.licenseNumber || "Not provided"
+        licenseNumber: userData.user?.licenseNumber || "Non renseigné"
       };
     } else if (userRole === 'ETUDIANT') {
       return {
         id: userData.user?.id || userData.id || "",
-        name: userData.user?.user?.name || "N/A",
+        name: userData.user?.user?.name || "Non disponible",
         firstName: userData.user?.firstName || userData.user?.user?.firstName || "",
         lastName: userData.user?.lastName || userData.user?.user?.lastName || "",
-        email: userData.user?.user?.email || userData.user?.email || "N/A",
-        phone: userData.user?.phone || "Not provided",
-        profession: "Etudiant",
+        email: userData.user?.user?.email || userData.user?.email || "Non disponible",
+        phone: userData.user?.phone || "Non renseigné",
+        profession: "Étudiant",
         niveau: userData.user?.niveau || 1,
-        licenseNumber: userData.user?.niveau ? `Level ${userData.user.niveau}` : "Not provided"
+        licenseNumber: userData.user?.niveau ? `Niveau ${userData.user.niveau}` : "Non renseigné"
       };
     } else { // ADMIN or other
       return {
         id: userData.user?.id || userData.id || "",
-        name: userData.user?.name || "N/A",
+        name: userData.user?.name || "Non disponible",
         firstName: userData.user?.firstName || "",
         lastName: userData.user?.lastName || "",
-        email: userData.user?.email || "N/A",
-        phone: userData.user?.phone || "Not provided",
-        profession: "Administrator",
+        email: userData.user?.email || "Non disponible",
+        phone: userData.user?.phone || "Non renseigné",
+        profession: "Administrateur",
         licenseNumber: "N/A"
       };
     }
@@ -183,8 +183,8 @@ export const Profile: React.FC = () => {
       email: userInfo.email || '',
       username: userInfo.email || '',  // Use email as username
       password: '', // Leave password empty when editing
-      phone: phoneNumber === 'Not provided' ? '' : phoneNumber,
-      profession: (userInfo.profession === 'PARODENTAIRE' || userInfo.profession === 'ORTHODENTAIRE') 
+      phone: phoneNumber === 'Non renseigné' ? '' : phoneNumber,
+      profession: (userInfo.profession === 'PARODENTAIRE' || userInfo.profession === 'ORTHODENTAIRE')
         ? userInfo.profession 
         : 'PARODENTAIRE',
       isSpecialiste: userInfo.isSpecialiste || false,
@@ -309,8 +309,8 @@ export const Profile: React.FC = () => {
       }
       
       // Show success message
-      setSuccess("Profile updated successfully!");
-      
+      setSuccess("Profil mis à jour avec succès !");
+
       // Reload user data to update the UI
       loadUserData();
       
@@ -318,7 +318,7 @@ export const Profile: React.FC = () => {
       handleCloseEditDialog();
     } catch (error: any) {
       console.error('Failed to update profile:', error);
-      setError(error.message || 'Failed to update profile. Please try again.');
+      setError(error.message || 'Échec de la mise à jour du profil. Veuillez réessayer.');
     } finally {
       setIsSubmitting(false);
     }
@@ -334,7 +334,7 @@ export const Profile: React.FC = () => {
         <Grid container spacing={3}>
           <Grid item xs={12} display="flex" justifyContent="space-between" alignItems="center">
             <Typography variant="h4" gutterBottom>
-              Profile
+              Profil
             </Typography>
             <Button 
               variant="contained" 
@@ -342,18 +342,18 @@ export const Profile: React.FC = () => {
               startIcon={<Edit />}
               onClick={handleOpenEditDialog}
             >
-              Edit Profile
+              Modifier le profil
             </Button>
           </Grid>
             <Grid item xs={12}>
             <Typography variant="h4" align="center" gutterBottom>
               {/* Always reconstruct name from firstName and lastName for consistency */}
-              {`${userInfo.firstName || ''} ${userInfo.lastName || ''}`.trim() || userInfo.name || 'N/A'}
+              {`${userInfo.firstName || ''} ${userInfo.lastName || ''}`.trim() || userInfo.name || 'Non disponible'}
             </Typography>
           </Grid>
           <Grid item xs={12} md={6}>
             <Card sx={{ p: 2 }}>
-              <Typography variant="subtitle1">Email</Typography>
+              <Typography variant="subtitle1">E-mail</Typography>
               <Typography variant="body1" color="text.secondary">
                 {userInfo.email}
               </Typography>
@@ -361,8 +361,8 @@ export const Profile: React.FC = () => {
           </Grid>
           <Grid item xs={12} md={6}>
             <Card sx={{ p: 2 }}>
-              <Typography variant="subtitle1">Phone</Typography>              <Typography variant="body1" color="text.secondary">
-                {userInfo.phone && userInfo.phone !== "Not provided" ? (
+              <Typography variant="subtitle1">Téléphone</Typography>              <Typography variant="body1" color="text.secondary">
+                {userInfo.phone && userInfo.phone !== "Non renseigné" ? (
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     {userInfo.phone.startsWith('+212') 
                       ? <>
@@ -372,22 +372,27 @@ export const Profile: React.FC = () => {
                       : userInfo.phone
                     }
                   </Box>
-                ) : "Not provided"}
+                ) : "Non renseigné"}
               </Typography>
             </Card>
           </Grid>
           <Grid item xs={12} md={6}>
             <Card sx={{ p: 2 }}>
-              <Typography variant="subtitle1">Specialité</Typography>
+              <Typography variant="subtitle1">Spécialité</Typography>
               <Typography variant="body1" color="text.secondary">
-                {(userInfo.profession=== 'PARODONTAIRE')? 'Parodontiste' : 'Orthodontiste'}
-                {userRole === 'MEDECIN' && userInfo.isSpecialiste && " (Specialist)"}
+                {(() => {
+                  const p = userInfo.profession;
+                  if (p === 'PARODENTAIRE' || p === 'PARODONTAIRE') return 'Parodontiste';
+                  if (p === 'ORTHODENTAIRE' || p === 'ORTHODONTAIRE') return 'Orthodontiste';
+                  return p || 'Non renseigné';
+                })()}
+                {userRole === 'MEDECIN' && userInfo.isSpecialiste && " (Spécialiste)"}
               </Typography>
             </Card>
           </Grid>
           <Grid item xs={12} md={6}>
             <Card sx={{ p: 2 }}>
-              <Typography variant="subtitle1">License Number</Typography>
+              <Typography variant="subtitle1">Numéro de licence</Typography>
               <Typography variant="body1" color="text.secondary">
                 {userInfo.licenseNumber}
               </Typography>
@@ -398,7 +403,7 @@ export const Profile: React.FC = () => {
       
       {/* Edit Profile Dialog */}
       <Dialog open={openEditDialog} onClose={handleCloseEditDialog} maxWidth="sm" fullWidth>
-        <DialogTitle>Edit Profile</DialogTitle>
+        <DialogTitle>Modifier le profil</DialogTitle>
         <form onSubmit={handleSubmitEdit}>
           <DialogContent>
             {error && (
@@ -409,7 +414,7 @@ export const Profile: React.FC = () => {
             
             <TextField
               fullWidth
-              label="First Name"
+              label="Prénom"
               name="firstName"
               value={editFormData.firstName}
               onChange={handleEditChange}
@@ -420,7 +425,7 @@ export const Profile: React.FC = () => {
             
             <TextField
               fullWidth
-              label="Last Name"
+              label="Nom"
               name="lastName"
               value={editFormData.lastName}
               onChange={handleEditChange}
@@ -431,7 +436,7 @@ export const Profile: React.FC = () => {
             
             <TextField
               fullWidth
-              label="Email"
+              label="E-mail"
               name="email"
               type="email"
               value={editFormData.email}
@@ -443,7 +448,7 @@ export const Profile: React.FC = () => {
             
             <TextField
               fullWidth
-              label="Password (leave empty to keep current)"
+              label="Mot de passe (laisser vide pour conserver l'actuel)"
               name="password"
               type="password"
               value={editFormData.password}
@@ -454,13 +459,13 @@ export const Profile: React.FC = () => {
             
             <TextField
               fullWidth
-              label="Phone Number"
-              name="Téléphone"
+              label="Numéro de téléphone"
+              name="phone"
               value={editFormData.phone}
               onChange={handlePhoneChange}
               disabled={isSubmitting}
               error={!!phoneError}
-              helperText={phoneError || "Moroccan format: 6XXXXXXXX (9 digits)"}
+              helperText={phoneError || "Format marocain : 6XXXXXXXX (9 chiffres)"}
               sx={{ mb: 2 }}
               placeholder="6XXXXXXXX"
               InputProps={{
@@ -501,7 +506,7 @@ export const Profile: React.FC = () => {
                       disabled={isSubmitting}
                     />
                   }
-                  label="Est Spécialiste"
+                  label="Spécialiste"
                   sx={{ mb: 2 }}
                 />
               </>
@@ -527,7 +532,7 @@ export const Profile: React.FC = () => {
           </DialogContent>
           <DialogActions>
             <Button onClick={handleCloseEditDialog} disabled={isSubmitting}>
-              Cancel
+              Annuler
             </Button>
             <Button 
               type="submit" 
@@ -535,7 +540,7 @@ export const Profile: React.FC = () => {
               disabled={isSubmitting}
               startIcon={isSubmitting ? <CircularProgress size={20} /> : undefined}
             >
-              {isSubmitting ? 'Saving...' : 'Save Changes'}
+              {isSubmitting ? 'Enregistrement...' : 'Enregistrer'}
             </Button>
           </DialogActions>
         </form>

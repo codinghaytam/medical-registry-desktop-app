@@ -138,7 +138,7 @@ const PatientDetails: React.FC = () => {
         setSeances(seancesData);
       } catch (err) {
         console.error('Error fetching patient data:', err);
-        setError('Failed to load patient information. Please try again.');
+        setError('Échec du chargement des informations sur le patient. Veuillez réessayer.');
       } finally {
         setLoading(false);
       }
@@ -225,7 +225,7 @@ const PatientDetails: React.FC = () => {
       setIsEditDialogOpen(false);
     } catch (err) {
       console.error('Error updating patient:', err);
-      setError('Failed to update patient. Please try again.');
+      setError('Échec de la mise à jour du patient. Veuillez réessayer.');
     } finally {
       setLoading(false);
     }
@@ -277,7 +277,7 @@ const PatientDetails: React.FC = () => {
       setIsConsultationDialogOpen(false);
     } catch (err) {
       console.error('Error saving consultation:', err);
-      setError('Failed to save consultation. Please try again.');
+      setError('Échec de l\'enregistrement de la consultation. Veuillez réessayer.');
     } finally {
       setLoading(false);
     }
@@ -330,7 +330,7 @@ const PatientDetails: React.FC = () => {
     }
     
     if (selectedMedecin.profession === 'PARODONTAIRE') {
-      setFilteredSeanceTypes(['DETARTRAGE', 'SURFACAGE', 'REEVALUATION']);
+      setFilteredSeanceTypes(['DETARTRAGE', 'PHASE_CURATIVE', 'MAINTENANCE','THERAPEUTIQUE_INITIALE']);
     } else if (selectedMedecin.profession === 'ORTHODONTAIRE') {
       setFilteredSeanceTypes(['ACTIVATION', 'DEBUT_DE_TRAITEMENT','FIN_DE_TRAITEMENT','SUIVI_POST_TRAITEMENT']);
     } else {
@@ -352,10 +352,10 @@ const PatientDetails: React.FC = () => {
             console.error('Error updating seance:', error);
             if (error.response) {
               return error.response.json().then((data: any) => {
-                throw new Error(data.error || 'Failed to update seance. Please try again.');
+                throw new Error(data.error || 'Échec de la mise à jour de la séance. Veuillez réessayer.');
               });
             }
-            throw new Error('Failed to update seance. Please try again.');
+            throw new Error('Échec de la mise à jour de la séance. Veuillez réessayer.');
           });
       } else {
         // Create new séance
@@ -364,10 +364,10 @@ const PatientDetails: React.FC = () => {
             console.error('Error creating seance:', error);
             if (error.response) {
               return error.response.json().then((data: any) => {
-                throw new Error(data.error || 'Failed to create seance. Please try again.');
+                throw new Error(data.error || 'Échec de la création de la séance. Veuillez réessayer.');
               });
             }
-            throw new Error('Failed to create seance. Please try again.');
+            throw new Error('Échec de la création de la séance. Veuillez réessayer.');
           });
       }
       
@@ -379,7 +379,7 @@ const PatientDetails: React.FC = () => {
       setIsSeanceDialogOpen(false);
     } catch (err: any) {
       console.error('Error saving seance:', err);
-      setError(err.message || 'Failed to save seance. Please try again.');
+      setError(err.message || 'Échec de l\'enregistrement de la séance. Veuillez réessayer.');
     } finally {
       setLoading(false);
     }
@@ -402,7 +402,7 @@ const PatientDetails: React.FC = () => {
       setIsConsultationDialogOpen(true);
     } catch (error) {
       console.error('Failed to fetch consultation for editing:', error);
-      setError('Failed to load consultation data. Please try again.');
+      setError('Échec du chargement des données de la consultation. Veuillez réessayer.');
     }
   };
 
@@ -427,7 +427,7 @@ const PatientDetails: React.FC = () => {
       setIsSeanceDialogOpen(true);
     } catch (error) {
       console.error('Failed to fetch seance for editing:', error);
-      setError('Failed to load seance data. Please try again.');
+      setError('Échec du chargement des données de la séance. Veuillez réessayer.');
     }
   };
 
@@ -443,7 +443,7 @@ const PatientDetails: React.FC = () => {
     return (
       <Box sx={{ p: 3 }}>
         <Button startIcon={<ArrowLeft />} onClick={handleGoBack} sx={{ mb: 2 }}>
-          Back to Patients
+          Retour aux patients
         </Button>
         <Alert severity="error">{error}</Alert>
       </Box>
@@ -454,9 +454,9 @@ const PatientDetails: React.FC = () => {
     return (
       <Box sx={{ p: 3 }}>
         <Button startIcon={<ArrowLeft />} onClick={handleGoBack} sx={{ mb: 2 }}>
-          Back to Patients
+          Retour aux patients
         </Button>
-        <Alert severity="warning">Patient not found</Alert>
+        <Alert severity="warning">Patient introuvable</Alert>
       </Box>
     );
   }
@@ -465,10 +465,10 @@ const PatientDetails: React.FC = () => {
     <Box sx={{ flexGrow: 1, p: 3 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
         <Button startIcon={<ArrowLeft />} onClick={handleGoBack} sx={{ mr: 2 }}>
-          Back
+          Retour
         </Button>
         <Typography variant="h4" sx={{ fontWeight: 'bold', flexGrow: 1 }}>
-          Patient Details
+          Détails du patient
         </Typography>
         
       </Box>
@@ -481,7 +481,7 @@ const PatientDetails: React.FC = () => {
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <User size={20} style={{ marginRight: 8 }} />
                 <Typography variant="subtitle1" sx={{ fontWeight: 'medium' }}>
-                  Patient Information
+                  Informations du patient
                 </Typography>
               </Box>
               <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 2 }}>
@@ -494,7 +494,7 @@ const PatientDetails: React.FC = () => {
             
             <Grid item xs={12} sm={6} md={3}>
               <Typography variant="subtitle2" sx={{ mb: 1, color: 'text.secondary' }}>
-                Contact Information
+                Coordonnées
               </Typography>
               <Typography variant="body1" sx={{ mb: 1 }}>
                 {patient.tel}
@@ -506,7 +506,7 @@ const PatientDetails: React.FC = () => {
             
             <Grid item xs={12} sm={6} md={3}>
               <Typography variant="subtitle2" sx={{ mb: 1, color: 'text.secondary' }}>
-                Medical Information
+                Informations médicales
               </Typography>
               <Chip 
                 label={patient.motifConsultation?.replace(/_/g, ' ').toLowerCase()} 
@@ -525,7 +525,7 @@ const PatientDetails: React.FC = () => {
             
             <Grid item xs={12} sm={6} md={3}>
               <Typography variant="subtitle2" sx={{ mb: 1, color: 'text.secondary' }}>
-                Summary
+                Résumé
               </Typography>
               <Typography variant="body2" sx={{ mb: 1 }}>
                 <strong>Consultations:</strong> {consultations.length}
@@ -549,8 +549,8 @@ const PatientDetails: React.FC = () => {
           >
             <Tab 
               icon={<User size={18} />} 
-              label="Details" 
-              {...a11yProps(0)} 
+              label="Détails"
+              {...a11yProps(0)}
               iconPosition="start"
             />
             <Tab 
@@ -573,40 +573,40 @@ const PatientDetails: React.FC = () => {
         <TabPanel value={tabValue} index={0} >
           <Grid container spacing={3} paddingLeft={10}>
             <Grid item xs={12} md={6}>
-              <Typography variant="h6" sx={{ mb: 2 }}>Medical History</Typography>
-              
+              <Typography variant="h6" sx={{ mb: 2 }}>Antécédents médicaux</Typography>
+
               <Typography variant="subtitle2" sx={{ mt: 2 }}>Anamnèse Générale</Typography>
               <Typography variant="body2" sx={{ mb: 2 }}>
-                {patient.anameseGenerale || 'Not provided'}
+                {patient.anameseGenerale || 'Non renseigné'}
               </Typography>
               
               <Typography variant="subtitle2" sx={{ mt: 2 }}>Anamnèse Familiale</Typography>
               <Typography variant="body2" sx={{ mb: 2 }}>
-                {patient.anamneseFamiliale || 'Not provided'}
+                {patient.anamneseFamiliale || 'Non renseigné'}
               </Typography>
               
               <Typography variant="subtitle2" sx={{ mt: 2 }}>Anamnèse Locale</Typography>
               <Typography variant="body2" sx={{ mb: 2 }}>
-                {patient.anamneseLocale || 'Not provided'}
+                {patient.anamneseLocale || 'Non renseigné'}
               </Typography>
             </Grid>
             
             <Grid item xs={12} md={6}>
-              <Typography variant="h6" sx={{ mb: 2 }}>Dental Information</Typography>
-              
+              <Typography variant="h6" sx={{ mb: 2 }}>Informations dentaires</Typography>
+
               <Typography variant="subtitle2" sx={{ mt: 2 }}>Antécédents Dentaires</Typography>
               <Typography variant="body2" sx={{ mb: 2 }}>
-                {patient.antecedentsDentaires || 'Not provided'}
+                {patient.antecedentsDentaires || 'Non renseigné'}
               </Typography>
               
               <Typography variant="subtitle2" sx={{ mt: 2 }}>Type de Mastication</Typography>
               <Typography variant="body2" sx={{ mb: 2 }}>
-                {patient.typeMastication?.replace(/_/g, ' ').toLowerCase() || 'Not specified'}
+                {patient.typeMastication?.replace(/_/g, ' ').toLowerCase() || 'Non spécifié'}
               </Typography>
               
               <Typography variant="subtitle2" sx={{ mt: 2 }}>Hygiène Bucco-Dentaire</Typography>
               <Typography variant="body2" sx={{ mb: 2 }}>
-                {patient.hygieneBuccoDentaire?.replace(/_/g, ' ').toLowerCase() || 'Not specified'}
+                {patient.hygieneBuccoDentaire?.replace(/_/g, ' ').toLowerCase() || 'Non spécifié'}
               </Typography>
             </Grid>
           </Grid>
@@ -616,7 +616,7 @@ const PatientDetails: React.FC = () => {
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }} paddingLeft={3}>
             <Typography variant="h6">Consultations</Typography>
             <Button startIcon={<Plus size={18} />} variant="contained" onClick={handleConsultationDialogOpen}>
-              New Consultation
+              Nouvelle consultation
             </Button>
           </Box>
           
@@ -649,7 +649,7 @@ const PatientDetails: React.FC = () => {
                         {consultation.date && format(new Date(consultation.date), 'PP')}
                       </TableCell>
                       <TableCell>
-                        {consultation.medecin?.user?.name || 'Unknown'}
+                        {consultation.medecin?.user?.name || 'Inconnu'}
                       </TableCell>
                       <TableCell>
                         {consultation.diagnostiques?.length || 0} diagnostique(s)
@@ -672,7 +672,7 @@ const PatientDetails: React.FC = () => {
             </TableContainer>
           ) : (
             <Alert severity="info">
-              No consultations found for this patient
+              Aucune consultation trouvée pour ce patient
             </Alert>
           )}
         </TabPanel>
@@ -681,7 +681,7 @@ const PatientDetails: React.FC = () => {
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }} paddingLeft={3}>
             <Typography variant="h6">Séances</Typography>
             <Button startIcon={<Plus size={18} />} variant="contained" onClick={handleSeanceDialogOpen}>
-              New Séance
+              Nouvelle séance
             </Button>
           </Box>
           
@@ -720,7 +720,7 @@ const PatientDetails: React.FC = () => {
                         {seance.date && format(new Date(seance.date), 'PP')}
                       </TableCell>
                       <TableCell>
-                        {seance.medecin?.user?.name}
+                        {seance.medecin?.user?.name || 'Non disponible'}
                       </TableCell>
                       <TableCell align="right">
                         <IconButton 
@@ -740,14 +740,14 @@ const PatientDetails: React.FC = () => {
             </TableContainer>
           ) : (
             <Alert severity="info">
-              No séances found for this patient
+              Aucune séance trouvée pour ce patient
             </Alert>
           )}
         </TabPanel>
       </Card>
 
       <Dialog open={isEditDialogOpen} onClose={handleEditDialogClose} maxWidth="sm" fullWidth>
-        <DialogTitle>Edit Patient</DialogTitle>
+        <DialogTitle>Modifier le patient</DialogTitle>
         <DialogContent>
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
@@ -846,15 +846,15 @@ const PatientDetails: React.FC = () => {
           </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleEditDialogClose}>Cancel</Button>
+          <Button onClick={handleEditDialogClose}>Annuler</Button>
           <Button onClick={handleSavePatient} variant="contained" color="primary">
-            Save
+            Enregistrer
           </Button>
         </DialogActions>
       </Dialog>
 
       <Dialog open={isConsultationDialogOpen} onClose={handleConsultationDialogClose} maxWidth="sm" fullWidth>
-        <DialogTitle>New Consultation</DialogTitle>
+        <DialogTitle>Nouvelle consultation</DialogTitle>
         <DialogContent>
           <Grid container spacing={2}>
             <Grid item xs={12}>
@@ -887,15 +887,15 @@ const PatientDetails: React.FC = () => {
           </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleConsultationDialogClose}>Cancel</Button>
+          <Button onClick={handleConsultationDialogClose}>Annuler</Button>
           <Button onClick={handleCreateConsultation} variant="contained" color="primary">
-            Create
+            Créer
           </Button>
         </DialogActions>
       </Dialog>
 
       <Dialog open={isSeanceDialogOpen} onClose={handleSeanceDialogClose} maxWidth="sm" fullWidth>
-        <DialogTitle>New Séance</DialogTitle>
+        <DialogTitle>Nouvelle séance</DialogTitle>
         <DialogContent>
           <Grid container spacing={2}>
             <Grid item xs={12}>
@@ -961,9 +961,9 @@ const PatientDetails: React.FC = () => {
           </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleSeanceDialogClose}>Cancel</Button>
+          <Button onClick={handleSeanceDialogClose}>Annuler</Button>
           <Button onClick={handleCreateSeance} variant="contained" color="primary">
-            Create
+            Créer
           </Button>
         </DialogActions>
       </Dialog>
@@ -972,3 +972,4 @@ const PatientDetails: React.FC = () => {
 };
 
 export default PatientDetails;
+

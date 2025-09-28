@@ -124,7 +124,7 @@ const Dashboard: React.FC = () => {
   return (
     <Box sx={{ flexGrow: 1, p: 3 }}>
       <Typography variant="h4" sx={{ mb: 4, fontWeight: 'bold' }}>
-        Dashboard
+        Tableau de bord
       </Typography>
       <Profile></Profile>
       
@@ -138,8 +138,8 @@ const Dashboard: React.FC = () => {
       {/* Medecin-only patients section */}
       <RoleBasedAccess requiredRoles="MEDECIN">
         <Box sx={{ mb: 4 }}>
-          <Typography variant="h5" sx={{ mb: 2 }}>Your Patients</Typography>
-          
+          <Typography variant="h5" sx={{ mb: 2 }}>Vos patients</Typography>
+
           {isLoading ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
               <CircularProgress />
@@ -189,7 +189,7 @@ const Dashboard: React.FC = () => {
                       <TableRow>
                         <TableCell colSpan={7} align="center">
                           <Typography variant="body1" sx={{ py: 2 }}>
-                            You don't have any patients yet.
+                            Vous n'avez pas encore de patients.
                           </Typography>
                         </TableCell>
                       </TableRow>

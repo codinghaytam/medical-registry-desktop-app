@@ -55,7 +55,7 @@ export default function PasswordReset() {
       
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || `Request failed: ${response.status}`);
+        throw new Error(errorData.error || `Échec de la requête: ${response.status}`);
       }
       
       const data = await response.json();
@@ -73,7 +73,7 @@ export default function PasswordReset() {
       
     } catch (err) {
       console.error("Request error:", err);
-      setError(err instanceof Error ? err.message : 'Password reset request failed');
+      setError(err instanceof Error ? err.message : 'La demande de réinitialisation du mot de passe a échoué');
     } finally {
       setLoading(false);
     }
@@ -88,7 +88,7 @@ export default function PasswordReset() {
     const confirmPassword = formData.get('confirmPassword') as string;
     
     if (newPassword !== confirmPassword) {
-      setError("Passwords do not match");
+      setError("Les mots de passe ne correspondent pas");
       setLoading(false);
       return;
     }
@@ -111,14 +111,14 @@ export default function PasswordReset() {
       
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || `Request failed: ${response.status}`);
+        throw new Error(errorData.error || `Échec de la requête: ${response.status}`);
       }
       
       setSuccess(true);
       setStep('complete');
     } catch (err) {
       console.error("Request error:", err);
-      setError(err instanceof Error ? err.message : 'Password change failed');
+      setError(err instanceof Error ? err.message : 'La modification du mot de passe a échoué');
     } finally {
       setLoading(false);
     }
@@ -133,7 +133,7 @@ export default function PasswordReset() {
       
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || `Request failed: ${response.status}`);
+        throw new Error(errorData.error || `Échec de la requête: ${response.status}`);
       }
       
       const data = await response.json();
@@ -145,7 +145,7 @@ export default function PasswordReset() {
       
     } catch (err) {
       console.error("Request error:", err);
-      setError(err instanceof Error ? err.message : 'Failed to check verification status');
+      setError(err instanceof Error ? err.message : "Échec de la vérification de l'email");
     } finally {
       setLoading(false);
     }
@@ -169,13 +169,13 @@ export default function PasswordReset() {
       
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || `Request failed: ${response.status}`);
+        throw new Error(errorData.error || `Échec de la requête: ${response.status}`);
       }
       
       setSuccess(true);
     } catch (err) {
       console.error("Request error:", err);
-      setError(err instanceof Error ? err.message : 'Failed to resend verification email');
+      setError(err instanceof Error ? err.message : "Échec de l'envoi de l'email de vérification");
     } finally {
       setLoading(false);
     }
@@ -206,18 +206,18 @@ export default function PasswordReset() {
         {loading ? (
           <>
             <Typography component="h1" variant="h5" gutterBottom>
-              Processing...
+              Traitement en cours...
             </Typography>
             <CircularProgress size={40} sx={{ my: 4 }} />
           </>
         ) : success && step === 'request' ? (
           <>
             <Typography component="h1" variant="h5" gutterBottom>
-              Email Verification Sent
+              Vérification de l'e-mail envoyée
             </Typography>
             <Alert severity="success" sx={{ width: '100%', mb: 2 }}>
-              If an account exists with that email, you will receive email verification instructions.
-              Please check your email and follow the instructions to verify your email before resetting your password.
+              Si un compte existe avec cet e-mail, vous recevrez des instructions de vérification par e-mail.
+              Veuillez vérifier votre e-mail et suivre les instructions pour vérifier votre adresse avant de réinitialiser votre mot de passe.
             </Alert>
             <Box sx={{ mt: 2, width: '100%' }}>
               <Button
@@ -226,7 +226,7 @@ export default function PasswordReset() {
                 sx={{ mb: 2, height: 48 }}
                 onClick={checkVerificationStatus}
               >
-                I've Verified My Email
+                J'ai vérifié mon e-mail
               </Button>
               <Button
                 fullWidth
@@ -234,24 +234,24 @@ export default function PasswordReset() {
                 sx={{ mb: 2 }}
                 onClick={handleResendVerification}
               >
-                Resend Verification Email
+                Renvoyer l'e-mail de vérification
               </Button>
               <Button
                 fullWidth
                 variant="text"
                 onClick={handleBackToLogin}
               >
-                Back to Login
+                Retour à la connexion
               </Button>
             </Box>
           </>
         ) : success && step === 'complete' ? (
           <>
             <Typography component="h1" variant="h5" gutterBottom>
-              Password Reset Complete
+              Réinitialisation du mot de passe terminée
             </Typography>
             <Alert severity="success" sx={{ width: '100%', mb: 2 }}>
-              Your password has been successfully reset. You can now login with your new password.
+              Votre mot de passe a été réinitialisé avec succès. Vous pouvez maintenant vous connecter avec votre nouveau mot de passe.
             </Alert>
             <Button
               fullWidth
@@ -259,13 +259,13 @@ export default function PasswordReset() {
               sx={{ mt: 3, mb: 2, height: 48 }}
               onClick={handleBackToLogin}
             >
-              Go to Login
+              Aller à la connexion
             </Button>
           </>
         ) : step === 'change' ? (
           <>
             <Typography component="h1" variant="h5" gutterBottom>
-              Set New Password
+              Définir un nouveau mot de passe
             </Typography>
             
             {error && (
@@ -276,14 +276,14 @@ export default function PasswordReset() {
 
             <Box component="form" onSubmit={handlePasswordChange} sx={{ width: '100%' }}>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                Enter your new password below
+                Entrez votre nouveau mot de passe ci-dessous
               </Typography>
               <TextField
                 margin="normal"
                 required
                 fullWidth
                 name="newPassword"
-                label="New Password"
+                label="Nouveau mot de passe"
                 type="password"
                 id="newPassword"
                 autoComplete="new-password"
@@ -293,7 +293,7 @@ export default function PasswordReset() {
                 required
                 fullWidth
                 name="confirmPassword"
-                label="Confirm Password"
+                label="Confirmer le mot de passe"
                 type="password"
                 id="confirmPassword"
                 autoComplete="new-password"
@@ -306,7 +306,7 @@ export default function PasswordReset() {
                 sx={{ mt: 3, mb: 2, height: 48 }}
                 disabled={loading}
               >
-                Reset Password
+                Réinitialiser le mot de passe
               </Button>
               
               <Button
@@ -315,14 +315,14 @@ export default function PasswordReset() {
                 onClick={handleBackToLogin}
                 sx={{ mt: 1 }}
               >
-                Cancel
+                Annuler
               </Button>
             </Box>
           </>
         ) : (
           <>
             <Typography component="h1" variant="h5" gutterBottom>
-              Reset Password
+              Réinitialiser le mot de passe
             </Typography>
             
             {error && (
@@ -333,14 +333,14 @@ export default function PasswordReset() {
 
             <Box component="form" onSubmit={handlePasswordReset} sx={{ width: '100%' }}>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                Enter your email address and we will send you instructions to reset your password
+                Saisissez votre adresse e-mail et nous vous enverrons des instructions pour réinitialiser votre mot de passe
               </Typography>
               <TextField
                 margin="normal"
                 required
                 fullWidth
                 id="email"
-                label="Email Address"
+                label="Adresse e-mail"
                 name="email"
                 autoComplete="email"
                 autoFocus
@@ -353,7 +353,7 @@ export default function PasswordReset() {
                 sx={{ mt: 3, mb: 2, height: 48 }}
                 disabled={loading}
               >
-                Request Password Reset
+                Demander la réinitialisation du mot de passe
               </Button>
               
               <Button
@@ -362,7 +362,7 @@ export default function PasswordReset() {
                 onClick={handleBackToLogin}
                 sx={{ mt: 1 }}
               >
-                Back to Login
+                Retour à la connexion
               </Button>
             </Box>
           </>

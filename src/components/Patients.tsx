@@ -178,8 +178,8 @@ const Patients: React.FC = () => {
       handleMenuClose();
     } catch (error: any) {
       console.error('Failed to fetch patient for editing:', error);
-      showFeedback('Failed to fetch patient data. Please try again.', 'error');
-      setError('Failed to fetch patient data. Please try again.');
+      showFeedback('Échec de la récupération des données du patient. Veuillez réessayer.', 'error');
+      setError('Échec de la récupération des données du patient. Veuillez réessayer.');
     } finally {
       setIsLoading(false);
     }
@@ -230,17 +230,17 @@ const Patients: React.FC = () => {
       if (newPatient.id) {
         // Update existing patient
         await patientService.update(newPatient.id.toString(), newPatient);
-        showFeedback('Patient updated successfully');
+        showFeedback('Patient mis à jour avec succès');
       } else {
         // Create new patient
         await patientService.create(newPatient);
-        showFeedback('New patient created successfully');
+        showFeedback('Nouveau patient créé avec succès');
       }
       handleCloseDialog();
       // Refresh patients list after successful creation/update
       const success = await fetchPatients();
       if (!success) {
-        showFeedback('Patient saved, but unable to refresh the list', 'info');
+        showFeedback('Patient enregistré, mais impossible de rafraîchir la liste', 'info');
       }
     } catch (error: any) {
       console.error('Failed to save patient:', error);
@@ -287,17 +287,17 @@ const Patients: React.FC = () => {
     setError(null);
     try {
       await patientService.delete(patientToDelete);
-      showFeedback('Patient deleted successfully');
-      
+      showFeedback('Patient supprimé avec succès');
+
       // Refresh patients list after deletion
       const success = await fetchPatients();
       if (!success) {
-        showFeedback('Patient deleted, but unable to refresh the list', 'info');
+        showFeedback('Patient supprimé, mais impossible de rafraîchir la liste', 'info');
       }
     } catch (error: any) {
       console.error('Failed to delete patient:', error);
-      showFeedback(error.message || "Failed to delete patient", 'error');
-      setNetworkError(error.message || "Failed to delete patient");
+      showFeedback(error.message || "Échec de la suppression du patient", 'error');
+      setNetworkError(error.message || "Échec de la suppression du patient");
     } finally {
       setIsLoading(false);
       setOpenDeleteDialog(false);
@@ -345,27 +345,27 @@ const Patients: React.FC = () => {
         if (orthodontist) {
           medecinId = orthodontist.id;
         } else {
-          throw new Error('No orthodontist found in the system. Please add one first.');
+          throw new Error('Aucun orthodontiste trouvé dans le système. Veuillez en ajouter un d\'abord.');
         }
       }
       
       if (!medecinId) {
-        throw new Error('Could not determine the médecin ID for transfer');
+        throw new Error('Impossible de déterminer l\'ID du médecin pour le transfert');
       }
       
       // Call the transfer service
       await patientService.transferParoToOrtho(patientToTransfer, medecinId);
-      showFeedback('Patient transferred to Orthodontaire department successfully');
-      
+      showFeedback('Patient transféré avec succès au service d\'Orthodontie');
+
       // Refresh patients list after transfer
       const success = await fetchPatients();
       if (!success) {
-        showFeedback('Patient transferred, but unable to refresh the list', 'info');
+        showFeedback('Patient transféré, mais impossible de rafraîchir la liste', 'info');
       }
     } catch (error: any) {
       console.error('Failed to transfer patient:', error);
-      showFeedback(error.message || "Failed to transfer patient", 'error');
-      setNetworkError(error.message || "Failed to transfer patient");
+      showFeedback(error.message || "Échec du transfert du patient", 'error');
+      setNetworkError(error.message || "Échec du transfert du patient");
     } finally {
       setIsLoading(false);
       setOpenTransferDialog(false);
@@ -412,27 +412,27 @@ const Patients: React.FC = () => {
         if (parodontist) {
           medecinId = parodontist.id;
         } else {
-          throw new Error('No parodontist found in the system. Please add one first.');
+          throw new Error('Aucun parodontiste trouvé dans le système. Veuillez en ajouter un d\'abord.');
         }
       }
       
       if (!medecinId) {
-        throw new Error('Could not determine the médecin ID for transfer');
+        throw new Error('Impossible de déterminer l\'ID du médecin pour le transfert');
       }
       
       // Call the transfer service
       await patientService.transferOrthoToParo(patientToTransferOrthoToParo, medecinId);
-      showFeedback('Patient transferred to Parodontaire department successfully');
-      
+      showFeedback('Patient transféré avec succès au service de Parodontie');
+
       // Refresh patients list after transfer
       const success = await fetchPatients();
       if (!success) {
-        showFeedback('Patient transferred, but unable to refresh the list', 'info');
+        showFeedback('Patient transféré, mais impossible de rafraîchir la liste', 'info');
       }
     } catch (error: any) {
       console.error('Failed to transfer patient:', error);
-      showFeedback(error.message || "Failed to transfer patient", 'error');
-      setNetworkError(error.message || "Failed to transfer patient");
+      showFeedback(error.message || "Échec du transfert du patient", 'error');
+      setNetworkError(error.message || "Échec du transfert du patient");
     } finally {
       setIsLoading(false);
       setOpenTransferOrthoToParoDialog(false);
@@ -461,7 +461,7 @@ const Patients: React.FC = () => {
       return true;
     } catch (error: any) {
       console.error('Error fetching patients:', error);
-      setNetworkError(error.message || 'Failed to load patients. Please try again.');
+      setNetworkError(error.message || 'Échec du chargement des patients. Veuillez réessayer.');
       // Still set empty array instead of failing completely
       setPatients([]);
       return false;
@@ -484,9 +484,9 @@ const Patients: React.FC = () => {
     setIsLoading(true);
     const success = await fetchPatients();
     if (success) {
-      showFeedback('Data refreshed successfully');
+      showFeedback('Données rafraîchies avec succès');
     } else {
-      showFeedback('Failed to refresh data', 'error');
+      showFeedback('Échec du rafraîchissement des données', 'error');
     }
     setIsLoading(false);
   };
@@ -550,7 +550,7 @@ const Patients: React.FC = () => {
             onClick={() => handleRefreshClick()}
             disabled={isLoading}
           >
-            Refresh
+            Rafraîchir
           </Button>
         </Box>
       )}
@@ -569,20 +569,20 @@ const Patients: React.FC = () => {
           onClick={handleOpenDialog}
           disabled={isLoading}
         >
-          Add New Patient
+          Ajouter un patient
         </Button>
       </Box>
 
       {userRole === 'MEDECIN' && userProfession && (
         <Alert severity="info" sx={{ mb: 2 }}>
-          You are viewing patients in the {(userProfession=="PARODONTAIRE")? "Parodontiste":"Orthodontiste"} department based on your profession.
+          Vous consultez les patients du service {(userProfession=="PARODONTAIRE")? "Parodontie":"Orthodontie"} selon votre spécialité.
         </Alert>
       )}
 
       <Card sx={{ mb: 4 }}>
         <CardContent sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <TextField
-            placeholder="Search patients..."
+            placeholder="Rechercher des patients..."
             variant="outlined"
             size="small"
             sx={{ width: { xs: '100%', sm: 300 } }}
@@ -597,15 +597,14 @@ const Patients: React.FC = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
           <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1 }}>
-            <Tooltip title="Refresh patients list">
-              <Button 
+            <Tooltip title="Rafraîchir la liste des patients">
+              <Button
               variant="outlined" 
               size="small"
               startIcon={<RefreshCw size={16} />}
               onClick={handleRefreshClick}
               disabled={isLoading}
-            >
-              Refresh
+            >Rafraîchir
             </Button>
             </Tooltip>
            
@@ -632,14 +631,14 @@ const Patients: React.FC = () => {
               {isLoading && patients.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={userRole === 'ADMIN' ? 8 : 7} align="center">
-                    Loading patients...
+                    Chargement des patients...
                   </TableCell>
                 </TableRow>
               ) : filteredPatients.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={userRole === 'ADMIN' ? 8 : 7} align="center">
                     <Typography variant="body1" sx={{ py: 2 }}>
-                      {networkError ? "Couldn't load patients due to a network error" : "No patients found"}
+                      {networkError ? "Impossible de charger les patients à cause d'une erreur réseau" : "Aucun patient trouvé"}
                     </Typography>
                   </TableCell>
                 </TableRow>
@@ -669,8 +668,8 @@ const Patients: React.FC = () => {
                         {userRole === 'ADMIN' && (
                           <TableCell>
                             <Chip 
-                              label={patient.State?.replace(/_/g, ' ').toLowerCase() || 'unassigned'} 
-                              size="small" 
+                              label={patient.State?.replace(/_/g, ' ').toLowerCase() || 'non affecté'}
+                              size="small"
                               color={patient.State === 'PARODONTAIRE' ? 'primary' : 'secondary'} 
                               variant="outlined"
                             />
@@ -767,7 +766,7 @@ const Patients: React.FC = () => {
       >
         <MenuItem onClick={handleEditPatient}>
           <Edit size={16} style={{ marginRight: 8 }} />
-          Edit
+          Modifier
         </MenuItem>
         {/* Add transfer option - show for PARODONTAIRE patients to transfer to ORTHODONTAIRE */}
         {selectedUserId && patients.find(p => p.id === selectedUserId)?.State === 'PARODONTAIRE' && (
@@ -780,7 +779,7 @@ const Patients: React.FC = () => {
                 <path d="M17 8L21 12M21 12L17 16M21 12H3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </IconButton>
-            Transfer to Orthodontiste
+            Transférer vers Orthodontie
           </MenuItem>
         )}
         {/* Add transfer option - show for ORTHODONTAIRE patients to transfer to PARODONTAIRE */}
@@ -794,7 +793,7 @@ const Patients: React.FC = () => {
                 <path d="M7 8L3 12M3 12L7 16M3 12H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </IconButton>
-            Transfer to Parodontiste
+            Transférer vers Parodontie
           </MenuItem>
         )}
         <MenuItem 
@@ -802,7 +801,7 @@ const Patients: React.FC = () => {
           sx={{ color: 'error.main' }}
         >
           <Trash2 size={16} style={{ marginRight: 8 }} />
-          Delete
+          Supprimer
         </MenuItem>
       </Menu>
 
@@ -814,16 +813,16 @@ const Patients: React.FC = () => {
         aria-describedby="delete-dialog-description"
       >
         <DialogTitle id="delete-dialog-title">
-          Confirm Deletion
+          Confirmer la suppression
         </DialogTitle>
         <DialogContent>
           <Typography id="delete-dialog-description">
-            Are you sure you want to delete this patient? This action cannot be undone.
+            Êtes-vous sûr de vouloir supprimer ce patient ? Cette action est irréversible.
           </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDeleteDialog} color="primary">
-            Cancel
+            Annuler
           </Button>
           <Button 
             onClick={handleConfirmedDelete} 
@@ -831,7 +830,7 @@ const Patients: React.FC = () => {
             variant="contained"
             disabled={isLoading}
           >
-            {isLoading ? 'Deleting...' : 'Delete'}
+            {isLoading ? 'Suppression...' : 'Supprimer'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -844,14 +843,16 @@ const Patients: React.FC = () => {
         aria-describedby="transfer-dialog-description"
       >
         <DialogTitle id="transfer-dialog-title">
-          Confirm Patient Transfer
+          Confirmer le transfert du patient
         </DialogTitle>
         <DialogContent>
-
+          <Typography id="transfer-dialog-description">
+            Êtes-vous sûr de vouloir transférer ce patient au service d'Orthodontie ?
+          </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseTransferDialog} color="primary">
-            Cancel
+            Annuler
           </Button>
           <Button 
             onClick={handleConfirmedTransfer} 
@@ -859,7 +860,7 @@ const Patients: React.FC = () => {
             variant="contained"
             disabled={isLoading}
           >
-            {isLoading ? 'Processing...' : 'Transfer'}
+            {isLoading ? 'Traitement...' : 'Transférer'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -872,19 +873,19 @@ const Patients: React.FC = () => {
         aria-describedby="transfer-ortho-paro-dialog-description"
       >
         <DialogTitle id="transfer-ortho-paro-dialog-title">
-          Confirm Patient Transfer
+          Confirmer le transfert du patient
         </DialogTitle>
         <DialogContent>
           <Typography id="transfer-ortho-paro-dialog-description" paragraph>
-            Are you sure you want to transfer this patient from the Orthodontaire department to the Parodontaire department?
+              Êtes-vous sûr de vouloir transférer ce patient au service de Parodontie ?
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            This action will move the patient to the Parodontaire department and create a transfer record. The transfer may require approval.
+              Cette action transférera le patient vers le service de parodontie et créera un dossier de transfert. Le transfert peut nécessiter une approbation.
           </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseTransferOrthoToParoDialog} color="primary">
-            Cancel
+            Annuler
           </Button>
           <Button 
             onClick={handleConfirmedTransferOrthoToParo} 
@@ -892,13 +893,13 @@ const Patients: React.FC = () => {
             variant="contained"
             disabled={isLoading}
           >
-            {isLoading ? 'Processing...' : 'Transfer'}
+            {isLoading ? 'Traitement...' : 'Transférer'}
           </Button>
         </DialogActions>
       </Dialog>
 
       <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
-        <DialogTitle>{newPatient.id ? 'Edit Patient' : 'Add New Patient'}</DialogTitle>
+        <DialogTitle>{newPatient.id ? 'Modifier le patient' : 'Ajouter un patient'}</DialogTitle>
         <form onSubmit={handleSubmit}>
           <DialogContent>
             {/* Show error message if present */}
@@ -999,7 +1000,7 @@ const Patients: React.FC = () => {
                         </MenuItem>
                       ))
                     ) : (
-                      <MenuItem disabled value="">No options available</MenuItem>
+                      <MenuItem disabled value="">Aucune option disponible</MenuItem>
                     )}
                   </Select>
                 </FormControl>
@@ -1020,7 +1021,7 @@ const Patients: React.FC = () => {
                         </MenuItem>
                       ))
                     ) : (
-                      <MenuItem disabled value="">No options available</MenuItem>
+                      <MenuItem disabled value="">Aucune option disponible</MenuItem>
                     )}
                   </Select>
                 </FormControl>
@@ -1041,7 +1042,7 @@ const Patients: React.FC = () => {
                         </MenuItem>
                       ))
                     ) : (
-                      <MenuItem disabled value="">No options available</MenuItem>
+                      <MenuItem disabled value="">Aucune option disponible</MenuItem>
                     )}
                   </Select>
                 </FormControl>
@@ -1099,9 +1100,9 @@ const Patients: React.FC = () => {
             </Box>
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleCloseDialog} disabled={isLoading}>Cancel</Button>
+            <Button onClick={handleCloseDialog} disabled={isLoading}>Annuler</Button>
             <Button type="submit" variant="contained" disabled={isLoading}>
-              {isLoading ? 'Saving...' : 'Save'}
+              {isLoading ? 'Enregistrement...' : 'Enregistrer'}
             </Button>
           </DialogActions>
         </form>
@@ -1143,3 +1144,4 @@ const Patients: React.FC = () => {
 };
 
 export default Patients;
+

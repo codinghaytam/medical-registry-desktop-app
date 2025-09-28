@@ -49,8 +49,8 @@ const Header: React.FC<HeaderProps> = ({ handleDrawerToggle }) => {
         <Box sx={{ display: 'flex', alignItems: 'center', ml: isMobile ? 0 : 2 }}>
           <img 
             src="/medica-name.svg" 
-            alt="Medica Logo" 
-            style={{ 
+            alt="Logo Medica"
+            style={{
               height: '45px',
               width: 'auto',
             }} 
@@ -88,7 +88,7 @@ const Header: React.FC<HeaderProps> = ({ handleDrawerToggle }) => {
                   } else if (userRole === 'ADMIN' && userData.user.name) {
                     return userData.user.name;
                   } else {
-                    return "User";
+                    return "Utilisateur";
                   }
                 })()}
               </Typography>
@@ -107,7 +107,7 @@ const Header: React.FC<HeaderProps> = ({ handleDrawerToggle }) => {
                   if (userRole === 'MEDECIN' && userData.user?.profession) {
                     return (userData.user.profession === 'PARODONTAIRE' ? 'Parodontiste' : 'Orthodontiste');
                   } else {
-                    return userRole || "User";
+                    return userRole || "Utilisateur";
                   }
                 })()}
               </Typography>

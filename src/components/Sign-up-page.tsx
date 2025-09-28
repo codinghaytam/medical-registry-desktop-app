@@ -56,7 +56,7 @@ export default function LoginPage() {
         });
         
         if (!userResponse.ok) {
-          throw new Error("Failed to fetch user information");
+          throw new Error("Échec de la récupération des informations utilisateur");
         }
         
         const userData = await userResponse.json();
@@ -109,7 +109,7 @@ export default function LoginPage() {
             return;
           }        } 
         else {
-          throw new Error("Unknown user role");
+          throw new Error("Rôle utilisateur inconnu");
         }
       } catch (e) {
         console.error("Error determining user role:", e);
@@ -170,12 +170,12 @@ export default function LoginPage() {
           }
         } catch (e) {
           console.log("Could not determine user role");
-          setError("User role could not be determined");
+          setError("Impossible de déterminer le rôle utilisateur");
         }
       }
     } catch (err) {
       console.error("Request error:", err);
-      setError('Login failed');
+      setError('Échec de la connexion');
     } finally {
       setLoading(false);
     }
@@ -206,14 +206,14 @@ export default function LoginPage() {
         {loading ? (
           <>
             <Typography component="h1" variant="h5" gutterBottom>
-              Authenticating...
+              Authentification en cours...
             </Typography>
             <CircularProgress size={40} sx={{ my: 4 }} />
           </>
         ) : (
           <>
             <Typography component="h1" variant="h5" gutterBottom>
-              {error ? 'Authentication failed' : 'Sign in'}
+              {error ? 'Échec de l\'authentification' : 'Se connecter'}
             </Typography>
             
             {error && (
@@ -224,14 +224,14 @@ export default function LoginPage() {
 
             <Box component="form" onSubmit={handleUserLogin} sx={{ width: '100%' }}>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                Use your credentials to sign in
+                Utilisez vos identifiants pour vous connecter
               </Typography>
               <TextField
                 margin="normal"
                 required
                 fullWidth
                 id="email"
-                label="Email Address"
+                label="Adresse e-mail"
                 name="email"
                 autoComplete="email"
                 autoFocus
@@ -241,7 +241,7 @@ export default function LoginPage() {
                 required
                 fullWidth
                 name="password"
-                label="Password"
+                label="Mot de passe"
                 type="password"
                 id="password"
                 autoComplete="current-password"
@@ -257,7 +257,7 @@ export default function LoginPage() {
                 {loading ? (
                   <CircularProgress size={24} color="inherit" />
                 ) : (
-                  'Sign In'
+                  'Se connecter'
                 )}
               </Button>
               
@@ -268,7 +268,7 @@ export default function LoginPage() {
                   onClick={handleForgotPassword}
                   sx={{ cursor: 'pointer' }}
                 >
-                  Forgot password?
+                  Mot de passe oublié ?
                 </Link>
               </Box>
             </Box>
@@ -278,4 +278,3 @@ export default function LoginPage() {
     </Container>
   );
 }
-

@@ -240,7 +240,7 @@ const Consultations: React.FC = () => {
       setConsultations(consultationsArray);
     } catch (error: any) {
       console.error('Error fetching data:', error);
-      setNetworkError(error.message || 'Failed to load consultations. Please try again.');
+      setNetworkError(error.message || 'Échec du chargement des consultations. Veuillez réessayer.');
       // Still set empty arrays instead of failing completely
       setPatients([]);
       setMedecins([]);
@@ -313,7 +313,7 @@ const Consultations: React.FC = () => {
     
     try {
       await consultationService.create(newConsultation);
-      showFeedback('Consultation created successfully');
+      showFeedback('Consultation créée avec succès');
       handleCloseDialog();
       
       // Refresh the consultations list
@@ -337,11 +337,11 @@ const Consultations: React.FC = () => {
       } catch (refreshError) {
         console.error('Error refreshing data:', refreshError);
         // Don't block the UX flow on refresh errors
-        showFeedback('Consultation created, but unable to refresh the list', 'info');
+        showFeedback('Consultation créée, mais impossible de rafraîchir la liste', 'info');
       }
     } catch (error: any) {
       console.error('Error creating consultation:', error);
-      const errorMessage = error.message || 'Failed to create consultation. Please try again.';
+      const errorMessage = error.message || 'Échec de la création de la consultation. Veuillez réessayer.';
       showFeedback(errorMessage, 'error');
     }
   };
@@ -371,7 +371,7 @@ const Consultations: React.FC = () => {
       setConsultations(updatedConsultations);
     } catch (error) {
       console.error('Error deleting consultation:', error);
-      setNetworkError("Failed to delete consultation. Please try again later.");
+      setNetworkError("Échec de la suppression de la consultation. Veuillez réessayer plus tard.");
     } finally {
       setIsLoading(false);
       setOpenDeleteDialog(false);
@@ -431,7 +431,7 @@ const Consultations: React.FC = () => {
     try {
       if (selectedConsultation) {
         await consultationService.addDiagnosis(selectedConsultation, newDiagnosis);
-        showFeedback('Diagnosis added successfully');
+        showFeedback('Diagnostic ajouté avec succès');
         handleCloseDiagnosisDialog();
         
         // Refresh the consultations list
@@ -454,12 +454,12 @@ const Consultations: React.FC = () => {
           }
         } catch (refreshError) {
           console.error('Error refreshing data:', refreshError);
-          showFeedback('Diagnosis added, but unable to refresh the list', 'info');
+          showFeedback('Diagnostic ajouté, mais impossible de rafraîchir la liste', 'info');
         }
       }
     } catch (error: any) {
       console.error('Error adding diagnosis:', error);
-      const errorMessage = error.message || 'Failed to add diagnosis. Please try again.';
+      const errorMessage = error.message || 'Échec de l\'ajout du diagnostic. Veuillez réessayer.';
       showFeedback(errorMessage, 'error');
     } finally {
     }
@@ -596,7 +596,7 @@ const Consultations: React.FC = () => {
         );
       }
       
-      showFeedback('Patient and consultation created successfully');
+      showFeedback('Patient et consultation créés avec succès');
       handleCloseIntegratedDialog();
       
       // 3. Refresh the consultations list
@@ -619,11 +619,11 @@ const Consultations: React.FC = () => {
         }
       } catch (refreshError) {
         console.error('Error refreshing data:', refreshError);
-        showFeedback('Data created successfully, but unable to refresh the list', 'info');
+        showFeedback('Données créées avec succès, mais impossible de rafraîchir la liste', 'info');
       }
     } catch (error: any) {
       console.error('Error creating consultation with patient:', error);
-      const errorMessage = error.message || 'Failed to create consultation with patient. Please try again.';
+      const errorMessage = error.message || 'Échec de la création de la consultation avec le patient. Veuillez réessayer.';
       showFeedback(errorMessage, 'error');
     } finally {
     }
@@ -669,7 +669,7 @@ const Consultations: React.FC = () => {
             size="small"
             onClick={() => window.location.reload()}
           >
-            Refresh
+            Rafraîchir
           </Button>
         </Box>
       )}
@@ -689,7 +689,7 @@ const Consultations: React.FC = () => {
               onClick={handleOpenIntegratedDialog}
               disabled={isLoading}
             >
-              New Patient & Consultation
+              Nouveau patient et consultation
             </Button>
           </Box>
         </RoleBasedAccess>
@@ -698,19 +698,19 @@ const Consultations: React.FC = () => {
       {/* Role-specific message banner */}
       {userRole === 'ETUDIANT' && (
         <Alert severity="info" sx={{ mb: 3 }}>
-          You have view-only access to consultations.
+          Vous avez un accès en lecture seule aux consultations.
         </Alert>
       )}
       {userRole === 'MEDECIN' && (
         <Alert severity="info" sx={{ mb: 3 }}>
-          You can view, create, and modify your own consultations only.
+          Vous pouvez consulter, créer et modifier uniquement vos propres consultations.
         </Alert>
       )}
 
       <Card sx={{ mb: 4 }}>
         <CardContent sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <TextField
-            placeholder="Search Consultations..."
+            placeholder="Rechercher des consultations..."
             variant="outlined"
             size="small"
             sx={{ width: { xs: '100%', sm: 300 } }}
@@ -726,8 +726,8 @@ const Consultations: React.FC = () => {
           />
           <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1 }}>
             {/* Refresh button for all users */}
-            <Tooltip title="Refresh data">
-             
+            <Tooltip title="Rafraîchir les données">
+
               <Button 
               variant="outlined" 
               size="small"
@@ -735,7 +735,7 @@ const Consultations: React.FC = () => {
               onClick={fetchData}
               disabled={isLoading}
             >
-              Refresh
+              Rafraîchir
             </Button>
             </Tooltip>
             
@@ -759,14 +759,14 @@ const Consultations: React.FC = () => {
               {isLoading && filteredConsultations.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} align="center">
-                    Loading consultations...
+                    Chargement des consultations...
                   </TableCell>
                 </TableRow>
               ) : filteredConsultations.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} align="center">
                     <Typography variant="body1" sx={{ py: 2 }}>
-                      {networkError ? "Couldn't load consultations due to a network error" : "No consultations found"}
+                      {networkError ? "Impossible de charger les consultations à cause d'une erreur réseau" : "Aucune consultation trouvée"}
                     </Typography>
                   </TableCell>
                 </TableRow>
@@ -798,7 +798,7 @@ const Consultations: React.FC = () => {
                           <Typography variant="body2">
                             {consultation.medecin.user.name 
                               ? `${consultation.medecin.user.name }` 
-                              : (consultation.medecin?.user?.name || 'Unknown')}
+                              : (consultation.medecin?.user?.name || 'Inconnu')}
                           </Typography>
                         </Box>
                       </TableCell>
@@ -806,15 +806,15 @@ const Consultations: React.FC = () => {
                       <TableCell align="right">
                         {/* Different action buttons based on role */}
                         {canOnlyView() ? (
-                          <Tooltip title="View Details">
+                          <Tooltip title="Voir les détails">
                             <IconButton size="small">
                               <Eye size={18} />
                             </IconButton>
                           </Tooltip>
                         ) : (
                           <>
-                            <Tooltip title="Add Diagnosis">
-                              <IconButton 
+                            <Tooltip title="Ajouter un diagnostic">
+                              <IconButton
                                 size="small" 
                                 onClick={() => handleOpenDiagnosisDialog(consultation.id)}
                                 disabled={userRole === 'MEDECIN' && consultation.medecinId !== JSON.parse(sessionStorage.getItem('user') || '').id}
@@ -910,7 +910,7 @@ const Consultations: React.FC = () => {
           
           <MenuItem onClick={() => handleDelete(selectedConsultation!)} sx={{ color: 'error.main' }}>
             <Trash2 size={16} style={{ marginRight: 8 }} />
-            Delete
+            Supprimer
           </MenuItem>
         </Menu>
       </RoleBasedAccess>
@@ -938,7 +938,7 @@ const Consultations: React.FC = () => {
       {/* Only ADMIN or MEDECIN can add/edit consultations */}
       <RoleBasedAccess requiredRoles={['ADMIN', 'MEDECIN']}>
         <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
-          <DialogTitle>Update Consultation</DialogTitle>
+          <DialogTitle>Mettre à jour la consultation</DialogTitle>
           <form onSubmit={handleSubmit}>
             <DialogContent>
               <TextField
@@ -975,7 +975,7 @@ const Consultations: React.FC = () => {
                 requiredRoles="ADMIN"
                 fallback={
                   <Alert severity="info" sx={{ mb: 2 }}>
-                    As a MEDECIN, you will be automatically assigned as the consultant.
+                    En tant que médecin, vous serez automatiquement assigné comme consultant.
                   </Alert>
                 }
               >
@@ -999,15 +999,15 @@ const Consultations: React.FC = () => {
               </RoleBasedAccess>
             </DialogContent>
             <DialogActions>
-              <Button onClick={handleCloseDialog}>Cancel</Button>
-              <Button type="submit" variant="contained">Save</Button>
+              <Button onClick={handleCloseDialog}>Annuler</Button>
+              <Button type="submit" variant="contained">Enregistrer</Button>
             </DialogActions>
           </form>
         </Dialog>
         
         {/* Diagnosis Dialog */}
         <Dialog open={openDiagnosisDialog} onClose={handleCloseDiagnosisDialog} maxWidth="sm" fullWidth>
-          <DialogTitle>Add Diagnosis</DialogTitle>
+          <DialogTitle>Ajouter un diagnostic</DialogTitle>
           <form onSubmit={handleDiagnosisSubmit}>
             <DialogContent>
               <FormControl fullWidth sx={{ mb: 2 }}>
@@ -1029,7 +1029,7 @@ const Consultations: React.FC = () => {
               
               <TextField
                 fullWidth
-                label="Diagnosis Text"
+                label="Texte du diagnostic"
                 name="text"
                 value={newDiagnosis.text}
                 onChange={handleDiagnosisInputChange}
@@ -1044,7 +1044,7 @@ const Consultations: React.FC = () => {
                 requiredRoles="ADMIN"
                 fallback={
                   <Alert severity="info" sx={{ mb: 2 }}>
-                    As a MEDECIN, you will be automatically assigned as the diagnostician.
+                    En tant que médecin, vous serez automatiquement assigné comme diagnosticien.
                   </Alert>
                 }
               >
@@ -1067,8 +1067,8 @@ const Consultations: React.FC = () => {
               </RoleBasedAccess>
             </DialogContent>
             <DialogActions>
-              <Button onClick={handleCloseDiagnosisDialog}>Cancel</Button>
-              <Button type="submit" variant="contained">Save</Button>
+              <Button onClick={handleCloseDiagnosisDialog}>Annuler</Button>
+              <Button type="submit" variant="contained">Enregistrer</Button>
             </DialogActions>
           </form>
         </Dialog>
@@ -1078,9 +1078,9 @@ const Consultations: React.FC = () => {
         {/* Integrated Patient + Consultation + Diagnosis Form Dialog */}
         <Dialog open={openIntegratedDialog} onClose={handleCloseIntegratedDialog} maxWidth="md" fullWidth>
           <DialogTitle>   
-            Create New Patient and Consultation
+            Créer un nouveau patient et une consultation
             <Typography variant="body2" color="text.secondary">
-              Complete all steps to create a patient record with consultation
+              Complétez toutes les étapes pour créer un dossier patient avec consultation
             </Typography>
           </DialogTitle>
           
@@ -1088,13 +1088,13 @@ const Consultations: React.FC = () => {
             <DialogContent>
               <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
                 <Step>
-                  <StepLabel>Patient Information</StepLabel>
+                  <StepLabel>Informations du patient</StepLabel>
                 </Step>
                 <Step>
-                  <StepLabel>Consultation Details</StepLabel>
+                  <StepLabel>Détails de la consultation</StepLabel>
                 </Step>
                 <Step>
-                  <StepLabel>Diagnosis (Optional)</StepLabel>
+                  <StepLabel>Diagnostic (optionnel)</StepLabel>
                 </Step>
               </Stepper>
               
@@ -1102,12 +1102,12 @@ const Consultations: React.FC = () => {
               {activeStep === 0 && (
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
-                    <Typography variant="h6" gutterBottom>Basic Patient Information</Typography>
+                    <Typography variant="h6" gutterBottom>Informations de base du patient</Typography>
                   </Grid>
                   <Grid item xs={12} md={6}>
                     <TextField
                       fullWidth
-                      label="Last Name"
+                      label="Nom"
                       name="nom"
                       value={integratedForm.patient.nom}
                       onChange={(e) => handleIntegratedInputChange(e, 'patient')}
@@ -1117,7 +1117,7 @@ const Consultations: React.FC = () => {
                   <Grid item xs={12} md={6}>
                     <TextField
                       fullWidth
-                      label="First Name"
+                      label="Prénom"
                       name="prenom"
                       value={integratedForm.patient.prenom}
                       onChange={(e) => handleIntegratedInputChange(e, 'patient')}
@@ -1127,7 +1127,7 @@ const Consultations: React.FC = () => {
                   <Grid item xs={12}>
                     <TextField
                       fullWidth
-                      label="Address"
+                      label="Adresse"
                       name="adresse"
                       value={integratedForm.patient.adresse}
                       onChange={(e) => handleIntegratedInputChange(e, 'patient')}
@@ -1137,7 +1137,7 @@ const Consultations: React.FC = () => {
                   <Grid item xs={12} md={6}>
                     <TextField
                       fullWidth
-                      label="Phone Number"
+                      label="Téléphone"
                       name="tel"
                       value={integratedForm.patient.tel}
                       onChange={(e) => handleIntegratedInputChange(e, 'patient')}
@@ -1147,7 +1147,7 @@ const Consultations: React.FC = () => {
                   <Grid item xs={12} md={6}>
                     <TextField
                       fullWidth
-                      label="File Number"
+                      label="Numéro de dossier"
                       name="numeroDeDossier"
                       value={integratedForm.patient.numeroDeDossier}
                       onChange={(e) => handleIntegratedInputChange(e, 'patient')}
@@ -1157,14 +1157,14 @@ const Consultations: React.FC = () => {
                   
                   <Grid item xs={12}>
                     <Divider sx={{ my: 2 }} />
-                    <Typography variant="h6" gutterBottom>Clinical Information</Typography>
+                    <Typography variant="h6" gutterBottom>Informations cliniques</Typography>
                   </Grid>
                   
                   <Grid item xs={12} md={4}>
                     <FormControl fullWidth>
-                      <InputLabel>Consultation Reason</InputLabel>
+                      <InputLabel>Motif de consultation</InputLabel>
                       <Select
-                        label="Consultation Reason"
+                        label="Motif de consultation"
                         name="motifConsultation"
                         value={integratedForm.patient.motifConsultation}
                         onChange={(e) => handleIntegratedInputChange(e, 'patient')}
@@ -1179,9 +1179,9 @@ const Consultations: React.FC = () => {
                   
                   <Grid item xs={12} md={4}>
                     <FormControl fullWidth>
-                      <InputLabel>Oral Hygiene</InputLabel>
+                      <InputLabel>Hygiène bucco-dentaire</InputLabel>
                       <Select
-                        label="Oral Hygiene"
+                        label="Hygiène bucco-dentaire"
                         name="hygieneBuccoDentaire"
                         value={integratedForm.patient.hygieneBuccoDentaire}
                         onChange={(e) => handleIntegratedInputChange(e, 'patient')}
@@ -1196,16 +1196,16 @@ const Consultations: React.FC = () => {
                   
                   <Grid item xs={12} md={4}>
                     <FormControl fullWidth>
-                      <InputLabel>Mastication Type</InputLabel>
+                      <InputLabel>Type de mastication</InputLabel>
                       <Select
-                        label="Mastication Type"
+                        label="Type de mastication"
                         name="typeMastication"
                         value={integratedForm.patient.typeMastication}
                         onChange={(e) => handleIntegratedInputChange(e, 'patient')}
                         required
                       >
-                        <MenuItem value="UNILATERALE_ALTERNEE">Unilatérale Alternée</MenuItem>
-                        <MenuItem value="UNILATERALE_STRICTE">Unilatérale Stricte</MenuItem>
+                        <MenuItem value="UNILATERALE_ALTERNEE">Unilatérale alternée</MenuItem>
+                        <MenuItem value="UNILATERALE_STRICTE">Unilatérale stricte</MenuItem>
                         <MenuItem value="BILATERALE">Bilatérale</MenuItem>
                       </Select>
                     </FormControl>
@@ -1214,7 +1214,7 @@ const Consultations: React.FC = () => {
                   <Grid item xs={12}>
                     <TextField
                       fullWidth
-                      label="General Anamnesis"
+                      label="Anamnèse générale"
                       name="anameseGenerale"
                       value={integratedForm.patient.anameseGenerale || ''}
                       onChange={(e) => handleIntegratedInputChange(e, 'patient')}
@@ -1226,7 +1226,7 @@ const Consultations: React.FC = () => {
                   <Grid item xs={12}>
                     <TextField
                       fullWidth
-                      label="Family Anamnesis"
+                      label="Anamnèse familiale"
                       name="anamneseFamiliale"
                       value={integratedForm.patient.anamneseFamiliale || ''}
                       onChange={(e) => handleIntegratedInputChange(e, 'patient')}
@@ -1238,7 +1238,7 @@ const Consultations: React.FC = () => {
                   <Grid item xs={12}>
                     <TextField
                       fullWidth
-                      label="Local Anamnesis"
+                      label="Anamnèse locale"
                       name="anamneseLocale"
                       value={integratedForm.patient.anamneseLocale || ''}
                       onChange={(e) => handleIntegratedInputChange(e, 'patient')}
@@ -1250,7 +1250,7 @@ const Consultations: React.FC = () => {
                   <Grid item xs={12}>
                     <TextField
                       fullWidth
-                      label="Dental History"
+                      label="Antécédents dentaires"
                       name="antecedentsDentaires"
                       value={integratedForm.patient.antecedentsDentaires || ''}
                       onChange={(e) => handleIntegratedInputChange(e, 'patient')}
@@ -1265,7 +1265,7 @@ const Consultations: React.FC = () => {
               {activeStep === 1 && (
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
-                    <Typography variant="h6" gutterBottom>Consultation Information</Typography>
+                    <Typography variant="h6" gutterBottom>Informations sur la consultation</Typography>
                   </Grid>
                   
                   <Grid item xs={12}>
@@ -1289,7 +1289,7 @@ const Consultations: React.FC = () => {
                       requiredRoles="ADMIN"
                       fallback={
                         <Alert severity="info">
-                          As a MEDECIN, you will be automatically assigned as the consultant.
+                          En tant que médecin, vous serez automatiquement assigné comme consultant.
                         </Alert>
                       }
                     >
@@ -1319,16 +1319,16 @@ const Consultations: React.FC = () => {
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                      <Typography variant="h6">Diagnosis Information</Typography>
+                      <Typography variant="h6">Informations sur le diagnostic</Typography>
                       <FormControl component="fieldset">
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          <Typography variant="body2" sx={{ mr: 1 }}>Include diagnosis</Typography>
-                          <Button 
+                          <Typography variant="body2" sx={{ mr: 1 }}>Inclure un diagnostic</Typography>
+                          <Button
                             variant={includesDiagnosis ? "contained" : "outlined"}
                             size="small"
                             onClick={() => setIncludesDiagnosis(!includesDiagnosis)}
                           >
-                            {includesDiagnosis ? "Yes" : "No"}
+                            {includesDiagnosis ? "Oui" : "Non"}
                           </Button>
                         </Box>
                       </FormControl>
@@ -1359,7 +1359,7 @@ const Consultations: React.FC = () => {
                       <Grid item xs={12}>
                         <TextField
                           fullWidth
-                          label="Diagnosis Text"
+                          label="Texte du diagnostic"
                           name="text"
                           value={integratedForm.diagnosis?.text || ''}
                           onChange={(e) => handleIntegratedInputChange(e, 'diagnosis')}
@@ -1376,7 +1376,7 @@ const Consultations: React.FC = () => {
                           requiredRoles="ADMIN"
                           fallback={
                             <Alert severity="info">
-                              As a MEDECIN, you will be automatically assigned as the diagnostician.
+                              En tant que médecin, vous serez automatiquement assigné comme diagnosticien.
                             </Alert>
                           }
                         >
@@ -1404,7 +1404,7 @@ const Consultations: React.FC = () => {
                   {!includesDiagnosis && (
                     <Grid item xs={12}>
                       <Alert severity="info" sx={{ mt: 2 }}>
-                        You can add a diagnosis later by clicking the "+" button in the actions column.
+                        Vous pourrez ajouter un diagnostic ultérieurement en cliquant sur le bouton "+" dans la colonne actions.
                       </Alert>
                     </Grid>
                   )}
@@ -1413,16 +1413,16 @@ const Consultations: React.FC = () => {
             </DialogContent>
             
             <DialogActions>
-              <Button onClick={handleCloseIntegratedDialog}>Cancel</Button>
+              <Button onClick={handleCloseIntegratedDialog}>Annuler</Button>
               {activeStep > 0 && (
-                <Button onClick={handleBackStep}>Back</Button>
+                <Button onClick={handleBackStep}>Retour</Button>
               )}
               {activeStep < 2 && (
-                <Button variant="contained" onClick={handleNextStep}>Next</Button>
+                <Button variant="contained" onClick={handleNextStep}>Suivant</Button>
               )}
               {activeStep === 2 && (
                 <Button type="submit" variant="contained" startIcon={<Save size={18} />}>
-                  Save Patient & Consultation
+                  Enregistrer le patient et la consultation
                 </Button>
               )}
             </DialogActions>
@@ -1436,16 +1436,16 @@ const Consultations: React.FC = () => {
         aria-describedby="delete-dialog-description"
       >
         <DialogTitle id="delete-dialog-title">
-          Confirm Deletion
+          Confirmer la suppression
         </DialogTitle>
         <DialogContent>
           <Typography id="delete-dialog-description">
-            Are you sure you want to delete this consultation? This action cannot be undone.
+            Êtes-vous sûr de vouloir supprimer cette consultation ? Cette action est irréversible.
           </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDeleteDialog} color="primary">
-            Cancel
+            Annuler
           </Button>
           <Button 
             onClick={handleConfirmedDelete} 
@@ -1453,7 +1453,7 @@ const Consultations: React.FC = () => {
             variant="contained"
             disabled={isLoading}
           >
-            {isLoading ? 'Deleting...' : 'Delete'}
+            {isLoading ? 'Suppression...' : 'Supprimer'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -1478,3 +1478,4 @@ const Consultations: React.FC = () => {
 };
 
 export default Consultations;
+

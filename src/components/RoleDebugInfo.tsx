@@ -17,23 +17,23 @@ const RoleDebugInfo = () => {
   }, []);
 
   if (!debugInfo) {
-    return <Alert severity="info">Loading role information...</Alert>;
+    return <Alert severity="info">Chargement des informations de rôle...</Alert>;
   }
 
   return (
     <Card sx={{ mt: 2 }}>
       <CardContent>
         <Typography variant="h6" gutterBottom>
-          Role Debug Information
+          Informations de débogage des rôles
         </Typography>
         <Typography variant="body1">
-          Detected Role: <strong>{currentRole}</strong>
+          Rôle détecté : <strong>{currentRole}</strong>
         </Typography>
         <Typography variant="body2" sx={{ mt: 2 }}>
-          Has Edit Permission: {debugInfo.canEditPermission ? 'Yes' : 'No'}
+          Permission de modification : {debugInfo.canEditPermission ? 'Oui' : 'Non'}
         </Typography>
         <Typography variant="body2">
-          Has Full Access: {debugInfo.hasFullAccessPermission ? 'Yes' : 'No'}
+          Accès complet : {debugInfo.hasFullAccessPermission ? 'Oui' : 'Non'}
         </Typography>
         <Box sx={{ mt: 2, p: 2, bgcolor: '#f5f5f5', borderRadius: 1 }}>
           <Typography variant="caption" component="pre" sx={{ overflow: 'auto' }}>

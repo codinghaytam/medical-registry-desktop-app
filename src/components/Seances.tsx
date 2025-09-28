@@ -210,8 +210,8 @@ const Seances: React.FC = () => {
       return hasData;
     } catch (error: any) {
       console.error('Error fetching data:', error);
-      setNetworkError(error.message || 'Failed to load data');
-      
+      setNetworkError(error.message || 'Échec du chargement des données');
+
       // Set empty arrays as fallback but preserve any existing data
       if (!seances.length) setSeances([]);
       if (!patients.length) setPatients([]);
@@ -435,8 +435,8 @@ const Seances: React.FC = () => {
   const validateFileUpload = (type: string): boolean => {
     // Check if a file is required but not provided
     if (type === 'REEVALUATION' && !selectedFile && !isEditing) {
-      setError('Image file is required for reevaluation séances');
-      showFeedback('Image file is required for reevaluation séances', 'error');
+      setError('Un fichier image est requis pour les séances de réévaluation');
+      showFeedback('Un fichier image est requis pour les séances de réévaluation', 'error');
       return false;
     }
     return true;
@@ -474,27 +474,27 @@ const Seances: React.FC = () => {
             Reevaluation: updatedReevaluation as ReevaluationData
           }).catch(error => {
             console.error('Error updating seance with reevaluation:', error);
-            throw new Error('Failed to update séance. Please try again later.');
+            throw new Error('Échec de la mise à jour de la séance. Veuillez réessayer plus tard.');
           });
           
           if (updatedSeance?.id) {
             createdSeanceId = updatedSeance.id;
           }
           
-          showFeedback('Séance updated successfully');
+          showFeedback('Séance mise à jour avec succès');
         } else {
           // For non-REEVALUATION types, just update the seance
           const updatedSeance = await seanceService.update(selectedSeanceId, newSeance)
             .catch(error => {
               console.error('Error updating seance:', error);
-              throw new Error('Failed to update séance. Please try again later.');
+              throw new Error('Échec de la mise à jour de la séance. Veuillez réessayer plus tard.');
             });
           
           if (updatedSeance?.id) {
             createdSeanceId = updatedSeance.id;
           }
           
-          showFeedback('Séance updated successfully');
+          showFeedback('Séance mise à jour avec succès');
         }
       } else {
         // Creating a new seance
@@ -511,21 +511,21 @@ const Seances: React.FC = () => {
             Reevaluation: reevaluationWithFile as ReevaluationData
           }).catch(error => {
             console.error('Error creating seance with reevaluation:', error);
-            throw new Error('Failed to create new séance. Please try again later.');
+            throw new Error('Échec de la création de la nouvelle séance. Veuillez réessayer plus tard.');
           });
           
           createdSeanceId = createdSeance?.id;
-          showFeedback('New séance created successfully');
+          showFeedback('Nouvelle séance créée avec succès');
         } else {
           // For non-REEVALUATION types, just create the seance
           const createdSeance = await seanceService.create(newSeance)
             .catch(error => {
               console.error('Error creating seance:', error);
-              throw new Error('Failed to create new séance. Please try again later.');
+              throw new Error('Échec de la création de la nouvelle séance. Veuillez réessayer plus tard.');
             });
           
           createdSeanceId = createdSeance?.id;
-          showFeedback('New séance created successfully');
+          showFeedback('Nouvelle séance créée avec succès');
         }
       }
       
@@ -535,12 +535,12 @@ const Seances: React.FC = () => {
       try {
         const success = await fetchData();
         if (!success) {
-          showFeedback('Séance saved, but unable to refresh the list', 'info');
+          showFeedback('Séance enregistrée, mais impossible de rafraîchir la liste', 'info');
         }
       } catch (refreshError) {
         console.error('Error refreshing data:', refreshError);
         // Don't block the UX flow on refresh errors
-        showFeedback('Séance saved, but unable to refresh the list', 'info');
+        showFeedback('Séance enregistrée, mais impossible de rafraîchir la liste', 'info');
       }
     } catch (error: any) {
       console.error('Error saving seance:', error);
@@ -573,8 +573,8 @@ const Seances: React.FC = () => {
     
     // Validate file upload for new reevaluations
     if (!isReevaluationEditing && !selectedFile) {
-      setError('Image file is required for reevaluation séances');
-      showFeedback('Image file is required for reevaluation séances', 'error');
+      setError('Un fichier image est requis pour les séances de réévaluation');
+      showFeedback('Un fichier image est requis pour les séances de réévaluation', 'error');
       setIsLoading(false);
       return;
     }
@@ -586,7 +586,7 @@ const Seances: React.FC = () => {
       const selectedSeance = seances.find(s => s.id === newReevaluation.seanceId);
       
       if (!selectedSeance) {
-        throw new Error('Séance not found');
+        throw new Error('Séance non trouvée');
       }
       
       // Add required fields in the correct format for the backend
@@ -612,16 +612,16 @@ const Seances: React.FC = () => {
         await reevaluationService.update(selectedReevaluationId, formData)
           .catch(error => {
             console.error('Error updating reevaluation:', error);
-            throw new Error('Failed to update réévaluation. Please try again later.');
+            throw new Error('Échec de la mise à jour de la réévaluation. Veuillez réessayer plus tard.');
           });
-        showFeedback('Réévaluation updated successfully');
+        showFeedback('Réévaluation mise à jour avec succès');
       } else {
         await reevaluationService.create(formData)
           .catch(error => {
             console.error('Error creating reevaluation:', error);
-            throw new Error('Failed to create new réévaluation. Please try again later.');
+            throw new Error('Échec de la création de la nouvelle réévaluation. Veuillez réessayer plus tard.');
           });
-        showFeedback('New réévaluation created successfully');
+        showFeedback('Nouvelle réévaluation créée avec succès');
       }
       
       handleCloseReevaluationDialog();
@@ -630,12 +630,12 @@ const Seances: React.FC = () => {
       try {
         const success = await fetchData();
         if (!success) {
-          showFeedback('Réévaluation saved, but unable to refresh the list', 'info');
+          showFeedback('Réévaluation enregistrée, mais impossible de rafraîchir la liste', 'info');
         }
       } catch (refreshError) {
         console.error('Error refreshing data:', refreshError);
         // Don't block the UX flow on refresh errors
-        showFeedback('Réévaluation saved, but unable to refresh the list', 'info');
+        showFeedback('Réévaluation enregistrée, mais impossible de rafraîchir la liste', 'info');
       }
     } catch (error: any) {
       console.error('Error saving reevaluation:', error);
@@ -685,16 +685,16 @@ const Seances: React.FC = () => {
       
       // Pass the seance type to use the correct endpoint
       await seanceService.delete(seanceToDelete, seanceToDeleteObj?.type);
-      showFeedback('Séance deleted successfully');
-      
+      showFeedback('Séance supprimée avec succès');
+
       // Refresh data immediately after successful deletion
       const success = await fetchData();
       if (!success) {
-        showFeedback('Séance deleted, but unable to refresh the list', 'info');
+        showFeedback('Séance supprimée, mais impossible de rafraîchir la liste', 'info');
       }
     } catch (error: any) {
       console.error('Error deleting seance:', error);
-      showFeedback("Reloading page to refresh data...", 'info');
+      showFeedback("Rechargement de la page pour actualiser les données...", 'info');
       // Reload the page instead of showing network errors
       setTimeout(() => {
         window.location.reload();
@@ -723,16 +723,16 @@ const Seances: React.FC = () => {
     setIsLoading(true);
     try {
       await reevaluationService.delete(reevaluationToDelete);
-      showFeedback('Réévaluation deleted successfully');
-      
+      showFeedback('Réévaluation supprimée avec succès');
+
       // Refresh data immediately after successful deletion
       const success = await fetchData();
       if (!success) {
-        showFeedback('Réévaluation deleted, but unable to refresh the list', 'info');
+        showFeedback('Réévaluation supprimée, mais impossible de rafraîchir la liste', 'info');
       }
     } catch (error: any) {
       console.error('Error deleting reevaluation:', error);
-      showFeedback("Reloading page to refresh data...", 'info');
+      showFeedback("Rechargement de la page pour actualiser les données...", 'info');
       // Reload the page instead of showing network errors
       setTimeout(() => {
         window.location.reload();
@@ -758,10 +758,10 @@ const Seances: React.FC = () => {
     if (!medecinId || !Array.isArray(medecins)) return [];
     
     const selectedMedecin = medecins.find(medecin => medecin.id === medecinId);
-    if (!selectedMedecin) {return ['DETARTRAGE', 'SURFACAGE', 'REEVALUATION','ACTIVATION', 'DEBUT_DE_TRAITEMENT','FIN_DE_TRAITEMENT','SUIVI_POST_TRAITEMENT'];}
+    if (!selectedMedecin) {return ['PHASE_CURATIVE', 'MAINTENANCE','THERAPEUTIQUE_INITIALE', 'REEVALUATION','ACTIVATION', 'DEBUT_DE_TRAITEMENT','FIN_DE_TRAITEMENT','SUIVI_POST_TRAITEMENT'];}
     
     if (selectedMedecin.profession === 'PARODONTAIRE') {
-      return ['DETARTRAGE', 'SURFACAGE', 'REEVALUATION'];
+      return ['PHASE_CURATIVE', 'MAINTENANCE', 'REEVALUATION','THERAPEUTIQUE_INITIALE'];
     } else if (selectedMedecin.profession === 'ORTHODONTAIRE') {
       return ['ACTIVATION', 'DEBUT_DE_TRAITEMENT','FIN_DE_TRAITEMENT','SUIVI_POST_TRAITEMENT'];
     }
@@ -784,9 +784,9 @@ const Seances: React.FC = () => {
     setIsLoading(true);
     const success = await fetchData();
     if (success) {
-      showFeedback('Data refreshed successfully');
+      showFeedback('Données rafraîchies avec succès');
     } else {
-      showFeedback('Failed to refresh data', 'error');
+      showFeedback('Échec du rafraîchissement des données', 'error');
     }
     setIsLoading(false);
   };
@@ -815,7 +815,7 @@ const Seances: React.FC = () => {
             onClick={() => handleOpenDialog()}
             disabled={isLoading}
           >
-            Add New Séance
+            Ajouter une séance
           </Button>
         </RoleBasedAccess>
       </Box>
@@ -823,19 +823,19 @@ const Seances: React.FC = () => {
       {/* Role-specific message banner */}
       {userRole === 'ETUDIANT' && (
         <Alert severity="info" sx={{ mb: 3 }}>
-          You have view-only access to séances.
+          Vous avez un accès en lecture seule aux séances.
         </Alert>
       )}
       {userRole === 'MEDECIN' && (
         <Alert severity="info" sx={{ mb: 3 }}>
-          You can view, create, and modify your own séances only.
+          Vous pouvez consulter, créer et modifier uniquement vos propres séances.
         </Alert>
       )}
 
       <Card sx={{ mb: 4 }}>
         <CardContent sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <TextField
-            placeholder="Search Séances..."
+            placeholder="Rechercher des séances..."
             variant="outlined"
             size="small"
             sx={{ width: { xs: '100%', sm: 300 } }}
@@ -851,15 +851,15 @@ const Seances: React.FC = () => {
           />
           <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1 }}>
             {/* Refresh button for all users */}
-            <Tooltip title="Refresh data">
-            <Button 
+            <Tooltip title="Rafraîchir les données">
+            <Button
               variant="outlined" 
               size="small"
               startIcon={<RefreshCw size={16} />}
               onClick={handleRefreshClick}
               disabled={isLoading}
             >
-              Refresh
+              Rafraîchir
             </Button>
             </Tooltip>
             
@@ -886,14 +886,14 @@ const Seances: React.FC = () => {
               {isLoading && filteredSeances.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} align="center">
-                    Loading séances...
+                    Chargement des séances...
                   </TableCell>
                 </TableRow>
               ) : filteredSeances.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} align="center">
                     <Typography variant="body1" sx={{ py: 2 }}>
-                      {networkError ? "Couldn't load séances due to a network error" : "No séances found"}
+                      {networkError ? "Impossible de charger les séances à cause d'une erreur réseau" : "Aucune séance trouvée"}
                     </Typography>
                   </TableCell>
                 </TableRow>
@@ -908,8 +908,9 @@ const Seances: React.FC = () => {
                         <TableCell>
                           {
                           seance.type=== 'REEVALUATION' ? 'Réévaluation' :
-                          seance.type === 'DETARTRAGE' ? 'Détartrage':
-                          seance.type === 'SURFACAGE' ? 'Surfacage':
+                          seance.type === 'PHASE_CURATIVE' ? 'Phase curative' :
+                          seance.type === 'MAINTENANCE' ? 'Maintenance' :
+                          seance.type === 'THERAPEUTIQUE_INITIALE' ? 'Thérapeutique initiale' :
                           seance.type === 'ACTIVATION' ? 'Activation' :
                           seance.type === 'DEBUT_DE_TRAITEMENT' ? 'Début de traitement' :
                           seance.type === 'FIN_DE_TRAITEMENT' ? 'Fin de traitement' :
@@ -925,13 +926,13 @@ const Seances: React.FC = () => {
                         <TableCell>
                           {seance.patient ? 
                             `${seance.patient.nom} ${seance.patient.prenom}` : 
-                            'N/A'}
+                            'Non disponible'}
                         </TableCell>
                         <TableCell>
                           {seance.medecin?.user? 
                             `${seance.medecin.user.name}` : 
-                            'N/A'}
-                            
+                            'Non disponible'}
+
                         </TableCell>
                         <TableCell>
                           {hasReevaluation(seance.id!) ? (
@@ -948,7 +949,7 @@ const Seances: React.FC = () => {
                             />
                           ) : (
                             <RoleBasedAccess requiredRoles={['ADMIN', 'MEDECIN']}>
-                              <Tooltip title={seance.type === 'REEVALUATION' ? "Ajouter une réévaluation" : "Réévaluation disponible uniquement pour type REEVALUATION"}>
+                              <Tooltip title={seance.type === 'REEVALUATION' ? "Ajouter une réévaluation" : "Réévaluation disponible uniquement pour le type REEVALUATION"}>
                                 <span>
                                   <IconButton 
                                     color="primary" 
@@ -972,7 +973,7 @@ const Seances: React.FC = () => {
                         </TableCell>
                         <TableCell align="right">
                           {canOnlyView() ? (
-                            <Tooltip title="View Details">
+                            <Tooltip title="Voir les détails">
                               <IconButton size="small">
                                 <Eye size={18} />
                               </IconButton>
@@ -982,8 +983,8 @@ const Seances: React.FC = () => {
                               
                               
                               {/* Delete button */}
-                              <Tooltip title="Delete Séance">
-                                <IconButton 
+                              <Tooltip title="Supprimer la séance">
+                                <IconButton
                                   size="small"
                                   color="error"
                                   onClick={() => handleConfirmDeleteSeance(seance.id!)}                                  disabled={isLoading || (userRole === 'MEDECIN' && seance.medecinId !== (function() {
@@ -1014,7 +1015,7 @@ const Seances: React.FC = () => {
                             <Collapse in={expandedRows.includes(seance.id!)} timeout="auto" unmountOnExit>
                               <Box sx={{ margin: 2 }}>
                                 <Typography variant="h6" gutterBottom component="div">
-                                  Réévaluation Details
+                                  Détails de la réévaluation
                                 </Typography>
                                 <Grid container spacing={2}>
                                   <Grid item xs={12} sm={6}>
@@ -1052,7 +1053,7 @@ const Seances: React.FC = () => {
                                       </Box>
                                     ) : (
                                       <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
-                                        No photo available
+                                        Aucune photo disponible
                                       </Typography>
                                     )}
                                   </Grid>
@@ -1112,12 +1113,12 @@ const Seances: React.FC = () => {
                 handleMenuClose();
               }}>
                 <Edit size={16} style={{ marginRight: 8 }} />
-                Edit
+                Modifier
               </MenuItem>
               
               <MenuItem onClick={() => selectedSeanceId && handleConfirmDeleteSeance(selectedSeanceId)} sx={{ color: 'error.main' }}>
                 <Trash2 size={16} style={{ marginRight: 8 }} />
-                Delete
+                Supprimer
               </MenuItem>
             </>
           )}
@@ -1132,11 +1133,11 @@ const Seances: React.FC = () => {
                 handleMenuClose();
               }}>
                 <Edit size={16} style={{ marginRight: 8 }} />
-                Edit
+                Modifier
               </MenuItem>
               <MenuItem onClick={() => selectedReevaluationId && handleConfirmDeleteReevaluation(selectedReevaluationId)} sx={{ color: 'error.main' }}>
                 <Trash2 size={16} style={{ marginRight: 8 }} />
-                Delete
+                Supprimer
               </MenuItem>
             </>
           )}
@@ -1146,7 +1147,7 @@ const Seances: React.FC = () => {
       {/* Only ADMIN or MEDECIN can add/edit séances */}
       <RoleBasedAccess requiredRoles={['ADMIN', 'MEDECIN']}>
         <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
-          <DialogTitle>{isEditing ? 'Edit Séance' : 'Add New Séance'}</DialogTitle>
+          <DialogTitle>{isEditing ? 'Modifier la séance' : 'Ajouter une séance'}</DialogTitle>
           <form onSubmit={handleSubmit}>
             <DialogContent>
              
@@ -1179,12 +1180,12 @@ const Seances: React.FC = () => {
                       <MenuItem key={medecin.id} value={medecin.id}>
                         {medecin.userInfo ? 
                           `${medecin.user.firstName} ${medecin.user.lastName}` : 
-                          (medecin.user && medecin.user.name) ? medecin.user.name : 'Unknown'} 
+                          (medecin.user && medecin.user.name) ? medecin.user.name : 'Inconnu'}
                         - {(medecin.profession==='PARODONTAIRE' ? 'Parodontie' : 'Orthodontie')}
                       </MenuItem>
                     ))
                   ) : (
-                    <MenuItem disabled value="">No médecins available</MenuItem>
+                    <MenuItem disabled value="">Aucun médecin disponible</MenuItem>
                   )}
                 </Select>
               </FormControl>
@@ -1204,8 +1205,10 @@ const Seances: React.FC = () => {
                       <MenuItem key={type} value={type}>
                         {
                           type === 'DETARTRAGE' ? 'Détartrage' :
-                          type === 'SURFACAGE' ? 'Surfacage' :
-                          type === 'REEVALUATION' ? 'Réévaluation' :
+                              type === 'REEVALUATION' ? 'Réévaluation' :
+                          type === 'PHASE_CURATIVE' ? 'Phase curative' :
+                          type === 'MAINTENANCE' ? 'Maintenance' :
+                          type === 'THERAPEUTIQUE_INITIALE' ? 'Thérapeutique initiale' :
                           type === 'ACTIVATION' ? 'Activation' :
                           type === 'DEBUT_DE_TRAITEMENT' ? 'Début de traitement' :
                           type === 'FIN_DE_TRAITEMENT' ? 'Fin de traitement' :
@@ -1237,7 +1240,7 @@ const Seances: React.FC = () => {
                       </MenuItem>
                     ))
                   ) : (
-                    <MenuItem disabled value="">No patients available</MenuItem>
+                    <MenuItem disabled value="">Aucun patient disponible</MenuItem>
                   )}
                 </Select>
               </FormControl>
@@ -1302,12 +1305,12 @@ const Seances: React.FC = () => {
                         component="span"
                         startIcon={<FileImage size={16} />}
                       >
-                        {isReevaluationEditing ? 'Change Photo' : 'Upload Photo'}
+                        {isReevaluationEditing ? 'Changer la photo' : 'Téléverser une photo'}
                       </Button>
                     </label>
                     {selectedFile && (
                       <Typography variant="body2" sx={{ mt: 1 }}>
-                        Selected file: {selectedFile.name}
+                        Fichier sélectionné : {selectedFile.name}
                       </Typography>
                     )}
                   </Box>
@@ -1316,13 +1319,13 @@ const Seances: React.FC = () => {
               
             </DialogContent>
             <DialogActions>
-              <Button onClick={handleCloseDialog} disabled={isLoading}>Cancel</Button>
-              <Button 
+              <Button onClick={handleCloseDialog} disabled={isLoading}>Annuler</Button>
+              <Button
                 type="submit" 
                 variant="contained" 
                 disabled={isLoading}
               >
-                {isLoading ? 'Saving...' : 'Save'}
+                {isLoading ? 'Enregistrement...' : 'Enregistrer'}
               </Button>
             </DialogActions>
           </form>
@@ -1332,7 +1335,7 @@ const Seances: React.FC = () => {
       {/* Reevaluation Dialog */}
       <RoleBasedAccess requiredRoles={['ADMIN', 'MEDECIN']}>
         <Dialog open={openReevaluationDialog} onClose={handleCloseReevaluationDialog} maxWidth="sm" fullWidth>
-          <DialogTitle>{isReevaluationEditing ? 'Edit Réévaluation' : 'Add New Réévaluation'}</DialogTitle>
+          <DialogTitle>{isReevaluationEditing ? 'Modifier la réévaluation' : 'Ajouter une réévaluation'}</DialogTitle>
           <form onSubmit={handleReevaluationSubmit}>
             <DialogContent>
               {/* Show error message if present */}
@@ -1366,7 +1369,7 @@ const Seances: React.FC = () => {
                       return seance ? (
                         <MenuItem key={seance.id} value={seance.id}>
                           {format(new Date(seance.date), 'dd/MM/yyyy')} - {seance.type} - 
-                          {seance.patient ? ` ${seance.patient.nom} ${seance.patient.prenom}` : ' N/A'}
+                          {seance.patient ? ` ${seance.patient.nom} ${seance.patient.prenom}` : ' Non disponible'}
                         </MenuItem>
                       ) : null;
                     })()
@@ -1381,7 +1384,7 @@ const Seances: React.FC = () => {
                       .map(seance => (
                         <MenuItem key={seance.id} value={seance.id}>
                           {format(new Date(seance.date), 'dd/MM/yyyy')} - {seance.type} - 
-                          {seance.patient ? ` ${seance.patient.nom} ${seance.patient.prenom}` : ' N/A'}
+                          {seance.patient ? ` ${seance.patient.nom} ${seance.patient.prenom}` : ' Non disponible'}
                         </MenuItem>
                       ))
                   )}
@@ -1441,24 +1444,24 @@ const Seances: React.FC = () => {
                     component="span"
                     startIcon={<FileImage size={16} />}
                   >
-                    {isReevaluationEditing ? 'Change Photo' : 'Upload Photo'}
+                    {isReevaluationEditing ? 'Changer la photo' : 'Téléverser une photo'}
                   </Button>
                 </label>
                 {selectedFile && (
                   <Typography variant="body2" sx={{ mt: 1 }}>
-                    Selected file: {selectedFile.name}
+                    Fichier sélectionné : {selectedFile.name}
                   </Typography>
                 )}
               </Box>
             </DialogContent>
             <DialogActions>
-              <Button onClick={handleCloseReevaluationDialog} disabled={isLoading}>Cancel</Button>
-              <Button 
+              <Button onClick={handleCloseReevaluationDialog} disabled={isLoading}>Annuler</Button>
+              <Button
                 type="submit" 
                 variant="contained" 
                 disabled={isLoading}
               >
-                {isLoading ? 'Saving...' : 'Save'}
+                {isLoading ? 'Enregistrement...' : 'Enregistrer'}
               </Button>
             </DialogActions>
           </form>
@@ -1473,16 +1476,16 @@ const Seances: React.FC = () => {
         aria-describedby="delete-seance-dialog-description"
       >
         <DialogTitle id="delete-seance-dialog-title">
-          Confirm Deletion
+          Confirmer la suppression
         </DialogTitle>
         <DialogContent>
           <Typography id="delete-seance-dialog-description">
-            Are you sure you want to delete this séance? This action cannot be undone.
+            Êtes-vous sûr de vouloir supprimer cette séance ? Cette action est irréversible.
           </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDeleteDialog} color="primary">
-            Cancel
+            Annuler
           </Button>
           <Button 
             onClick={handleConfirmedDeleteSeance} 
@@ -1490,7 +1493,7 @@ const Seances: React.FC = () => {
             variant="contained"
             disabled={isLoading}
           >
-            {isLoading ? 'Deleting...' : 'Delete'}
+            {isLoading ? 'Suppression...' : 'Supprimer'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -1502,16 +1505,16 @@ const Seances: React.FC = () => {
         aria-describedby="delete-reevaluation-dialog-description"
       >
         <DialogTitle id="delete-reevaluation-dialog-title">
-          Confirm Deletion
+          Confirmer la suppression
         </DialogTitle>
         <DialogContent>
           <Typography id="delete-reevaluation-dialog-description">
-            Are you sure you want to delete this reevaluation? This action cannot be undone.
+            Êtes-vous sûr de vouloir supprimer cette réévaluation ? Cette action est irréversible.
           </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDeleteReevaluationDialog} color="primary">
-            Cancel
+            Annuler
           </Button>
           <Button 
             onClick={handleConfirmedDeleteReevaluation} 
@@ -1519,7 +1522,7 @@ const Seances: React.FC = () => {
             variant="contained"
             disabled={isLoading}
           >
-            {isLoading ? 'Deleting...' : 'Delete'}
+            {isLoading ? 'Suppression...' : 'Supprimer'}
           </Button>
         </DialogActions>
       </Dialog>

@@ -47,8 +47,8 @@ const Sidebar: React.FC<SidebarProps> = ({ open, handleDrawerToggle }) => {
 
   const allMenuItems: MenuItem[] = [
     { 
-      text: 'Dashboard', 
-      icon: <LayoutDashboard size={22} />, 
+      text: 'Tableau de bord',
+      icon: <LayoutDashboard size={22} />,
       path: '/',
       allowedRoles: ['ADMIN', 'MEDECIN', 'ETUDIANT']
     },
@@ -71,8 +71,8 @@ const Sidebar: React.FC<SidebarProps> = ({ open, handleDrawerToggle }) => {
       allowedRoles: ['ADMIN', 'MEDECIN', 'ETUDIANT'] 
     },
     { 
-      text: 'Seance', 
-      icon: <Calendar size={22} />, 
+      text: 'Séances',
+      icon: <Calendar size={22} />,
       path: '/sceance',
       allowedRoles: ['ADMIN', 'MEDECIN', 'ETUDIANT'] 
     }
@@ -150,7 +150,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, handleDrawerToggle }) => {
             <ListItemIcon sx={{ minWidth: 0, mr: 2 }}>
               <LogOut size={22} />
             </ListItemIcon>
-            <ListItemText primary="Logout" />
+            <ListItemText primary="Déconnexion" />
           </ListItemButton>
         </ListItem>
       </List>

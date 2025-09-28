@@ -66,7 +66,7 @@ const Users: React.FC = () => {
   const validatePhone = (phone: string): string => {
     // Empty check - this validation is separate from the required attribute
     if (!phone.trim()) {
-      return "Phone number is required";
+      return "Le numéro de téléphone est requis";
     }
 
     // Moroccan phone number validation (9 digits)
@@ -74,7 +74,7 @@ const Users: React.FC = () => {
     const phoneRegex = /^[567]\d{8}$/;
 
     if (!phoneRegex.test(phone)) {
-      return "Invalid Moroccan phone format. Use 9 digits starting with 5, 6, or 7";
+      return "Format de téléphone marocain invalide. Utilisez 9 chiffres commençant par 5, 6 ou 7";
     }
 
     return ''; // No error
@@ -110,7 +110,7 @@ const Users: React.FC = () => {
       setUsers(data);
     } catch (error: any) {
       console.error('Failed to fetch users:', error);
-      setNetworkError(error.message || 'Failed to load users. Please try again.');
+      setNetworkError(error.message || 'Échec du chargement des utilisateurs. Veuillez réessayer.');
       // Still set empty array instead of failing completely
       setUsers([]);
     } finally {
@@ -203,7 +203,7 @@ const Users: React.FC = () => {
       }
     } catch (error) {
       console.error('Error loading role-specific data:', error);
-      setError('Failed to load user data. Please try again.');
+      setError('Échec du chargement des données utilisateur. Veuillez réessayer.');
     }
   };
 
@@ -303,7 +303,7 @@ const Users: React.FC = () => {
       handleCloseEditDialog();
     } catch (error: any) {
       console.error('Failed to update user:', error);
-      setError(error.message || 'Failed to update user. Please try again.');
+      setError(error.message || "Échec de la mise à jour de l’utilisateur. Veuillez réessayer.");
     } finally {
       setIsSubmitting(false);
     }
@@ -466,7 +466,7 @@ const Users: React.FC = () => {
       // Find the user to determine its role
       const userToDeleteObj = users.filter(user => user.id === userToDelete)[0];
       if (!userToDeleteObj) {
-        throw new Error("User not found");
+        throw new Error("Utilisateur introuvable");
       }
       
       // Delete based on user role
@@ -488,7 +488,7 @@ const Users: React.FC = () => {
       fetchUsers();
     } catch (error: any) {
       console.error('Failed to delete user:', error);
-      setNetworkError(error.message || "Failed to delete user");
+      setNetworkError(error.message || "Échec de la suppression de l’utilisateur");
     } finally {
       setIsLoading(false);
       setOpenDeleteDialog(false);
@@ -537,7 +537,7 @@ const Users: React.FC = () => {
             size="small"
             onClick={() => window.location.reload()}
           >
-            Refresh
+            Rafraîchir
           </Button>
         </Box>
       )}
@@ -547,8 +547,8 @@ const Users: React.FC = () => {
           Utilisateurs
         </Typography>
         <Box sx={{ display: 'flex', gap: 1 }}>
-          <Tooltip title="Refresh users list">
-            <IconButton 
+          <Tooltip title="Rafraîchir la liste des utilisateurs">
+            <IconButton
               size="small" 
               onClick={fetchUsers}
               disabled={isLoading}
@@ -562,7 +562,7 @@ const Users: React.FC = () => {
             onClick={handleOpenDialog}
             disabled={isLoading}
           >
-            Add New User
+            Ajouter un utilisateur
           </Button>
         </Box>
       </Box>
@@ -571,7 +571,7 @@ const Users: React.FC = () => {
       <Card sx={{ mb: 4 }}>
         <CardContent sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <TextField
-            placeholder="Search users..."
+            placeholder="Rechercher des utilisateurs..."
             variant="outlined"
             size="small"
             sx={{ width: { xs: '100%', sm: 300 } }}
@@ -593,7 +593,7 @@ const Users: React.FC = () => {
               onClick={fetchUsers}
               disabled={isLoading}
             >
-              Refresh
+              Rafraîchir
             </Button>
           </Box>
         </CardContent>
@@ -605,11 +605,11 @@ const Users: React.FC = () => {
           <Table sx={{ minWidth: 650 }}>
             <TableHead>
               <TableRow>
-                <TableCell>Name</TableCell>
+                <TableCell>Nom</TableCell>
                 <TableCell>Email</TableCell>
-                <TableCell>Phone</TableCell>
-                <TableCell>Role</TableCell>
-                <TableCell>Username</TableCell>
+                <TableCell>Téléphone</TableCell>
+                <TableCell>Rôle</TableCell>
+                <TableCell>Nom d'utilisateur</TableCell>
                 <TableCell align="right">Actions</TableCell>
               </TableRow>
             </TableHead>
@@ -618,14 +618,14 @@ const Users: React.FC = () => {
                 <TableRow>
                   <TableCell colSpan={7} align="center">
                     <CircularProgress size={24} sx={{ mr: 1 }} />
-                    Loading users...
+                    Chargement des utilisateurs...
                   </TableCell>
                 </TableRow>
               ) : filteredUsers.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} align="center">
                     <Typography variant="body1" sx={{ py: 2 }}>
-                      {networkError ? "Couldn't load users due to a network error" : "No users found"}
+                      {networkError ? "Impossible de charger les utilisateurs à cause d'une erreur réseau" : "Aucun utilisateur trouvé"}
                     </Typography>
                   </TableCell>
                 </TableRow>
@@ -651,7 +651,7 @@ const Users: React.FC = () => {
                           </Typography>
                         ) : ''}
                       </TableCell>
-                      <TableCell>{user.role || 'No roles'}</TableCell>
+                      <TableCell>{user.role || 'Aucun rôle'}</TableCell>
                       <TableCell>{user.username}</TableCell>
                       <TableCell align="right">
                         <IconButton 
@@ -703,7 +703,7 @@ const Users: React.FC = () => {
       >
         <MenuItem onClick={() => selectedUserId && handleOpenEditDialog(selectedUserId.toString())}>
           <Edit size={16} style={{ marginRight: 8 }} />
-          Edit
+          Modifier
         </MenuItem>
         <MenuItem 
           onClick={() => selectedUserId && handleConfirmDelete(selectedUserId.toString())} 
@@ -711,7 +711,7 @@ const Users: React.FC = () => {
           disabled={isLoading}
         >
           <Trash2 size={16} style={{ marginRight: 8 }} />
-          Delete
+          Supprimer
         </MenuItem>
       </Menu>
 
@@ -723,16 +723,16 @@ const Users: React.FC = () => {
         aria-describedby="delete-dialog-description"
       >
         <DialogTitle id="delete-dialog-title">
-          Confirm Deletion
+          Confirmer la suppression
         </DialogTitle>
         <DialogContent>
           <Typography id="delete-dialog-description">
-            Are you sure you want to delete this user? This action cannot be undone.
+            Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action est irréversible.
           </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDeleteDialog} color="primary">
-            Cancel
+            Annuler
           </Button>
           <Button 
             onClick={handleConfirmedDelete} 
@@ -740,14 +740,14 @@ const Users: React.FC = () => {
             variant="contained"
             disabled={isLoading}
           >
-            {isLoading ? 'Deleting...' : 'Delete'}
+            {isLoading ? 'Suppression...' : 'Supprimer'}
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* Add User Dialog */}
       <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
-        <DialogTitle>Add New User</DialogTitle>
+        <DialogTitle>Ajouter un utilisateur</DialogTitle>
         <form onSubmit={handleSubmit}>
           <DialogContent>
             {/* Show error message if present */}
@@ -773,7 +773,7 @@ const Users: React.FC = () => {
             
             <TextField
               fullWidth
-              label="First Name"
+              label="Prénom"
               name="firstName"
               value={newUser.firstName}
               onChange={handleInputChange}
@@ -783,7 +783,7 @@ const Users: React.FC = () => {
             />
             <TextField
               fullWidth
-              label="Last Name"
+              label="Nom"
               name="lastName"
               value={newUser.lastName}
               onChange={handleInputChange}
@@ -793,7 +793,7 @@ const Users: React.FC = () => {
             />
             <TextField
               fullWidth
-              label="Email"
+              label="E-mail"
               name="email"
               type="email"
               value={newUser.email}
@@ -804,7 +804,7 @@ const Users: React.FC = () => {
             />
             <TextField
               fullWidth
-              label="Password"
+              label="Mot de passe"
               name="password"
               type="password"
               value={newUser.password}
@@ -815,14 +815,14 @@ const Users: React.FC = () => {
             />
             <TextField
               fullWidth
-              label="Phone Number"
+              label="Numéro de téléphone"
               name="phone"
               value={newUser.phone}
               onChange={handlePhoneChange}
               required
               disabled={isSubmitting}
               error={!!phoneError}
-              helperText={phoneError || "Moroccan format: 6XXXXXXXX (9 digits)"}
+              helperText={phoneError || "Format marocain : 6XXXXXXXX (9 chiffres)"}
               sx={{ mb: 2 }}
               placeholder="6XXXXXXXX"
               InputProps={{
@@ -837,17 +837,17 @@ const Users: React.FC = () => {
               }}
             />
             <FormControl fullWidth sx={{ mb: 2 }}>
-              <InputLabel>Role</InputLabel>
+              <InputLabel>Rôle</InputLabel>
               <Select
                 value={newUser.role}
-                label="Role"
+                label="Rôle"
                 onChange={handleRoleChange}
                 required
                 disabled={isSubmitting}
               >
                 <MenuItem value="ADMIN">Admin</MenuItem>
                 <MenuItem value="MEDECIN">Médecin</MenuItem>
-                <MenuItem value="ETUDIANT">Etudiant</MenuItem>
+                <MenuItem value="ETUDIANT">Étudiant</MenuItem>
               </Select>
             </FormControl>
             
@@ -877,7 +877,7 @@ const Users: React.FC = () => {
                       disabled={isSubmitting}
                     />
                   }
-                  label="Est Spécialiste"
+                  label="Spécialiste"
                   sx={{ mb: 2 }}
                 />
               </>
@@ -903,14 +903,14 @@ const Users: React.FC = () => {
             
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleCloseDialog} disabled={isSubmitting}>Cancel</Button>
-            <Button 
+            <Button onClick={handleCloseDialog} disabled={isSubmitting}>Annuler</Button>
+            <Button
               type="submit" 
               variant="contained"
               disabled={isSubmitting}
               startIcon={isSubmitting ? <CircularProgress size={20} /> : undefined}
             >
-              {isSubmitting ? 'Saving...' : 'Save'}
+              {isSubmitting ? 'Enregistrement...' : 'Enregistrer'}
             </Button>
           </DialogActions>
         </form>
@@ -918,7 +918,7 @@ const Users: React.FC = () => {
 
       {/* Edit User Dialog */}
       <Dialog open={openEditDialog} onClose={handleCloseEditDialog} maxWidth="sm" fullWidth>
-        <DialogTitle>Edit User</DialogTitle>
+        <DialogTitle>Modifier l'utilisateur</DialogTitle>
         <form onSubmit={handleSubmitEdit}>
           <DialogContent>
             {error && (
@@ -936,7 +936,7 @@ const Users: React.FC = () => {
 
             <TextField
               fullWidth
-              label="First Name"
+              label="Prénom"
               name="firstName"
               value={editFormData.firstName}
               onChange={handleEditChange}
@@ -947,7 +947,7 @@ const Users: React.FC = () => {
             
             <TextField
               fullWidth
-              label="Last Name"
+              label="Nom"
               name="lastName"
               value={editFormData.lastName}
               onChange={handleEditChange}
@@ -958,7 +958,7 @@ const Users: React.FC = () => {
             
             <TextField
               fullWidth
-              label="Email"
+              label="E-mail"
               name="email"
               type="email"
               value={editFormData.email}
@@ -970,7 +970,7 @@ const Users: React.FC = () => {
             
             <TextField
               fullWidth
-              label="Password (leave empty to keep current)"
+              label="Mot de passe (laisser vide pour conserver l'actuel)"
               name="password"
               type="password"
               value={editFormData.password}
@@ -981,14 +981,14 @@ const Users: React.FC = () => {
             
             <TextField
               fullWidth
-              label="Phone Number"
+              label="Numéro de téléphone"
               name="phone"
               value={editFormData.phone}
               onChange={handlePhoneChange}
               required
               disabled={isSubmitting}
               error={!!phoneError}
-              helperText={phoneError || "Moroccan format: 6XXXXXXXX (9 digits)"}
+              helperText={phoneError || "Format marocain : 6XXXXXXXX (9 chiffres)"}
               sx={{ mb: 2 }}
               placeholder="6XXXXXXXX"
               InputProps={{
@@ -1005,15 +1005,15 @@ const Users: React.FC = () => {
             
             {/* Role is shown but disabled for editing */}
             <FormControl fullWidth sx={{ mb: 2 }} disabled>
-              <InputLabel>Role</InputLabel>
+              <InputLabel>Rôle</InputLabel>
               <Select
                 value={editFormData.role}
-                label="Role"
+                label="Rôle"
                 onChange={handleEditRoleChange}
               >
                 <MenuItem value="ADMIN">Admin</MenuItem>
                 <MenuItem value="MEDECIN">Médecin</MenuItem>
-                <MenuItem value="ETUDIANT">Etudiant</MenuItem>
+                <MenuItem value="ETUDIANT">Étudiant</MenuItem>
               </Select>
             </FormControl>
             
@@ -1043,7 +1043,7 @@ const Users: React.FC = () => {
                       disabled={isSubmitting}
                     />
                   }
-                  label="Est Spécialiste"
+                  label="Spécialiste"
                   sx={{ mb: 2 }}
                 />
               </>
@@ -1070,7 +1070,7 @@ const Users: React.FC = () => {
           </DialogContent>
           <DialogActions>
             <Button onClick={handleCloseEditDialog} disabled={isSubmitting}>
-              Cancel
+              Annuler
             </Button>
             <Button 
               type="submit" 
@@ -1078,7 +1078,7 @@ const Users: React.FC = () => {
               disabled={isSubmitting}
               startIcon={isSubmitting ? <CircularProgress size={20} /> : undefined}
             >
-              {isSubmitting ? 'Saving...' : 'Save'}
+              {isSubmitting ? 'Enregistrement...' : 'Enregistrer'}
             </Button>
           </DialogActions>
         </form>
@@ -1088,3 +1088,4 @@ const Users: React.FC = () => {
 };
 
 export default Users;
+
