@@ -17,6 +17,7 @@ import {
 import { User } from 'lucide-react';
 import {
   Chart as ChartJS,
+  Chip,
   CategoryScale,
   LinearScale,
   PointElement,
@@ -166,6 +167,7 @@ const Dashboard: React.FC = () => {
                       <TableCell>Num dossier</TableCell>
                       <TableCell>Nom</TableCell>
                       <TableCell>Prénom</TableCell>
+                      <TableCell>Service</TableCell>
                       <TableCell>Adresse</TableCell>
                       <TableCell>Téléphone</TableCell>
                       <TableCell>Motif de Consultation</TableCell>
@@ -190,6 +192,14 @@ const Dashboard: React.FC = () => {
                             <TableCell>{patient.numeroDeDossier}</TableCell>
                             <TableCell>{patient.nom}</TableCell>
                             <TableCell>{patient.prenom}</TableCell>
+                            <TableCell>
+                              <Chip
+                                label={patient.State === 'PARODONTAIRE' ? 'Parodontie' : (patient.State === 'ORTHODONTAIRE' ? 'Orthodontie' : 'Non affecté')}
+                                size="small"
+                                variant="outlined"
+                                color={patient.State === 'PARODONTAIRE' ? 'primary' : 'secondary'}
+                              />
+                            </TableCell>
                             <TableCell>{patient.adresse}</TableCell>
                             <TableCell>{patient.tel}</TableCell>
                             <TableCell>
@@ -199,7 +209,7 @@ const Dashboard: React.FC = () => {
                         ))
                     ) : (
                       <TableRow>
-                        <TableCell colSpan={7} align="center">
+                        <TableCell colSpan={8} align="center">
                           <Typography variant="body1" sx={{ py: 2 }}>
                             Vous n'avez pas encore de patients.
                           </Typography>
