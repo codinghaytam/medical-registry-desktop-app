@@ -32,6 +32,7 @@ import RoleBasedAccess from '../utiles/RoleBasedAccess';
 import { getUserRole } from '../utiles/RoleAccess';
 import { consultationService } from '../services/consultationService';
 import { patientService } from '../services/patientService';
+import { seanceService } from '../services/seanceService';
 import { useAuthErrorHandler } from '../utiles/useAuthErrorHandler';
 
 // Register ChartJS components
@@ -67,30 +68,41 @@ const Dashboard: React.FC = () => {
     setIsLoading(true);
     try {
       // Get the medecin ID from sessionStorage
-      const medecinId = JSON.parse(sessionStorage.getItem('user') || '{}').user.id;
+      const userData = JSON.parse(sessionStorage.getItem('user') || '{}');
+      // Use the top-level ID if available (Medecin entity ID), otherwise fallback to user.id
+      const medecinId = userData.id || userData.user?.id;
       
       if (!medecinId) {
         console.error('Medecin ID not found in local storage');
         return;
       }
 
-      // Fetch all consultations
-      const consultations = await consultationService.getAll();
+      // Fetch all consultations and seances
+      const [consultations, seances] = await Promise.all([
+        consultationService.getAll(),
+        seanceService.getAll()
+      ]);
       
-      // Filter consultations by medecin ID
-      const medecinConsultations = consultations.filter(
-        (consultation: any) => consultation.medecinId === medecinId
-      );
-      
-      // Extract unique patient IDs from consultations
-      const patientIds = new Set(
-        medecinConsultations.map((consultation: any) => consultation.patientId)
-      );
+      const patientIds = new Set<string>();
+
+      // Filter consultations by medecin ID and collect patient IDs
+      if (Array.isArray(consultations)) {
+        consultations
+          .filter((c: any) => c.medecinId === medecinId)
+          .forEach((c: any) => patientIds.add(c.patientId));
+      }
+
+      // Filter seances by medecin ID and collect patient IDs
+      if (Array.isArray(seances)) {
+        seances
+          .filter((s: any) => s.medecinId === medecinId)
+          .forEach((s: any) => patientIds.add(s.patientId));
+      }
       
       // Fetch all patients
       const allPatients = await patientService.getAll();
       
-      // Filter patients by ID
+      // Filter patients by collected IDs
       const filteredPatients = allPatients.filter(
         (patient: any) => patientIds.has(patient.id)
       );

@@ -7,6 +7,7 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 export interface SeanceData {
   id?: string;
   type: string;
+  autreMotif?: string;
   date: Date;
   patientId: string;
   medecinId: string;
@@ -64,10 +65,13 @@ export const seanceService = {  getAll: async () => {
       reevalData.append('medecinId', data.medecinId);
       reevalData.append('date', formattedData.date);
       
-      // If there's a sondagePhoto that's a File object, add it
-      if (data.Reevaluation.sondagePhoto instanceof File) {
-        reevalData.append('sondagePhoto', data.Reevaluation.sondagePhoto);
-        console.log("Adding file to reevaluation FormData:", data.Reevaluation.sondagePhoto.name);
+      if (Array.isArray(data.Reevaluation.sondagePhotos)) {
+        data.Reevaluation.sondagePhotos.forEach((file) => {
+          if (file instanceof File) {
+            reevalData.append('sondagePhotos', file);
+            console.log('Adding file to reevaluation FormData:', file.name);
+          }
+        });
       }
       
       // Create the reevaluation and return the result
@@ -141,9 +145,12 @@ export const seanceService = {  getAll: async () => {
       reevalData.append('date', formattedData.date);
       reevalData.append('seanceId', id);
       
-      // If there's a sondagePhoto that's a File object, add it
-      if (data.Reevaluation.sondagePhoto instanceof File) {
-        reevalData.append('sondagePhoto', data.Reevaluation.sondagePhoto);
+      if (Array.isArray(data.Reevaluation.sondagePhotos)) {
+        data.Reevaluation.sondagePhotos.forEach((file) => {
+          if (file instanceof File) {
+            reevalData.append('sondagePhotos', file);
+          }
+        });
       }
       
       // Check if reevaluation already exists

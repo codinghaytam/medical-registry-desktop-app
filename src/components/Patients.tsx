@@ -668,7 +668,7 @@ const Patients: React.FC = () => {
                         {userRole === 'ADMIN' && (
                           <TableCell>
                             <Chip 
-                              label={patient.State?.replace(/_/g, ' ').toLowerCase() || 'non affecté'}
+                              label={patient.State === 'PARODONTAIRE' ? 'Parodontie' : (patient.State === 'ORTHODONTAIRE' ? 'Orthodontie' : 'Non affecté')}
                               size="small"
                               color={patient.State === 'PARODONTAIRE' ? 'primary' : 'secondary'} 
                               variant="outlined"

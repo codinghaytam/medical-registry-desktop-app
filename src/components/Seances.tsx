@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Box, 
-  Typography, 
-  Card, 
-  CardContent, 
-  Button, 
+import {
+  Box,
+  Typography,
+  Card,
+  CardContent,
+  Button,
   TextField,
   InputAdornment,
   Table,
@@ -34,15 +34,14 @@ import {
   Grid,
   Divider
 } from '@mui/material';
-import { 
-  Search, 
-  Plus, 
-  Edit, 
+import {
+  Search,
+  Plus,
+  Edit,
   Trash2,
   Calendar,
   BarChart,
   FileImage,
-  FilePlus,
   Eye,
   RefreshCw,
   CheckCircle,
@@ -91,7 +90,7 @@ const Seances: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isReevaluationEditing, setIsReevaluationEditing] = useState(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [seancesWithoutReevaluation, setSeancesWithoutReevaluation] = useState<SeanceData[]>([]);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
@@ -101,30 +100,30 @@ const Seances: React.FC = () => {
   const [seanceToDelete, setSeanceToDelete] = useState<string | null>(null);
   const [openDeleteReevaluationDialog, setOpenDeleteReevaluationDialog] = useState(false);
   const [reevaluationToDelete, setReevaluationToDelete] = useState<string | null>(null);
-  
+
   // New state for feedback notifications
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState('');
   const [feedbackType, setFeedbackType] = useState<FeedbackType>('success');
-  
+
   // New state for expanded rows
   const [expandedRows, setExpandedRows] = useState<string[]>([]);
-  
+
   // Get current user role
   const userRole = getUserRole();
-  
+
   // Show feedback notification
   const showFeedback = (message: string, type: FeedbackType = 'success') => {
     setFeedbackMessage(message);
     setFeedbackType(type);
     setFeedbackOpen(true);
   };
-  
+
   // Close feedback notification
   const handleCloseFeedback = () => {
     setFeedbackOpen(false);
   };
-  
+
   // Fetch seances when component mounts
   const fetchData = async (): Promise<boolean> => {
     setIsLoading(true);
@@ -137,76 +136,88 @@ const Seances: React.FC = () => {
         medecinService.getAll(),
         reevaluationService.getAll()
       ]);
-      
+
       // Process results
       const [seancesResult, patientsResult, medecinsResult, reevaluationsResult] = results;
-      
+
       // Handle each result individually
       let seancesData: any[] = [];
-      if (seancesResult.status === 'fulfilled') {
-        seancesData = seancesResult.value || [];
+      if (seancesResult.status === 'fulfilled' && Array.isArray(seancesResult.value)) {
+        seancesData = seancesResult.value;
       } else {
-        console.error('Error fetching seances:', seancesResult.reason);
-      }
-      
-      let patientsData: any[] = [];
-      if (patientsResult.status === 'fulfilled') {
-        patientsData = patientsResult.value || [];
-      } else {
-        console.error('Error fetching patients:', patientsResult.reason);
-      }
-      
-      let medecinsData: any[] = [];
-      if (medecinsResult.status === 'fulfilled') {
-        medecinsData = medecinsResult.value || [];
-      } else {
-        console.error('Error fetching medecins:', medecinsResult.reason);
-      }
-      
-      let reevaluationsData: any[] = [];
-      if (reevaluationsResult.status === 'fulfilled') {
-        reevaluationsData = reevaluationsResult.value || [];
-      } else {
-        console.error('Error fetching reevaluations:', reevaluationsResult.reason);
-      }
-      
-      // If user is MEDECIN, filter seances to only show their own
-      let filteredSeances = [...seancesData]; // Create a copy to prevent mutation issues
-      
-      if (userRole === 'MEDECIN') {
-        const userData = JSON.parse(sessionStorage.getItem('user') || '{}');
-        const currentMedecinId = userData.user?.id;
-        
-        if (currentMedecinId) {
-          filteredSeances = filteredSeances.filter(seance => seance.medecinId === currentMedecinId);
+        console.error('Error fetching seances or invalid data format:', seancesResult.status === 'fulfilled' ? seancesResult.value : seancesResult.reason);
+        // If it's an object error, it might be in value
+        if (seancesResult.status === 'fulfilled' && seancesResult.value) {
+          console.error('Seances data received (not array):', seancesResult.value);
         }
       }
-      
+
+      let patientsData: any[] = [];
+      if (patientsResult.status === 'fulfilled' && Array.isArray(patientsResult.value)) {
+        patientsData = patientsResult.value;
+      } else {
+        console.error('Error fetching patients or invalid data format:', patientsResult.status === 'fulfilled' ? patientsResult.value : patientsResult.reason);
+      }
+
+      let medecinsData: any[] = [];
+      if (medecinsResult.status === 'fulfilled' && Array.isArray(medecinsResult.value)) {
+        medecinsData = medecinsResult.value;
+      } else {
+        console.error('Error fetching medecins or invalid data format:', medecinsResult.status === 'fulfilled' ? medecinsResult.value : medecinsResult.reason);
+      }
+
+      let reevaluationsData: any[] = [];
+      if (reevaluationsResult.status === 'fulfilled' && Array.isArray(reevaluationsResult.value)) {
+        reevaluationsData = reevaluationsResult.value;
+      } else {
+        console.error('Error fetching reevaluations or invalid data format:', reevaluationsResult.status === 'fulfilled' ? reevaluationsResult.value : reevaluationsResult.reason);
+        // Fallback to empty array if not an array (e.g. error object returned)
+        reevaluationsData = [];
+      }
+
+      // If user is MEDECIN, filter seances to only show their own
+      let filteredSeances = [...seancesData]; // Create a copy to prevent mutation issues
+
+      if (userRole === 'MEDECIN') {
+        const userData = JSON.parse(sessionStorage.getItem('user') || '{}');
+        // The user object in session storage contains the Medecin profile.
+        // The root 'id' is overwritten by the Medecin ID due to the backend merge strategy.
+        // We prioritize userData.id (MedecinID) over userData.user.id (UserID)
+        const medecinId = userData.id || userData.user?.id;
+        
+        if (medecinId) {
+          filteredSeances = filteredSeances.filter(seance => seance.medecinId === medecinId);
+        } else {
+            // If we can't identify the doctor profile, show nothing for safety
+            filteredSeances = [];
+        }
+      }
+
       // Always update state with fetched data, even if some requests fail
       setSeances(filteredSeances);
       setPatients(patientsData || []);
       setMedecins(medecinsData || []);
       setReevaluations(reevaluationsData || []);
-      
+
       // Update seances without reevaluations
       // Make sure reevaluationSeanceIds is always an array to prevent filter errors
-      const reevaluationSeanceIds = Array.isArray(reevaluationsData) 
-        ? reevaluationsData.map((r: any) => r.seanceId) 
+      const reevaluationSeanceIds = Array.isArray(reevaluationsData)
+        ? reevaluationsData.map((r: any) => r.seanceId)
         : [];
-      
+
       // Only filter if seances data is valid
       let availableSeances = [];
       if (Array.isArray(filteredSeances)) {
         availableSeances = filteredSeances.filter((s: any) => s && s.id && !reevaluationSeanceIds.includes(s.id));
       }
       setSeancesWithoutReevaluation(availableSeances);
-      
+
       // Check if at least some data was successfully fetched
-      const hasData = seancesResult.status === 'fulfilled' || 
-                    patientsResult.status === 'fulfilled' || 
-                    medecinsResult.status === 'fulfilled' || 
-                    reevaluationsResult.status === 'fulfilled';
-      
+      const hasData = seancesResult.status === 'fulfilled' ||
+        patientsResult.status === 'fulfilled' ||
+        medecinsResult.status === 'fulfilled' ||
+        reevaluationsResult.status === 'fulfilled';
+
       return hasData;
     } catch (error: any) {
       console.error('Error fetching data:', error);
@@ -217,13 +228,13 @@ const Seances: React.FC = () => {
       if (!patients.length) setPatients([]);
       if (!medecins.length) setMedecins([]);
       if (!reevaluations.length) setReevaluations([]);
-      
+
       return false;
     } finally {
       setIsLoading(false);
     }
   };
-  
+
   useEffect(() => {
     // Fetch seances when component mounts
     fetchData();
@@ -253,7 +264,7 @@ const Seances: React.FC = () => {
         seanceId: '',
       });
       setIsReevaluationEditing(false);
-      setSelectedFile(null);
+      setSelectedFiles([]);
       setError(null);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
@@ -272,7 +283,7 @@ const Seances: React.FC = () => {
         seanceId: '',
       });
       setIsEditing(false);
-      setSelectedFile(null);
+      setSelectedFiles([]);
       setError(null);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
@@ -285,20 +296,28 @@ const Seances: React.FC = () => {
     if (userRole !== 'MEDECIN' || !Array.isArray(patients)) {
       return patients; // Admin sees all patients
     }
-      // Get current médecin's profession from sessionStorage
+    // Get current médecin's profession from sessionStorage
     try {
       const userString = sessionStorage.getItem('user');
       if (!userString) {
         console.log('No user data found in sessionStorage');
         return patients;
       }
-      
+
       const userData = JSON.parse(userString);
       // Check all possible locations for profession information
-      const profession = userData.profession || 
-                        (userData.user && userData.user.profession) ||
-                        '';
-      
+      let profession = userData.profession ||
+        (userData.user && userData.user.profession) ||
+        '';
+
+      // Fallback: Looking up profession in medecins list if not found in session
+      if (!profession && Array.isArray(medecins) && userData.user?.id) {
+        const currentMedecin = medecins.find((m: any) => m.userId === userData.user.id);
+        if (currentMedecin) {
+          profession = currentMedecin.profession;
+        }
+      }
+
       if (profession) {
         // Filter patients to match the médecin's profession (State field)
         return patients.filter(patient => patient.State === profession);
@@ -306,7 +325,7 @@ const Seances: React.FC = () => {
     } catch (error) {
       console.error('Error filtering patients by profession:', error);
     }
-    
+
     return patients;
   };
 
@@ -317,7 +336,7 @@ const Seances: React.FC = () => {
         date: new Date(seance.date)
       });
       setIsEditing(true);
-      
+
       // If this is a REEVALUATION type séance, also load its reevaluation data
       if (seance.type === 'REEVALUATION') {
         const existingReevaluation = getReevaluationForSeance(seance.id!);
@@ -333,15 +352,21 @@ const Seances: React.FC = () => {
       // If user is MEDECIN, force the medecinId to be the current user's ID
       if (userRole === 'MEDECIN') {
         const userData = JSON.parse(sessionStorage.getItem('user') || '{}');
-        const currentMedecinId = userData.user?.id;
-        if (currentMedecinId) {
+        const currentUserId = userData.user?.id || userData.id;
+        
+        // Find the medecin profile for the current user using the medecins state
+        // Note: medecins state is already populated by fetchData
+        const currentMedecin = medecins.find((m: any) => m.userId === currentUserId);
+        
+        if (currentMedecin?.id) {
           setNewSeance(prev => ({
             ...prev,
-            medecinId: currentMedecinId
+            medecinId: currentMedecin.id
           }));
         }
       }
     }
+    setSelectedFiles([]);
     setOpenDialog(true);
   };
 
@@ -355,23 +380,11 @@ const Seances: React.FC = () => {
     } else {
       resetForm(true);
     }
+    setSelectedFiles([]);
     setOpenReevaluationDialog(true);
   };
 
-  const handleAddReevaluationForSeance = (seanceId: string) => {
-    // Reset form state properly before setting new values
-    resetForm(true);
-    
-    // Set the reevaluation values with the selected seance
-    setNewReevaluation({
-      indiceDePlaque: 0,
-      indiceGingivale: 0,
-      seanceId: seanceId,
-    });
-    
-    setIsReevaluationEditing(false);
-    setOpenReevaluationDialog(true);
-  };
+
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
@@ -383,10 +396,10 @@ const Seances: React.FC = () => {
     resetForm(true);
   };
 
-  const handleInputChange = (event: SelectChangeEvent<string>) => {
+  const handleInputChange = (event: SelectChangeEvent<string> | React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const name = event.target.name as keyof SeanceData;
     const value = event.target.value;
-    
+
     if (name === 'medecinId') {
       // Reset type when medecinId changes to ensure proper filtering
       setNewSeance(prev => ({
@@ -427,14 +440,15 @@ const Seances: React.FC = () => {
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) {
-      setSelectedFile(event.target.files[0]);
+    if (event.target.files) {
+      setSelectedFiles(Array.from(event.target.files));
     }
   };
 
   const validateFileUpload = (type: string): boolean => {
     // Check if a file is required but not provided
-    if (type === 'REEVALUATION' && !selectedFile && !isEditing) {
+    const existingUploads = newReevaluation.uploads?.length ?? 0;
+    if (type === 'REEVALUATION' && selectedFiles.length === 0 && !isEditing && existingUploads === 0) {
       setError('Un fichier image est requis pour les séances de réévaluation');
       showFeedback('Un fichier image est requis pour les séances de réévaluation', 'error');
       return false;
@@ -446,15 +460,15 @@ const Seances: React.FC = () => {
     event.preventDefault();
     setError(null);
     setIsLoading(true);
-    
+
     // Validate file upload for REEVALUATION type
     if (!validateFileUpload(newSeance.type)) {
       setIsLoading(false);
       return;
     }
-    
+
     // If user is MEDECIN, force the medecinId to be the current user's ID
-    
+
     try {
       let createdSeanceId: string | undefined;
       console.log(createdSeanceId);
@@ -466,9 +480,9 @@ const Seances: React.FC = () => {
           // Make sure to include the file
           const updatedReevaluation = {
             ...newReevaluation,
-            sondagePhoto: selectedFile || undefined
+            sondagePhotos: selectedFiles
           };
-          
+
           const updatedSeance = await seanceService.update(selectedSeanceId, {
             ...newSeance,
             Reevaluation: updatedReevaluation as ReevaluationData
@@ -476,11 +490,11 @@ const Seances: React.FC = () => {
             console.error('Error updating seance with reevaluation:', error);
             throw new Error('Échec de la mise à jour de la séance. Veuillez réessayer plus tard.');
           });
-          
+
           if (updatedSeance?.id) {
             createdSeanceId = updatedSeance.id;
           }
-          
+
           showFeedback('Séance mise à jour avec succès');
         } else {
           // For non-REEVALUATION types, just update the seance
@@ -489,11 +503,11 @@ const Seances: React.FC = () => {
               console.error('Error updating seance:', error);
               throw new Error('Échec de la mise à jour de la séance. Veuillez réessayer plus tard.');
             });
-          
+
           if (updatedSeance?.id) {
             createdSeanceId = updatedSeance.id;
           }
-          
+
           showFeedback('Séance mise à jour avec succès');
         }
       } else {
@@ -503,9 +517,9 @@ const Seances: React.FC = () => {
           // Make sure to include the file
           const reevaluationWithFile = {
             ...newReevaluation,
-            sondagePhoto: selectedFile || undefined
+            sondagePhotos: selectedFiles
           };
-          
+
           const createdSeance = await seanceService.create({
             ...newSeance,
             Reevaluation: reevaluationWithFile as ReevaluationData
@@ -513,7 +527,7 @@ const Seances: React.FC = () => {
             console.error('Error creating seance with reevaluation:', error);
             throw new Error('Échec de la création de la nouvelle séance. Veuillez réessayer plus tard.');
           });
-          
+
           createdSeanceId = createdSeance?.id;
           showFeedback('Nouvelle séance créée avec succès');
         } else {
@@ -523,14 +537,14 @@ const Seances: React.FC = () => {
               console.error('Error creating seance:', error);
               throw new Error('Échec de la création de la nouvelle séance. Veuillez réessayer plus tard.');
             });
-          
+
           createdSeanceId = createdSeance?.id;
           showFeedback('Nouvelle séance créée avec succès');
         }
       }
-      
+
       handleCloseDialog();
-      
+
       // Refresh data with error handling
       try {
         const success = await fetchData();
@@ -570,25 +584,35 @@ const Seances: React.FC = () => {
     event.preventDefault();
     setError(null);
     setIsLoading(true);
-    
-    // Validate file upload for new reevaluations
-    if (!isReevaluationEditing && !selectedFile) {
-      setError('Un fichier image est requis pour les séances de réévaluation');
+
+    const existingUploads = newReevaluation.seanceId
+      ? getReevaluationForSeance(newReevaluation.seanceId)?.uploads ?? []
+      : [];
+
+    if (!isReevaluationEditing && selectedFiles.length === 0) {
+      setError('Au moins une image est requise pour les réévaluations');
       showFeedback('Un fichier image est requis pour les séances de réévaluation', 'error');
       setIsLoading(false);
       return;
     }
-    
+
+    if (isReevaluationEditing && selectedFiles.length === 0 && existingUploads.length === 0) {
+      setError('Ajoutez au moins une image pour compléter la réévaluation');
+      showFeedback('Au moins une image doit être fournie', 'error');
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const formData = new FormData();
-      
+
       // Get the seance data to extract patient and medecin IDs
       const selectedSeance = seances.find(s => s.id === newReevaluation.seanceId);
-      
+
       if (!selectedSeance) {
         throw new Error('Séance non trouvée');
       }
-      
+
       // Add required fields in the correct format for the backend
       formData.append('indiceDePlaque', (newReevaluation.indiceDePlaque || 0).toString());
       formData.append('indiceGingivale', (newReevaluation.indiceGingivale || 0).toString());
@@ -596,18 +620,20 @@ const Seances: React.FC = () => {
       formData.append('medecinId', selectedSeance.medecinId);
       formData.append('date', new Date(selectedSeance.date).toISOString());
       formData.append('seanceId', newReevaluation.seanceId || '');
-      
+
       // Attach the image file if provided - Debug log to verify
-      if (selectedFile) {
-        console.log('Adding file to FormData:', selectedFile.name, selectedFile.type, selectedFile.size);
-        formData.append('sondagePhoto', selectedFile);
+      if (selectedFiles.length) {
+        selectedFiles.forEach((file) => {
+          console.log('Adding file to FormData:', file.name, file.type, file.size);
+          formData.append('sondagePhotos', file);
+        });
       }
 
       // Debug log to check FormData contents
       for (const pair of formData.entries()) {
         console.log(`${pair[0]}: ${pair[1]}`);
       }
-      
+
       if (isReevaluationEditing && selectedReevaluationId) {
         await reevaluationService.update(selectedReevaluationId, formData)
           .catch(error => {
@@ -623,9 +649,9 @@ const Seances: React.FC = () => {
           });
         showFeedback('Nouvelle réévaluation créée avec succès');
       }
-      
+
       handleCloseReevaluationDialog();
-      
+
       // Refresh data with error handling
       try {
         const success = await fetchData();
@@ -678,11 +704,11 @@ const Seances: React.FC = () => {
 
   const handleConfirmedDeleteSeance = async () => {
     if (!seanceToDelete) return;
-    
+
     setIsLoading(true);
     try {
       const seanceToDeleteObj = seances.find(s => s.id === seanceToDelete);
-      
+
       // Pass the seance type to use the correct endpoint
       await seanceService.delete(seanceToDelete, seanceToDeleteObj?.type);
       showFeedback('Séance supprimée avec succès');
@@ -719,7 +745,7 @@ const Seances: React.FC = () => {
 
   const handleConfirmedDeleteReevaluation = async () => {
     if (!reevaluationToDelete) return;
-    
+
     setIsLoading(true);
     try {
       await reevaluationService.delete(reevaluationToDelete);
@@ -746,7 +772,7 @@ const Seances: React.FC = () => {
 
   const filteredSeances = React.useMemo(() => {
     if (!Array.isArray(seances)) return [];
-    return seances.filter(seance => 
+    return seances.filter(seance =>
       seance.type?.toLowerCase().includes(searchQuery?.toLowerCase() || '') ||
       seance.patient?.nom?.toLowerCase().includes(searchQuery?.toLowerCase() || '') ||
       seance.medecin?.user?.name?.toLowerCase().includes(searchQuery?.toLowerCase() || '')
@@ -756,27 +782,27 @@ const Seances: React.FC = () => {
   // Filter seance types based on medecin profession
   const getFilteredSeanceTypes = (medecinId: string) => {
     if (!medecinId || !Array.isArray(medecins)) return [];
-    
+
     const selectedMedecin = medecins.find(medecin => medecin.id === medecinId);
-    if (!selectedMedecin) {return ['PHASE_CURATIVE', 'MAINTENANCE','THERAPEUTIQUE_INITIALE', 'REEVALUATION','ACTIVATION', 'DEBUT_DE_TRAITEMENT','FIN_DE_TRAITEMENT','SUIVI_POST_TRAITEMENT'];}
-    
+    if (!selectedMedecin) { return ['PHASE_CURATIVE', 'MAINTENANCE', 'THERAPEUTIQUE_INITIALE', 'REEVALUATION', 'ACTIVATION', 'DEBUT_DE_TRAITEMENT', 'FIN_DE_TRAITEMENT', 'SUIVI_POST_TRAITEMENT']; }
+
     if (selectedMedecin.profession === 'PARODONTAIRE') {
-      return ['PHASE_CURATIVE', 'MAINTENANCE', 'REEVALUATION','THERAPEUTIQUE_INITIALE'];
+      return ['PHASE_CURATIVE', 'MAINTENANCE', 'REEVALUATION', 'THERAPEUTIQUE_INITIALE'];
     } else if (selectedMedecin.profession === 'ORTHODONTAIRE') {
-      return ['ACTIVATION', 'DEBUT_DE_TRAITEMENT','FIN_DE_TRAITEMENT','SUIVI_POST_TRAITEMENT'];
+      return ['ACTIVATION', 'DEBUT_DE_TRAITEMENT', 'FIN_DE_TRAITEMENT', 'SUIVI_POST_TRAITEMENT', 'SUSPENSION_TRAITEMENT', 'AUTRE'];
     }
-    
+
     return [];
   };
 
   // Check if a seance has a reevaluation
   const hasReevaluation = (seanceId: string) => {
-    return reevaluations.some(r => r.seanceId === seanceId);
+    return Array.isArray(reevaluations) && reevaluations.some(r => r.seanceId === seanceId);
   };
 
   // Find reevaluation for a seance
   const getReevaluationForSeance = (seanceId: string) => {
-    return reevaluations.find(r => r.seanceId === seanceId);
+    return Array.isArray(reevaluations) ? reevaluations.find(r => r.seanceId === seanceId) : undefined;
   };
 
   // Handle refresh button click with visual feedback
@@ -793,23 +819,23 @@ const Seances: React.FC = () => {
 
   // Handle row expansion
   const handleRowExpand = (seanceId: string) => {
-    setExpandedRows(prev => 
+    setExpandedRows(prev =>
       prev.includes(seanceId) ? prev.filter(id => id !== seanceId) : [...prev, seanceId]
     );
   };
 
   return (
     <Box sx={{ flexGrow: 1, p: 3 }}>
-      
+
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
         <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
           Séances
         </Typography>
-        
+
         {/* Only ADMIN and MEDECIN can add new seances */}
         <RoleBasedAccess requiredRoles={['ADMIN', 'MEDECIN']}>
-          <Button 
-            variant="contained" 
+          <Button
+            variant="contained"
             startIcon={<Plus size={18} />}
             sx={{ borderRadius: 2 }}
             onClick={() => handleOpenDialog()}
@@ -819,7 +845,7 @@ const Seances: React.FC = () => {
           </Button>
         </RoleBasedAccess>
       </Box>
-      
+
       {/* Role-specific message banner */}
       {userRole === 'ETUDIANT' && (
         <Alert severity="info" sx={{ mb: 3 }}>
@@ -852,21 +878,21 @@ const Seances: React.FC = () => {
           <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1 }}>
             {/* Refresh button for all users */}
             <Tooltip title="Rafraîchir les données">
-            <Button
-              variant="outlined" 
-              size="small"
-              startIcon={<RefreshCw size={16} />}
-              onClick={handleRefreshClick}
-              disabled={isLoading}
-            >
-              Rafraîchir
-            </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<RefreshCw size={16} />}
+                onClick={handleRefreshClick}
+                disabled={isLoading}
+              >
+                Rafraîchir
+              </Button>
             </Tooltip>
-            
+
           </Box>
         </CardContent>
       </Card>
-        
+
       <Card>
         <TableContainer component={Paper} elevation={0}>
           <Table sx={{ minWidth: 650 }}>
@@ -876,12 +902,11 @@ const Seances: React.FC = () => {
                 <TableCell>Date</TableCell>
                 <TableCell>Patient</TableCell>
                 <TableCell>Médecin</TableCell>
-                <TableCell>Réévaluation</TableCell>
                 <TableCell align="right">Actions</TableCell>
                 <TableCell></TableCell>
               </TableRow>
             </TableHead>
-            
+
             <TableBody>
               {isLoading && filteredSeances.length === 0 ? (
                 <TableRow>
@@ -907,15 +932,20 @@ const Seances: React.FC = () => {
                       >
                         <TableCell>
                           {
-                          seance.type=== 'REEVALUATION' ? 'Réévaluation' :
-                          seance.type === 'PHASE_CURATIVE' ? 'Phase curative' :
-                          seance.type === 'MAINTENANCE' ? 'Maintenance' :
-                          seance.type === 'THERAPEUTIQUE_INITIALE' ? 'Thérapeutique initiale' :
-                          seance.type === 'ACTIVATION' ? 'Activation' :
-                          seance.type === 'DEBUT_DE_TRAITEMENT' ? 'Début de traitement' :
-                          seance.type === 'FIN_DE_TRAITEMENT' ? 'Fin de traitement' :
-                          seance.type === 'SUIVI_POST_TRAITEMENT' ? 'Suivi post-traitement'
-                          : seance.type
+                            seance.type === 'REEVALUATION' ? 
+                              <Chip label="Réévaluation" size="small" color="success" variant="filled" /> :
+                              seance.type === 'SUSPENSION_TRAITEMENT' ? 
+                                <Chip label="Suspension de traitement" size="small" color="error" variant="filled" /> :
+                                
+                              seance.type === 'PHASE_CURATIVE' ? 'Phase curative' :
+                                seance.type === 'MAINTENANCE' ? 'Maintenance' :
+                                  seance.type === 'THERAPEUTIQUE_INITIALE' ? 'Thérapeutique initiale' :
+                                    seance.type === 'ACTIVATION' ? 'Activation/Contrôle' :
+                                      seance.type === 'DEBUT_DE_TRAITEMENT' ? 'Début de traitement' :
+                                        seance.type === 'FIN_DE_TRAITEMENT' ? 'Fin de traitement' :
+                                          seance.type === 'SUIVI_POST_TRAITEMENT' ? 'Suivi post-traitement' :
+                                              seance.type === 'AUTRE' ? (seance.autreMotif ? `Autre: ${seance.autreMotif}` : 'Autre') :
+                                                seance.type
                           }</TableCell>
                         <TableCell>
                           <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -924,53 +954,17 @@ const Seances: React.FC = () => {
                           </Box>
                         </TableCell>
                         <TableCell>
-                          {seance.patient ? 
-                            `${seance.patient.nom} ${seance.patient.prenom}` : 
+                          {seance.patient ?
+                            `${seance.patient.nom} ${seance.patient.prenom}` :
                             'Non disponible'}
                         </TableCell>
                         <TableCell>
-                          {seance.medecin?.user? 
-                            `${seance.medecin.user.name}` : 
+                          {seance.medecin?.user ?
+                            `${seance.medecin.user.name}` :
                             'Non disponible'}
 
                         </TableCell>
-                        <TableCell>
-                          {hasReevaluation(seance.id!) ? (
-                            <Chip 
-                              label="Réévaluation" 
-                              color="success" 
-                              size="small"
-                              onClick={() => {
-                                const reevaluation = getReevaluationForSeance(seance.id!);
-                                if (reevaluation) {
-                                  handleOpenReevaluationDialog(reevaluation);
-                                }
-                              }}
-                            />
-                          ) : (
-                            <RoleBasedAccess requiredRoles={['ADMIN', 'MEDECIN']}>
-                              <Tooltip title={seance.type === 'REEVALUATION' ? "Ajouter une réévaluation" : "Réévaluation disponible uniquement pour le type REEVALUATION"}>
-                                <span>
-                                  <IconButton 
-                                    color="primary" 
-                                    size="small"
-                                    onClick={() => handleAddReevaluationForSeance(seance.id!)}
-                                    disabled={
-                                      isLoading || 
-                                      seance.type !== 'REEVALUATION' ||
-                                      (userRole === 'MEDECIN' && seance.medecinId !== (function() {
-                                        const userData = JSON.parse(sessionStorage.getItem('user') || '{}');
-                                        return userData.user?.id;
-                                      })())
-                                    }
-                                  >
-                                    <FilePlus size={16} />
-                                  </IconButton>
-                                </span>
-                              </Tooltip>
-                            </RoleBasedAccess>
-                          )}
-                        </TableCell>
+
                         <TableCell align="right">
                           {canOnlyView() ? (
                             <Tooltip title="Voir les détails">
@@ -980,16 +974,19 @@ const Seances: React.FC = () => {
                             </Tooltip>
                           ) : (
                             <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                              
-                              
+
+
                               {/* Delete button */}
                               <Tooltip title="Supprimer la séance">
                                 <IconButton
                                   size="small"
                                   color="error"
-                                  onClick={() => handleConfirmDeleteSeance(seance.id!)}                                  disabled={isLoading || (userRole === 'MEDECIN' && seance.medecinId !== (function() {
+                                  onClick={() => handleConfirmDeleteSeance(seance.id!)} 
+                                  disabled={isLoading || (userRole === 'MEDECIN' && (() => {
                                     const userData = JSON.parse(sessionStorage.getItem('user') || '{}');
-                                    return userData.user?.id;
+                                    const currentUserId = userData.user?.id || userData.id;
+                                    const currentMedecin = medecins.find((m: any) => m.userId === currentUserId);
+                                    return seance.medecinId !== currentMedecin?.id;
                                   })())}
                                 >
                                   <Trash2 size={16} />
@@ -1033,29 +1030,44 @@ const Seances: React.FC = () => {
                                   </Grid>
                                   <Grid item xs={12}>
                                     <Typography variant="body2" gutterBottom>
-                                      <strong>Photo:</strong>
+                                      <strong>Photos:</strong>
                                     </Typography>
-                                    {getReevaluationForSeance(seance.id!)?.sondagePhoto ? (
-                                      <Box 
-                                        sx={{ 
-                                          maxWidth: '100%',
-                                          mt: 1,
-                                          border: '1px solid #e0e0e0',
-                                          borderRadius: 1,
-                                          p: 1,
-                                          display: 'inline-block'
-                                        }}
-                                      >                                        <img
-                                          src={`${import.meta.env.VITE_API_BASE_URL}${getReevaluationForSeance(seance.id!)?.sondagePhoto}`}
-                                          alt="Sondage"
-                                          style={{ maxWidth: '100%', maxHeight: '300px' }}
-                                        />
-                                      </Box>
-                                    ) : (
-                                      <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
-                                        Aucune photo disponible
-                                      </Typography>
-                                    )}
+                                    {(() => {
+                                      const uploads = getReevaluationForSeance(seance.id!)?.uploads ?? [];
+                                      if (!uploads.length) {
+                                        return (
+                                          <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
+                                            Aucune photo disponible
+                                          </Typography>
+                                        );
+                                      }
+
+                                      return (
+                                        <Grid container spacing={2} sx={{ mt: 0.5 }}>
+                                          {uploads.map((upload) => (
+                                            <Grid item xs={12} sm={6} md={4} key={upload}>
+                                              <Box
+                                                sx={{
+                                                  border: '1px solid #e0e0e0',
+                                                  borderRadius: 1,
+                                                  p: 1,
+                                                  textAlign: 'center'
+                                                }}
+                                              >
+                                                <img
+                                                  src={upload}
+                                                  alt={upload.split('/').pop()}
+                                                  style={{ maxWidth: '100%', maxHeight: '250px' }}
+                                                />
+                                                <Typography variant="caption" display="block" sx={{ mt: 0.5 }}>
+                                                  {upload.split('/').pop()}
+                                                </Typography>
+                                              </Box>
+                                            </Grid>
+                                          ))}
+                                        </Grid>
+                                      );
+                                    })()}
                                   </Grid>
                                 </Grid>
                               </Box>
@@ -1115,14 +1127,14 @@ const Seances: React.FC = () => {
                 <Edit size={16} style={{ marginRight: 8 }} />
                 Modifier
               </MenuItem>
-              
+
               <MenuItem onClick={() => selectedSeanceId && handleConfirmDeleteSeance(selectedSeanceId)} sx={{ color: 'error.main' }}>
                 <Trash2 size={16} style={{ marginRight: 8 }} />
                 Supprimer
               </MenuItem>
             </>
           )}
-          
+
           {selectedReevaluationId && (
             <>
               <MenuItem onClick={() => {
@@ -1150,8 +1162,8 @@ const Seances: React.FC = () => {
           <DialogTitle>{isEditing ? 'Modifier la séance' : 'Ajouter une séance'}</DialogTitle>
           <form onSubmit={handleSubmit}>
             <DialogContent>
-             
-              
+
+
               <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <DatePicker
                   label="Date"
@@ -1167,7 +1179,7 @@ const Seances: React.FC = () => {
               {/* Médecin selection field - always visible for all users */}
               <FormControl fullWidth sx={{ mb: 2 }}>
                 <InputLabel>Médecin</InputLabel>
-                
+
                 <Select
                   label="Médecin"
                   name="medecinId"
@@ -1178,10 +1190,10 @@ const Seances: React.FC = () => {
                   {Array.isArray(medecins) && medecins.length > 0 ? (
                     medecins.map((medecin) => (
                       <MenuItem key={medecin.id} value={medecin.id}>
-                        {medecin.userInfo ? 
-                          `${medecin.user.firstName} ${medecin.user.lastName}` : 
+                        {medecin.userInfo ?
+                          `${medecin.user.firstName} ${medecin.user.lastName}` :
                           (medecin.user && medecin.user.name) ? medecin.user.name : 'Inconnu'}
-                        - {(medecin.profession==='PARODONTAIRE' ? 'Parodontie' : 'Orthodontie')}
+                        - {(medecin.profession === 'PARODONTAIRE' ? 'Parodontie' : 'Orthodontie')}
                       </MenuItem>
                     ))
                   ) : (
@@ -1205,15 +1217,17 @@ const Seances: React.FC = () => {
                       <MenuItem key={type} value={type}>
                         {
                           type === 'DETARTRAGE' ? 'Détartrage' :
-                              type === 'REEVALUATION' ? 'Réévaluation' :
-                          type === 'PHASE_CURATIVE' ? 'Phase curative' :
-                          type === 'MAINTENANCE' ? 'Maintenance' :
-                          type === 'THERAPEUTIQUE_INITIALE' ? 'Thérapeutique initiale' :
-                          type === 'ACTIVATION' ? 'Activation' :
-                          type === 'DEBUT_DE_TRAITEMENT' ? 'Début de traitement' :
-                          type === 'FIN_DE_TRAITEMENT' ? 'Fin de traitement' :
-                          type === 'SUIVI_POST_TRAITEMENT' ? 'Suivi post-traitement' :
-                          type
+                            type === 'REEVALUATION' ? 'Réévaluation' :
+                              type === 'PHASE_CURATIVE' ? 'Phase curative' :
+                                type === 'MAINTENANCE' ? 'Maintenance' :
+                                  type === 'THERAPEUTIQUE_INITIALE' ? 'Thérapeutique initiale' :
+                                    type === 'ACTIVATION' ? 'Activation/Contrôle' :
+                                      type === 'DEBUT_DE_TRAITEMENT' ? 'Début de traitement' :
+                                        type === 'FIN_DE_TRAITEMENT' ? 'Fin de traitement' :
+                                          type === 'SUIVI_POST_TRAITEMENT' ? 'Suivi post-traitement' :
+                                            type === 'SUSPENSION_TRAITEMENT' ? <span style={{ color: '#d32f2f' }}>Suspension de traitement</span> :
+                                              type === 'AUTRE' ? 'Autre' :
+                                                type
                         }
                       </MenuItem>
                     ))
@@ -1222,6 +1236,18 @@ const Seances: React.FC = () => {
                   )}
                 </Select>
               </FormControl>
+
+              {newSeance.type === 'AUTRE' && (
+                <TextField
+                  fullWidth
+                  label="Précisez le type"
+                  name="autreMotif"
+                  value={newSeance.autreMotif || ''}
+                  onChange={handleInputChange}
+                  required={newSeance.type === 'AUTRE'}
+                  sx={{ mb: 2 }}
+                />
+              )}
 
               <FormControl fullWidth sx={{ mb: 2 }}>
                 <InputLabel>Patient</InputLabel>
@@ -1251,7 +1277,7 @@ const Seances: React.FC = () => {
                   <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
                     Détails de Réévaluation
                   </Typography>
-                  
+
                   <TextField
                     fullWidth
                     label="Indice de Plaque"
@@ -1296,33 +1322,53 @@ const Seances: React.FC = () => {
                       style={{ display: 'none' }}
                       id="sondage-photo-upload"
                       type="file"
+                      multiple
                       onChange={handleFileChange}
                       ref={fileInputRef}
                     />
                     <label htmlFor="sondage-photo-upload">
-                      <Button 
-                        variant="outlined" 
+                      <Button
+                        variant="outlined"
                         component="span"
                         startIcon={<FileImage size={16} />}
                       >
-                        {isReevaluationEditing ? 'Changer la photo' : 'Téléverser une photo'}
+                        {isReevaluationEditing ? 'Mettre à jour les photos' : 'Téléverser des photos'}
                       </Button>
                     </label>
-                    {selectedFile && (
-                      <Typography variant="body2" sx={{ mt: 1 }}>
-                        Fichier sélectionné : {selectedFile.name}
-                      </Typography>
+                    {selectedFiles.length > 0 && (
+                      <Box sx={{ mt: 1 }}>
+                        <Typography variant="body2">
+                          Fichiers sélectionnés :
+                        </Typography>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
+                          {selectedFiles.map((file) => (
+                            <Chip key={file.name + file.lastModified} label={file.name} size="small" />
+                          ))}
+                        </Box>
+                      </Box>
+                    )}
+                    {isReevaluationEditing && (newReevaluation.uploads?.length ?? 0) > 0 && (
+                      <Box sx={{ mt: 1 }}>
+                        <Typography variant="body2" color="textSecondary">
+                          Photos existantes :
+                        </Typography>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
+                          {newReevaluation.uploads?.map((upload) => (
+                            <Chip key={upload} label={upload.split('/').pop()} size="small" color="success" />
+                          ))}
+                        </Box>
+                      </Box>
                     )}
                   </Box>
                 </Box>
               </Collapse>
-              
+
             </DialogContent>
             <DialogActions>
               <Button onClick={handleCloseDialog} disabled={isLoading}>Annuler</Button>
               <Button
-                type="submit" 
-                variant="contained" 
+                type="submit"
+                variant="contained"
                 disabled={isLoading}
               >
                 {isLoading ? 'Enregistrement...' : 'Enregistrer'}
@@ -1340,10 +1386,10 @@ const Seances: React.FC = () => {
             <DialogContent>
               {/* Show error message if present */}
               {error && (
-                <Box sx={{ 
+                <Box sx={{
                   mb: 2,
-                  p: 1.5, 
-                  bgcolor: 'error.light', 
+                  p: 1.5,
+                  bgcolor: 'error.light',
                   color: 'error.dark',
                   borderRadius: 1,
                   fontSize: '0.875rem'
@@ -1351,7 +1397,7 @@ const Seances: React.FC = () => {
                   {error}
                 </Box>
               )}
-              
+
               <FormControl fullWidth sx={{ mb: 2 }}>
                 <InputLabel>Séance</InputLabel>
                 <Select
@@ -1368,7 +1414,7 @@ const Seances: React.FC = () => {
                       const seance = seances.find(s => s.id === newReevaluation.seanceId);
                       return seance ? (
                         <MenuItem key={seance.id} value={seance.id}>
-                          {format(new Date(seance.date), 'dd/MM/yyyy')} - {seance.type} - 
+                          {format(new Date(seance.date), 'dd/MM/yyyy')} - {seance.type} -
                           {seance.patient ? ` ${seance.patient.nom} ${seance.patient.prenom}` : ' Non disponible'}
                         </MenuItem>
                       ) : null;
@@ -1377,13 +1423,13 @@ const Seances: React.FC = () => {
                     // When creating, show all seances without reevaluations
                     // For MEDECIN, only show their own seances
                     seancesWithoutReevaluation
-                      .filter(s => userRole !== 'MEDECIN' || s.medecinId === (function() {
-                                      const userData = JSON.parse(sessionStorage.getItem('user') || '{}');
-                                      return userData.user?.id;
-                                    })())
+                      .filter(s => userRole !== 'MEDECIN' || s.medecinId === (function () {
+                        const userData = JSON.parse(sessionStorage.getItem('user') || '{}');
+                        return userData.user?.id;
+                      })())
                       .map(seance => (
                         <MenuItem key={seance.id} value={seance.id}>
-                          {format(new Date(seance.date), 'dd/MM/yyyy')} - {seance.type} - 
+                          {format(new Date(seance.date), 'dd/MM/yyyy')} - {seance.type} -
                           {seance.patient ? ` ${seance.patient.nom} ${seance.patient.prenom}` : ' Non disponible'}
                         </MenuItem>
                       ))
@@ -1435,30 +1481,50 @@ const Seances: React.FC = () => {
                   style={{ display: 'none' }}
                   id="reevaluation-photo-upload"
                   type="file"
+                  multiple
                   onChange={handleFileChange}
                   ref={fileInputRef}
                 />
                 <label htmlFor="reevaluation-photo-upload">
-                  <Button 
-                    variant="outlined" 
+                  <Button
+                    variant="outlined"
                     component="span"
                     startIcon={<FileImage size={16} />}
                   >
-                    {isReevaluationEditing ? 'Changer la photo' : 'Téléverser une photo'}
+                    {isReevaluationEditing ? 'Mettre à jour les photos' : 'Téléverser des photos'}
                   </Button>
                 </label>
-                {selectedFile && (
-                  <Typography variant="body2" sx={{ mt: 1 }}>
-                    Fichier sélectionné : {selectedFile.name}
-                  </Typography>
+                {selectedFiles.length > 0 && (
+                  <Box sx={{ mt: 1 }}>
+                    <Typography variant="body2">
+                      Fichiers sélectionnés :
+                    </Typography>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
+                      {selectedFiles.map((file) => (
+                        <Chip key={file.name + file.lastModified} label={file.name} size="small" />
+                      ))}
+                    </Box>
+                  </Box>
+                )}
+                {isReevaluationEditing && (newReevaluation.uploads?.length ?? 0) > 0 && (
+                  <Box sx={{ mt: 1 }}>
+                    <Typography variant="body2" color="textSecondary">
+                      Photos existantes :
+                    </Typography>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
+                      {newReevaluation.uploads?.map((upload) => (
+                        <Chip key={upload} label={upload.split('/').pop()} size="small" color="success" />
+                      ))}
+                    </Box>
+                  </Box>
                 )}
               </Box>
             </DialogContent>
             <DialogActions>
               <Button onClick={handleCloseReevaluationDialog} disabled={isLoading}>Annuler</Button>
               <Button
-                type="submit" 
-                variant="contained" 
+                type="submit"
+                variant="contained"
                 disabled={isLoading}
               >
                 {isLoading ? 'Enregistrement...' : 'Enregistrer'}
@@ -1487,9 +1553,9 @@ const Seances: React.FC = () => {
           <Button onClick={handleCloseDeleteDialog} color="primary">
             Annuler
           </Button>
-          <Button 
-            onClick={handleConfirmedDeleteSeance} 
-            color="error" 
+          <Button
+            onClick={handleConfirmedDeleteSeance}
+            color="error"
             variant="contained"
             disabled={isLoading}
           >
@@ -1516,9 +1582,9 @@ const Seances: React.FC = () => {
           <Button onClick={handleCloseDeleteReevaluationDialog} color="primary">
             Annuler
           </Button>
-          <Button 
-            onClick={handleConfirmedDeleteReevaluation} 
-            color="error" 
+          <Button
+            onClick={handleConfirmedDeleteReevaluation}
+            color="error"
             variant="contained"
             disabled={isLoading}
           >
@@ -1526,7 +1592,7 @@ const Seances: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
-      
+
       {/* Toast notification for providing user feedback */}
       <Snackbar
         open={feedbackOpen}
@@ -1535,9 +1601,9 @@ const Seances: React.FC = () => {
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         sx={{
           '& .MuiPaper-root': {
-            backgroundColor: 
-              feedbackType === 'success' ? 'success.main' : 
-              feedbackType === 'error' ? 'error.main' : 'info.main',
+            backgroundColor:
+              feedbackType === 'success' ? 'success.main' :
+                feedbackType === 'error' ? 'error.main' : 'info.main',
             color: 'white',
             display: 'flex',
             alignItems: 'center',

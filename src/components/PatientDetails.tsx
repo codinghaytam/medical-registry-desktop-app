@@ -710,10 +710,10 @@ const PatientDetails: React.FC = () => {
                     >
                       <TableCell>
                         <Chip 
-                          label={seance.type?.replace(/_/g, ' ').toLowerCase()} 
+                          label={seance.type === 'REEVALUATION' ? 'réévaluation' : seance.type === 'SUSPENSION_TRAITEMENT' ? 'suspension de traitement' : seance.type === 'AUTRE' ? (seance.autreMotif ? `autre: ${seance.autreMotif}` : 'autre') : seance.type?.replace(/_/g, ' ').toLowerCase()} 
                           size="small" 
-                          color="primary" 
-                          variant="outlined"
+                          color={seance.type === 'SUSPENSION_TRAITEMENT' ? 'error' : seance.type === 'REEVALUATION' ? 'success' : 'primary'} 
+                          variant={seance.type === 'SUSPENSION_TRAITEMENT' || seance.type === 'REEVALUATION' ? 'filled' : 'outlined'}
                         />
                       </TableCell>
                       <TableCell>

@@ -3,13 +3,16 @@ import { withAuthHeader } from './authService';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
+export type ReevaluationUpload = string;
+
 export interface ReevaluationData {
   id?: string;
   indiceDePlaque: number;
   indiceGingivale: number;
-  sondagePhoto?: string | File;
   seanceId: string;
   seance?: any;
+  sondagePhotos?: File[];
+  uploads?: ReevaluationUpload[];
 }
 
 export const reevaluationService = {

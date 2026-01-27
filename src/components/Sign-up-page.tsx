@@ -1,7 +1,7 @@
 import { Button, TextField, Box, Typography, Container, CircularProgress, Alert, Link } from '@mui/material';
-import { fetch } from '@tauri-apps/plugin-http';
 import { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { authService, fetchWithAuth } from '../services/authService';
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
@@ -18,163 +18,94 @@ export default function LoginPage() {
     const formData = new FormData(event.currentTarget);
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
-    
-    const myHeaders = new Headers();
-    myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
+    const apiBase = import.meta.env.VITE_API_BASE_URL;
 
-    const urlencoded = new URLSearchParams();
-    urlencoded.append("grant_type", "password");
-    urlencoded.append("client_id", import.meta.env.VITE_KEYCLOAK_CLIENT_ID);
-    urlencoded.append("scope", "email");
-    urlencoded.append("username", email);
-    urlencoded.append("password", password);
-    urlencoded.append("client_secret", import.meta.env.VITE_KEYCLOAK_CLIENT_SECRET);
-    try {
-      const response = await fetch(`${import.meta.env.VITE_KEYCLOAK_URL}/realms/${import.meta.env.VITE_KEYCLOAK_REALM}/protocol/openid-connect/token`, {
-        method: "POST",
-        headers: myHeaders,
-        body: urlencoded.toString(),
-        redirect: "follow" as RequestRedirect,
-      });
-
+    const fetchJson = async (path: string) => {
+      const response = await fetchWithAuth(`${apiBase}${path}`, { method: 'GET' });
       if (!response.ok) {
-        throw new Error(`Invalid credentials: ${response.status} ${await response.text()}`);
+        throw new Error(`Request failed with status ${response.status}`);
       }
-      
-      const rawText = await response.text();
-      const data = JSON.parse(rawText);
-        sessionStorage.setItem('access_token', data.access_token);
-      sessionStorage.setItem('refresh_token', data.refresh_token);
-      
-      // First, check user type/role from a central endpoint
+      return response.json();
+    };
+
+    try {
+      await authService.loginWithCredentials(email, password);
+
       try {
-        const userResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/users/email/${email}`, {
-          method: "GET",
-          headers: {
-            "Authorization": `Bearer ${data.access_token}`
-          }
-        });
-        
-        if (!userResponse.ok) {
-          throw new Error("Échec de la récupération des informations utilisateur");
-        }
-        
-        const userData = await userResponse.json();
+        const userData = await fetchJson(`/users/email/${email}`);
         const userRole = userData.role;
-        // Fetch specific user data based on role
-        if (userRole === "MEDECIN") {
-          const medecinResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/medecin/email/${email}`, {
-            method: "GET",
-            headers: {
-              "Authorization": `Bearer ${data.access_token}`
+
+        if (userRole === 'MEDECIN') {
+          const medecinData = await fetchJson(`/medecin/email/${email}`);
+          sessionStorage.setItem('user', JSON.stringify({
+            user: {
+              ...medecinData,
+              role: 'MEDECIN',
+              firstName: medecinData.firstName || '',
+              lastName: medecinData.lastName || ''
             }
-          });          if (medecinResponse.ok) {
-            const medecinData = await medecinResponse.json();
-            // Store with proper structure to avoid "user.role" undefined error
-            sessionStorage.setItem("user", JSON.stringify({ 
-              user: { ...medecinData, role: "MEDECIN", firstName: medecinData.firstName || '', lastName: medecinData.lastName || '' } 
-            }));
-            navigate('/', { replace: true });
-            return;
-          }
+          }));
+          navigate('/', { replace: true });
+          return;
         }
-        else if (userRole === "ETUDIANT") {
-          const etudiantResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/etudiant/email/${email}`, {
-            method: "GET",
-            headers: {
-              "Authorization": `Bearer ${data.access_token}`
+
+        if (userRole === 'ETUDIANT') {
+          const etudiantData = await fetchJson(`/etudiant/email/${email}`);
+          sessionStorage.setItem('user', JSON.stringify({ user: { ...etudiantData, role: 'ETUDIANT' } }));
+          navigate('/', { replace: true });
+          return;
+        }
+
+        if (userRole === 'ADMIN') {
+          const adminData = await fetchJson(`/admin/email/${email}`);
+          sessionStorage.setItem('user', JSON.stringify({
+            user: {
+              ...adminData,
+              role: 'ADMIN',
+              firstName: adminData.keycloakDetails?.firstName || '',
+              lastName: adminData.keycloakDetails?.lastName || ''
             }
-          });
-          if (etudiantResponse.ok) {
-            const etudiantData = await etudiantResponse.json();
-            sessionStorage.setItem("user", JSON.stringify({ 
-              user: { ...etudiantData, role: "ETUDIANT" } 
-            }));
-            navigate('/', { replace: true });
-            return;
-          }
+          }));
+          navigate('/', { replace: true });
+          return;
         }
-        else if (userRole === "ADMIN") {
-          const adminResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/admin/email/${email}`, {
-            method: "GET",
-            headers: {
-              "Authorization": `Bearer ${data.access_token}`
-            }
-          });
-          if (adminResponse.ok) {
-            const adminData = await adminResponse.json();            sessionStorage.setItem("user", JSON.stringify({ 
-              user: { ...adminData, role: "ADMIN", firstName: adminData.keycloakDetails.firstName || '', lastName: adminData.keycloakDetails.lastName || '' } 
-            }));
-            navigate('/', { replace: true });
-            return;
-          }        } 
-        else {
-          throw new Error("Rôle utilisateur inconnu");
-        }
-      } catch (e) {
-        console.error("Error determining user role:", e);
-        
-        // Fallback to the previous approach if the central endpoint fails
+
+        throw new Error('Rôle utilisateur inconnu');
+      } catch (roleError) {
+        console.error('Error determining user role:', roleError);
+
         try {
-          // Try to fetch user data based on email - this might be a medecin
-          const medecinResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/medecin/email/${email}`, {
-            method: "GET",
-            headers: {
-              "Authorization": `Bearer ${data.access_token}`
-            }
-          });          if (medecinResponse.ok) {
-            const medecinData = await medecinResponse.json();
-            sessionStorage.setItem("user", JSON.stringify({ 
-              user: { ...medecinData, role: "MEDECIN" } 
-            }));
+          const medecinData = await fetchJson(`/medecin/email/${email}`);
+          sessionStorage.setItem('user', JSON.stringify({ user: { ...medecinData, role: 'MEDECIN' } }));
+          navigate('/', { replace: true });
+          return;
+        } catch (medecinError) {
+          console.log('Not a medecin user, trying other roles...');
+        }
+
+        try {
+          const etudiantData = await fetchJson(`/etudiant/email/${email}`);
+          sessionStorage.setItem('user', JSON.stringify({ user: { ...etudiantData, role: 'ETUDIANT' } }));
+          navigate('/', { replace: true });
+          return;
+        } catch (etudiantError) {
+          console.log('Not an etudiant user, trying admin...');
+        }
+
+        try {
+          const adminData = await fetchJson(`/admin/email/${email}`);
+          if (adminData) {
+            sessionStorage.setItem('user', JSON.stringify({ user: { ...adminData, role: 'ADMIN' } }));
             navigate('/', { replace: true });
             return;
           }
-        } catch (e) {
-          console.log("Not a medecin user, trying other roles...");
-        }
-        
-        try {
-          const etudiantResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/etudiant/email/${email}`, {
-            method: "GET",
-            headers: {
-              "Authorization": `Bearer ${data.access_token}`
-            }
-          });          if (etudiantResponse.ok) {
-            const etudiantData = await etudiantResponse.json();
-            sessionStorage.setItem("user", JSON.stringify({ 
-              user: { ...etudiantData, role: "ETUDIANT" } 
-            }));
-            navigate('/', { replace: true });
-            return;
-          }
-        } catch (e) {
-          console.log("Not an etudiant user, trying admin...");
-        }
-        
-        try {
-          const adminResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/admin/email/${email}`, {
-            method: "GET",
-            headers: {
-              "Authorization": `Bearer ${data.access_token}`
-            }
-          });
-          if (adminResponse.ok) {
-            const adminData = await adminResponse.json();
-            if (adminData) {              sessionStorage.setItem("user", JSON.stringify({ 
-                user: { ...adminData, role: "ADMIN" } 
-              }));
-              navigate('/', { replace: true });
-              return;
-            }
-          }
-        } catch (e) {
-          console.log("Could not determine user role");
-          setError("Impossible de déterminer le rôle utilisateur");
+        } catch (adminError) {
+          console.log('Could not determine user role');
+          setError('Impossible de déterminer le rôle utilisateur');
         }
       }
     } catch (err) {
-      console.error("Request error:", err);
+      console.error('Request error:', err);
       setError('Échec de la connexion');
     } finally {
       setLoading(false);

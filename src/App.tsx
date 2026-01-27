@@ -11,29 +11,32 @@ import Consultations from './components/Consultation';
 import { Logout } from './utiles/Logout';
 import Seances from './components/Seances';
 import PatientDetails from './components/PatientDetails';
+import { NotificationProvider } from './context/NotificationContext';
 
 function App() {
   return (
     <ThemeProvider>
-      <Router>
-        <Routes>
-          <Route path='/login' element={<ThemeSignInPage />}/>
-          <Route path='/reset-password' element={<PasswordReset />}/>
-          <Route path='logout' element={<Logout/>}/>
-          <Route element={<ProtectedRoutes/>}>
-            <Route path="/" element={<Layout />}>
-              <Route index element={<Dashboard />} />
-              <Route path="users" element={<Users />} />
-              <Route path='patients' element={<Patients/>}/>
-              <Route path="patients/:id" element={<PatientDetails />} />
-              <Route path="consultation" element={<Consultations />} />
-              <Route path="sceance" element={<Seances />} />
-              <Route path="help" element={<div style={{ padding: '24px' }}>Help Page Content</div>} />
-              <Route path="*" element={<Navigate to="/" replace />} />
+      <NotificationProvider>
+        <Router>
+          <Routes>
+            <Route path='/login' element={<ThemeSignInPage />} />
+            <Route path='/reset-password' element={<PasswordReset />} />
+            <Route path='logout' element={<Logout />} />
+            <Route element={<ProtectedRoutes />}>
+              <Route path="/" element={<Layout />}>
+                <Route index element={<Dashboard />} />
+                <Route path="users" element={<Users />} />
+                <Route path='patients' element={<Patients />} />
+                <Route path="patients/:id" element={<PatientDetails />} />
+                <Route path="consultation" element={<Consultations />} />
+                <Route path="sceance" element={<Seances />} />
+                <Route path="help" element={<div style={{ padding: '24px' }}>Help Page Content</div>} />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Route>
             </Route>
-          </Route>
-        </Routes>
-      </Router>
+          </Routes>
+        </Router>
+      </NotificationProvider>
     </ThemeProvider>
   );
 }

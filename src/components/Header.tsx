@@ -1,15 +1,16 @@
 import React from 'react';
-import { 
-  AppBar, 
-  Toolbar, 
-  IconButton, 
-  Typography, 
-  Box, 
+import {
+  AppBar,
+  Toolbar,
+  IconButton,
+  Typography,
+  Box,
   useTheme,
   useMediaQuery,
 } from '@mui/material';
 import { Menu } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
+import { NotificationBell } from './NotificationBell';
 
 interface HeaderProps {
   handleDrawerToggle: () => void;
@@ -20,9 +21,9 @@ const Header: React.FC<HeaderProps> = ({ handleDrawerToggle }) => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   return (
-    <AppBar 
-      position="fixed" 
-      sx={{ 
+    <AppBar
+      position="fixed"
+      sx={{
         zIndex: theme.zIndex.drawer + 1,
         boxShadow: 'none',
         backgroundColor: 'background.paper',
@@ -31,7 +32,7 @@ const Header: React.FC<HeaderProps> = ({ handleDrawerToggle }) => {
         borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)'
       }}
     >
-      
+
       <Toolbar>
         {isMobile && (
           <IconButton
@@ -47,33 +48,34 @@ const Header: React.FC<HeaderProps> = ({ handleDrawerToggle }) => {
 
         {/* Logo */}
         <Box sx={{ display: 'flex', alignItems: 'center', ml: isMobile ? 0 : 2 }}>
-          <img 
-            src="/medica-name.svg" 
+          <img
+            src="/medica-name.svg"
             alt="Logo Medica"
             style={{
               height: '45px',
               width: 'auto',
-            }} 
+            }}
           />
         </Box>
 
         <Box sx={{ flexGrow: 1 }} />
 
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <Box sx={{ mr: 2 }}>
+            <NotificationBell />
+          </Box>
           <ThemeToggle />
-          
+
           <Box sx={{ ml: 2, display: 'flex', alignItems: 'center' }}>
-            
+
             <Box sx={{ ml: 1, display: { xs: 'none', sm: 'block' } }}>
               <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
                 {(() => {
                   const userData = JSON.parse(sessionStorage.getItem("user") || "{}");
                   let userRole;
-                  if (JSON.parse(sessionStorage.getItem("user") as string)?.user!=null)
-                  {
+                  if (JSON.parse(sessionStorage.getItem("user") as string)?.user != null) {
                     userRole = JSON.parse(sessionStorage.getItem("user") as string)?.user.role;
-                  }else
-                  {
+                  } else {
                     userRole = JSON.parse(sessionStorage.getItem("user") as string)?.role;
 
                   }
@@ -82,7 +84,7 @@ const Header: React.FC<HeaderProps> = ({ handleDrawerToggle }) => {
                   if (userRole === 'MEDECIN' && userData.user?.user?.name) {
                     return `Dr. ${userData.user.user.name}`;
                   } else if (userRole === 'MEDECIN' && userData.user?.user?.profession) {
-                    return (userData.user.profession=== 'PARODONTAIRE' ? 'Parodontiste' : 'Orthodontiste');
+                    return (userData.user.profession === 'PARODONTAIRE' ? 'Parodontiste' : 'Orthodontiste');
                   } else if (userRole === 'ETUDIANT' && userData.user?.user?.name) {
                     return userData.user.user.name;
                   } else if (userRole === 'ADMIN' && userData.user.name) {
@@ -96,14 +98,12 @@ const Header: React.FC<HeaderProps> = ({ handleDrawerToggle }) => {
                 {(() => {
                   const userData = JSON.parse(sessionStorage.getItem("user") || "{}");
                   let userRole;
-                  if (JSON.parse(sessionStorage.getItem("user") as string)?.user!=null)
-                  {
+                  if (JSON.parse(sessionStorage.getItem("user") as string)?.user != null) {
                     userRole = JSON.parse(sessionStorage.getItem("user") as string)?.user.role;
-                  }else
-                  {
+                  } else {
                     userRole = JSON.parse(sessionStorage.getItem("user") as string)?.role;
 
-                  }                  
+                  }
                   if (userRole === 'MEDECIN' && userData.user?.profession) {
                     return (userData.user.profession === 'PARODONTAIRE' ? 'Parodontiste' : 'Orthodontiste');
                   } else {
@@ -112,7 +112,7 @@ const Header: React.FC<HeaderProps> = ({ handleDrawerToggle }) => {
                 })()}
               </Typography>
             </Box>
-           
+
           </Box>
         </Box>
       </Toolbar>
