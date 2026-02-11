@@ -23,12 +23,13 @@ export interface PatientData {
   state?: string;
 }
 
-export const patientService = {  getAll: async () => {
+export const patientService = {
+  getAll: async () => {
     try {
       const response = await fetchWithAuth(`${BASE_URL}/patient`);
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw Object.assign(new Error(errorData.error || `Failed with status: ${response.status}`), { 
+        throw Object.assign(new Error(errorData.error || `Failed with status: ${response.status}`), {
           response,
           status: response.status
         });
@@ -44,7 +45,7 @@ export const patientService = {  getAll: async () => {
       const response = await fetchWithAuth(`${BASE_URL}/patient/${id}`);
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw Object.assign(new Error(errorData.error || `Failed with status: ${response.status}`), { 
+        throw Object.assign(new Error(errorData.error || `Failed with status: ${response.status}`), {
           response,
           status: response.status
         });
@@ -66,7 +67,7 @@ export const patientService = {  getAll: async () => {
       });
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw Object.assign(new Error(errorData.error || `Failed with status: ${response.status}`), { 
+        throw Object.assign(new Error(errorData.error || `Failed with status: ${response.status}`), {
           response,
           status: response.status
         });
@@ -88,7 +89,7 @@ export const patientService = {  getAll: async () => {
       });
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw Object.assign(new Error(errorData.error || `Failed with status: ${response.status}`), { 
+        throw Object.assign(new Error(errorData.error || `Failed with status: ${response.status}`), {
           response,
           status: response.status
         });
@@ -106,7 +107,7 @@ export const patientService = {  getAll: async () => {
       });
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw Object.assign(new Error(errorData.error || `Failed with status: ${response.status}`), { 
+        throw Object.assign(new Error(errorData.error || `Failed with status: ${response.status}`), {
           response,
           status: response.status
         });
@@ -117,7 +118,7 @@ export const patientService = {  getAll: async () => {
       throw error;
     }
   },
-    // New function to transfer patient from PARODONTAIRE to ORTHODONTAIRE
+  // New function to transfer patient from PARODONTAIRE to ORTHODONTAIRE
   transferParoToOrtho: async (id: string, medecinId: string) => {
     try {
       const response = await fetchWithAuth(`${BASE_URL}/patient/Paro-Ortho/${id}`, {
@@ -129,7 +130,7 @@ export const patientService = {  getAll: async () => {
       });
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw Object.assign(new Error(errorData.error || `Failed with status: ${response.status}`), { 
+        throw Object.assign(new Error(errorData.error || `Failed with status: ${response.status}`), {
           response,
           status: response.status
         });
@@ -153,7 +154,7 @@ export const patientService = {  getAll: async () => {
       });
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw Object.assign(new Error(errorData.error || `Failed with status: ${response.status}`), { 
+        throw Object.assign(new Error(errorData.error || `Failed with status: ${response.status}`), {
           response,
           status: response.status
         });
@@ -165,3 +166,40 @@ export const patientService = {  getAll: async () => {
     }
   }
 };
+
+// ============================================================================
+// CLIENT-SIDE HELPER FUNCTIONS
+// ============================================================================
+
+/**
+ * Filter patients by profession (client-side helper)
+ * 
+ * NOTE: The API automatically filters patients server-side for MEDECIN users.
+ * This function is provided as a client-side helper for additional filtering
+ * or for displaying filtered results in the UI.
+ * 
+ * @param patients - Array of patients to filter
+ * @param profession - Profession to filter by ('ORTHODONTAIRE' or 'PARODONTAIRE')
+ * @returns Filtered array of patients matching the profession
+ */
+export const filterPatientsByProfession = (
+  patients: PatientData[],
+  profession: 'ORTHODONTAIRE' | 'PARODONTAIRE'
+): PatientData[] => {
+  return patients.filter(patient => patient.state === profession);
+};
+
+/**
+ * Check if a patient matches the user's profession
+ * 
+ * @param patient - Patient to check
+ * @param profession - User's profession
+ * @returns true if patient state matches profession
+ */
+export const patientMatchesProfession = (
+  patient: PatientData,
+  profession: 'ORTHODONTAIRE' | 'PARODONTAIRE'
+): boolean => {
+  return patient.state === profession;
+};
+
