@@ -2,7 +2,7 @@ import { fetchWithAuth } from './authService';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-export type Profession = 'PARODENTAIRE' | 'ORTHODENTAIRE';
+export type Profession = 'PARODONTAIRE' | 'ORTHODONTAIRE';
 
 export interface MedecinData {
   pwd: string;

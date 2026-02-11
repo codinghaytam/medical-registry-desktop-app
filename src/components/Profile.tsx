@@ -45,7 +45,7 @@ export const Profile: React.FC = () => {
     password: '',
     phone: '',
     // Additional fields for MEDECIN role
-    profession: 'PARODENTAIRE' as Profession,
+    profession: 'PARODONTAIRE' as Profession,
     isSpecialiste: false,
     // Additional field for ETUDIANT role
     niveau: 1,
@@ -111,7 +111,7 @@ export const Profile: React.FC = () => {
             lastName: user.lastName || '',
             email: user.email || '',
             phone: phoneNumber,
-            profession: user.profession || 'PARODENTAIRE',
+            profession: user.profession || 'PARODONTAIRE',
             isSpecialiste: user.isSpecialiste || false,
             niveau: user.niveau || 1,
           }));
@@ -184,9 +184,9 @@ export const Profile: React.FC = () => {
       username: userInfo.email || '',  // Use email as username
       password: '', // Leave password empty when editing
       phone: phoneNumber === 'Non renseigné' ? '' : phoneNumber,
-      profession: (userInfo.profession === 'PARODENTAIRE' || userInfo.profession === 'ORTHODENTAIRE')
+      profession: (userInfo.profession === 'PARODONTAIRE' || userInfo.profession === 'ORTHODONTAIRE')
         ? userInfo.profession 
-        : 'PARODENTAIRE',
+        : 'PARODONTAIRE',
       isSpecialiste: userInfo.isSpecialiste || false,
       niveau: userInfo.niveau || 1,
     });
@@ -382,7 +382,7 @@ export const Profile: React.FC = () => {
               <Typography variant="body1" color="text.secondary">
                 {(() => {
                   const p = userInfo.profession;
-                  if (p === 'PARODENTAIRE' || p === 'PARODONTAIRE') return 'Parodontiste';
+                  if (p === 'PARODONTAIRE' || p === 'PARODONTAIRE') return 'Parodontiste';
                   if (p === 'ORTHODENTAIRE' || p === 'ORTHODONTAIRE') return 'Orthodontiste';
                   return p || 'Non renseigné';
                 })()}
@@ -492,7 +492,7 @@ export const Profile: React.FC = () => {
                     required
                     disabled={isSubmitting}
                   >
-                    <MenuItem value="PARODENTAIRE">Parodontiste</MenuItem>
+                    <MenuItem value="PARODONTAIRE">Parodontiste</MenuItem>
                     <MenuItem value="ORTHODENTAIRE">Orthodontiste</MenuItem>
                   </MuiSelect>
                 </FormControl>

@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import useInterval from '../utiles/useInterval';
-import { 
-  Box, 
-  Typography, 
-  Card, 
-  CardContent, 
-  Button, 
+import {
+  Box,
+  Typography,
+  Card,
+  CardContent,
+  Button,
   TextField,
   InputAdornment,
   Table,
@@ -37,10 +37,10 @@ import {
   Collapse,
   Snackbar
 } from '@mui/material';
-import { 
-  Search, 
-  Plus, 
-  MoreVertical, 
+import {
+  Search,
+  Plus,
+  MoreVertical,
   Trash2,
   User,
   Stethoscope,
@@ -49,7 +49,8 @@ import {
   Save,
   ChevronDown,
   ChevronUp,
-  RefreshCw
+  RefreshCw,
+  Pencil
 } from 'lucide-react';
 import { patientService, HygieneBuccoDentaire, MotifConsultation, TypeMastication } from '../services/patientService';
 import { consultationService, ConsultationData, DiagnosisData } from '../services/consultationService';
@@ -146,10 +147,11 @@ const Consultations: React.FC = () => {
   const [medecins, setMedecins] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedConsultation, setSelectedConsultation] = useState<string | null>(null);
+  const [editingDiagnosisId, setEditingDiagnosisId] = useState<string | null>(null);
   const [diagnosisTypes] = useState<string[]>(['PARODONTAIRE', 'ORTHODONTAIRE']);
   // Get current user role
   const userRole = getUserRole();
-  
+
   const [activeStep, setActiveStep] = useState(0);
   const [integratedForm, setIntegratedForm] = useState<IntegratedConsultationForm>({
     // Consultation data
@@ -188,27 +190,27 @@ const Consultations: React.FC = () => {
   // Add delete confirmation dialog state
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [consultationToDelete, setConsultationToDelete] = useState<string | null>(null);
-  
+
   // Type for feedback notification styling
   type FeedbackType = 'success' | 'error' | 'info';
-  
+
   // State for feedback notifications
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState('');
   const [feedbackType, setFeedbackType] = useState<FeedbackType>('success');
-  
+
   // Show feedback notification
   const showFeedback = (message: string, type: FeedbackType = 'success') => {
     setFeedbackMessage(message);
     setFeedbackType(type);
     setFeedbackOpen(true);
   };
-  
+
   // Close feedback notification
   const handleCloseFeedback = () => {
     setFeedbackOpen(false);
   };
-  
+
   // Function to fetch all necessary data
   const fetchData = async () => {
     setIsLoading(true);
@@ -219,13 +221,13 @@ const Consultations: React.FC = () => {
         medecinService.getAll(),
         consultationService.getAll()
       ]);
-      
+
       setPatients(patientsData);
       setMedecins(medecinsData);
-      
+
       // Make sure consultationsData is actually an array
       let consultationsArray = Array.isArray(consultationsData) ? consultationsData : [];
-      
+
       // If user is MEDECIN, filter consultations to only show their own
       if (userRole === 'MEDECIN') {
         // Get current user ID from sessionStorage
@@ -244,7 +246,7 @@ const Consultations: React.FC = () => {
           consultationsArray = [];
         }
       }
-      
+
       // Ensure each consultation has the correct structure
       setConsultations(consultationsArray);
     } catch (error: any) {
@@ -258,12 +260,12 @@ const Consultations: React.FC = () => {
       setIsLoading(false);
     }
   };
-  
+
   // Set up auto-refresh for consultations list every 5 minutes
   useInterval(() => {
     fetchData();
   }, 300000); // 5 minutes in milliseconds
-  
+
   useEffect(() => {
     fetchData();
   }, [userRole]);
@@ -310,35 +312,35 @@ const Consultations: React.FC = () => {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    
+
     // If user is MEDECIN, force the medecinId to be the current user's ID
     if (userRole === 'MEDECIN') {
       const userData = JSON.parse(sessionStorage.getItem('user') || '{}');
       const currentUserId = userData.user?.id || userData.id;
-      
+
       const currentMedecin = medecins.find((m: any) => m.userId === currentUserId);
-      
+
       if (currentMedecin?.id) {
         newConsultation.medecinId = currentMedecin.id;
       }
     }
-    
+
     try {
       await consultationService.create(newConsultation);
       showFeedback('Consultation créée avec succès');
       handleCloseDialog();
-      
+
       // Refresh the consultations list
       try {
         const updatedConsultations = await consultationService.getAll();
-        
+
         // If user is MEDECIN, filter consultations again
         if (userRole === 'MEDECIN') {
           const userData = JSON.parse(sessionStorage.getItem('user') || '{}');
           const currentUserId = userData.user?.id || userData.id;
           const currentMedecin = medecins.find((m: any) => m.userId === currentUserId);
           const medecinId = currentMedecin?.id;
-          
+
           if (medecinId) {
             const filteredConsultations = updatedConsultations.filter(
               (consultation: ConsultationState) => consultation.medecinId === medecinId
@@ -378,7 +380,7 @@ const Consultations: React.FC = () => {
   // Proceed with delete after confirmation
   const handleConfirmedDelete = async () => {
     if (!consultationToDelete) return;
-    
+
     setIsLoading(true);
     try {
       await consultationService.delete(consultationToDelete);
@@ -402,7 +404,7 @@ const Consultations: React.FC = () => {
       handleMenuClose();
       return;
     }
-    
+
     handleConfirmDelete(id);
   };
 
@@ -414,6 +416,7 @@ const Consultations: React.FC = () => {
 
   const handleCloseDiagnosisDialog = () => {
     setOpenDiagnosisDialog(false);
+    setEditingDiagnosisId(null);
     setNewDiagnosis({
       type: '',
       text: '',
@@ -434,7 +437,7 @@ const Consultations: React.FC = () => {
 
   const handleDiagnosisSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    
+
     // If user is MEDECIN, force the medecinId to be the current user's ID
     if (userRole === 'MEDECIN') {
       const userData = JSON.parse(sessionStorage.getItem('user') || '{}');
@@ -444,46 +447,62 @@ const Consultations: React.FC = () => {
         newDiagnosis.medecinId = currentMedecin.id;
       }
     }
-    
+
     try {
-      if (selectedConsultation) {
+      if (editingDiagnosisId) {
+        // Update existing diagnosis
+        await consultationService.updateDiagnosis(editingDiagnosisId, newDiagnosis);
+        showFeedback('Diagnostic mis à jour avec succès');
+      } else if (selectedConsultation) {
+        // Create new diagnosis
         await consultationService.addDiagnosis(selectedConsultation, newDiagnosis);
         showFeedback('Diagnostic ajouté avec succès');
-        handleCloseDiagnosisDialog();
-        
-        // Refresh the consultations list
-        try {
-          const updatedConsultations = await consultationService.getAll();
-          
-          // Filter if needed
-          if (userRole === 'MEDECIN') {
-            const userData = JSON.parse(sessionStorage.getItem('user') || '{}');
-            const currentUserId = userData.user?.id || userData.id;
-            const currentMedecin = medecins.find((m: any) => m.userId === currentUserId);
-            const medecinId = currentMedecin?.id;
-            
-            if (medecinId) {
-              const filteredConsultations = updatedConsultations.filter(
-                (consultation: ConsultationState) => consultation.medecinId === medecinId
-              );
-              setConsultations(filteredConsultations);
-            } else {
-              setConsultations(updatedConsultations);
-            }
+      }
+
+      handleCloseDiagnosisDialog();
+
+      // Refresh the consultations list
+      try {
+        const updatedConsultations = await consultationService.getAll();
+
+        // Filter if needed
+        if (userRole === 'MEDECIN') {
+          const userData = JSON.parse(sessionStorage.getItem('user') || '{}');
+          const currentUserId = userData.user?.id || userData.id;
+          const currentMedecin = medecins.find((m: any) => m.userId === currentUserId);
+          const medecinId = currentMedecin?.id;
+
+          if (medecinId) {
+            const filteredConsultations = updatedConsultations.filter(
+              (consultation: ConsultationState) => consultation.medecinId === medecinId
+            );
+            setConsultations(filteredConsultations);
           } else {
             setConsultations(updatedConsultations);
           }
-        } catch (refreshError) {
-          console.error('Error refreshing data:', refreshError);
-          showFeedback('Diagnostic ajouté, mais impossible de rafraîchir la liste', 'info');
+        } else {
+          setConsultations(updatedConsultations);
         }
+      } catch (refreshError) {
+        console.error('Error refreshing data:', refreshError);
+        showFeedback('Opération réussie, mais impossible de rafraîchir la liste', 'info');
       }
     } catch (error: any) {
-      console.error('Error adding diagnosis:', error);
-      const errorMessage = error.message || 'Échec de l\'ajout du diagnostic. Veuillez réessayer.';
+      console.error('Error saving diagnosis:', error);
+      const errorMessage = error.message || 'Échec de l\'enregistrement du diagnostic. Veuillez réessayer.';
       showFeedback(errorMessage, 'error');
-    } finally {
     }
+  };
+
+  const handleEditDiagnosis = (consultationId: string, diagnosis: Diagnosis) => {
+    setSelectedConsultation(consultationId);
+    setEditingDiagnosisId(diagnosis.id || null);
+    setNewDiagnosis({
+      type: diagnosis.type,
+      text: diagnosis.text,
+      medecinId: diagnosis.medecinId
+    });
+    setOpenDiagnosisDialog(true);
   };
 
   // Handle integrated form
@@ -552,7 +571,7 @@ const Consultations: React.FC = () => {
     section: 'consultation' | 'patient' | 'diagnosis'
   ) => {
     const { name, value } = event.target;
-    
+
     if (section === 'consultation') {
       setIntegratedForm(prev => ({
         ...prev,
@@ -587,13 +606,13 @@ const Consultations: React.FC = () => {
 
   const handleIntegratedSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    
+
     // If user is MEDECIN, force the medecinId to be the current user's ID
     if (userRole === 'MEDECIN') {
       const userData = JSON.parse(sessionStorage.getItem('user') || '{}');
       const currentUserId = userData.user?.id || userData.id;
       const currentMedecin = medecins.find((m: any) => m.userId === currentUserId);
-      
+
       if (currentMedecin?.id) {
         integratedForm.medecinId = currentMedecin.id;
         if (includesDiagnosis && integratedForm.diagnosis) {
@@ -601,7 +620,7 @@ const Consultations: React.FC = () => {
         }
       }
     }
-    
+
     try {
       // 1. Create consultation with patient data
       const consultationData: ConsultationData & { patient: PatientFormData } = {
@@ -611,32 +630,32 @@ const Consultations: React.FC = () => {
         patientId: '', // This will be ignored as we're creating a patient inline
         patient: integratedForm.patient
       };
-      
+
       // Create consultation with new patient
       const newConsultation = await consultationService.create(consultationData as any);
-      
+
       // 2. If including diagnosis, add it to the new consultation
       if (includesDiagnosis && integratedForm.diagnosis && newConsultation.id) {
         await consultationService.addDiagnosis(
-          newConsultation.id, 
+          newConsultation.id,
           integratedForm.diagnosis
         );
       }
-      
+
       showFeedback('Patient et consultation créés avec succès');
       handleCloseIntegratedDialog();
-      
+
       // 3. Refresh the consultations list
       try {
         const updatedConsultations = await consultationService.getAll();
-        
+
         // Filter if needed for MEDECIN users
         if (userRole === 'MEDECIN') {
           const userData = JSON.parse(sessionStorage.getItem('user') || '{}');
           const currentUserId = userData.user?.id || userData.id;
           const currentMedecin = medecins.find((m: any) => m.userId === currentUserId);
           const medecinId = currentMedecin?.id;
-          
+
           if (medecinId) {
             const filteredConsultations = updatedConsultations.filter(
               (consultation: ConsultationState) => consultation.medecinId === medecinId
@@ -662,10 +681,10 @@ const Consultations: React.FC = () => {
 
   const filteredConsultations = React.useMemo(() => {
     if (!Array.isArray(consultations)) return [];
-    return consultations.filter(consultation => 
-      (consultation.patient?.nom?.toLowerCase().includes(searchQuery?.toLowerCase() || '') ||
-       consultation.patient?.prenom?.toLowerCase().includes(searchQuery?.toLowerCase() || '') ||
-       new Date(consultation.date).toLocaleDateString().includes(searchQuery?.toLowerCase() || ''))
+    return consultations.filter(consultation =>
+    (consultation.patient?.nom?.toLowerCase().includes(searchQuery?.toLowerCase() || '') ||
+      consultation.patient?.prenom?.toLowerCase().includes(searchQuery?.toLowerCase() || '') ||
+      new Date(consultation.date).toLocaleDateString().includes(searchQuery?.toLowerCase() || ''))
     );
   }, [consultations, searchQuery]);
 
@@ -681,10 +700,10 @@ const Consultations: React.FC = () => {
     <Box sx={{ flexGrow: 1, p: 3 }}>
       {/* Show network error message at the top if present */}
       {networkError && (
-        <Box sx={{ 
-          mb: 4, 
-          p: 2, 
-          bgcolor: 'error.light', 
+        <Box sx={{
+          mb: 4,
+          p: 2,
+          bgcolor: 'error.light',
           color: 'error.dark',
           borderRadius: 1,
           display: 'flex',
@@ -694,9 +713,9 @@ const Consultations: React.FC = () => {
           <Typography variant="body1">
             {networkError}
           </Typography>
-          <Button 
-            variant="outlined" 
-            color="error" 
+          <Button
+            variant="outlined"
+            color="error"
             size="small"
             onClick={() => window.location.reload()}
           >
@@ -704,17 +723,17 @@ const Consultations: React.FC = () => {
           </Button>
         </Box>
       )}
-      
+
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
         <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-         Consultations
+          Consultations
         </Typography>
-        
+
         {/* Only ADMIN and MEDECIN can add new consultations */}
         <RoleBasedAccess requiredRoles={['ADMIN', 'MEDECIN']}>
           <Box sx={{ display: 'flex', gap: 2 }}>
-            <Button 
-              variant="contained" 
+            <Button
+              variant="contained"
               startIcon={<User size={18} />}
               sx={{ borderRadius: 2 }}
               onClick={handleOpenIntegratedDialog}
@@ -759,17 +778,17 @@ const Consultations: React.FC = () => {
             {/* Refresh button for all users */}
             <Tooltip title="Rafraîchir les données">
 
-              <Button 
-              variant="outlined" 
-              size="small"
-              startIcon={<RefreshCw size={16} />}
-              onClick={fetchData}
-              disabled={isLoading}
-            >
-              Rafraîchir
-            </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<RefreshCw size={16} />}
+                onClick={fetchData}
+                disabled={isLoading}
+              >
+                Rafraîchir
+              </Button>
             </Tooltip>
-            
+
           </Box>
         </CardContent>
       </Card>
@@ -805,115 +824,145 @@ const Consultations: React.FC = () => {
                 filteredConsultations
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((consultation) => (
-                  <React.Fragment key={consultation.id}>
-                    <TableRow
-                      sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                    >
-                      <TableCell>
-                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
-                          <Calendar size={14} style={{ marginRight: 8 }} />
-                          <Typography variant="body2">{new Date(consultation.date).toLocaleDateString()}</Typography>
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          <User size={14} style={{ marginRight: 8 }}></User>
-                          <Typography variant="body2">
-                            {consultation.patient?.nom} {consultation.patient?.prenom}
-                          </Typography>
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          <Stethoscope size={14} style={{ marginRight: 8 }}/>
-                          <Typography variant="body2">
-                            {consultation.medecin.user.name 
-                              ? `${consultation.medecin.user.name} (${consultation.medecin.profession === 'PARODONTAIRE' ? 'Paro' : 'Ortho'})`
-                              : (consultation.medecin?.user?.name || 'Inconnu')}
-                          </Typography>
-                        </Box>
-                      </TableCell>
-                      
-                      <TableCell align="right">
-                        {/* Different action buttons based on role */}
-                        {canOnlyView() ? (
-                          <Tooltip title="Voir les détails">
-                            <IconButton size="small">
-                              <Eye size={18} />
-                            </IconButton>
-                          </Tooltip>
-                        ) : (
-                          <>
-                            <Tooltip title="Ajouter un diagnostic">
+                    <React.Fragment key={consultation.id}>
+                      <TableRow
+                        sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                      >
+                        <TableCell>
+                          <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+                            <Calendar size={14} style={{ marginRight: 8 }} />
+                            <Typography variant="body2">{new Date(consultation.date).toLocaleDateString()}</Typography>
+                          </Box>
+                        </TableCell>
+                        <TableCell>
+                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            <User size={14} style={{ marginRight: 8 }}></User>
+                            <Typography variant="body2">
+                              {consultation.patient?.nom} {consultation.patient?.prenom}
+                            </Typography>
+                          </Box>
+                        </TableCell>
+                        <TableCell>
+                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            <Stethoscope size={14} style={{ marginRight: 8 }} />
+                            <Typography variant="body2">
+                              {consultation.medecin.user.name
+                                ? `${consultation.medecin.user.name} (${consultation.medecin.profession === 'PARODONTAIRE' ? 'Paro' : 'Ortho'})`
+                                : (consultation.medecin?.user?.name || 'Inconnu')}
+                            </Typography>
+                          </Box>
+                        </TableCell>
+
+                        <TableCell align="right">
+                          {/* Different action buttons based on role */}
+                          {canOnlyView() ? (
+                            <Tooltip title="Voir les détails">
+                              <IconButton size="small">
+                                <Eye size={18} />
+                              </IconButton>
+                            </Tooltip>
+                          ) : (
+                            <>
+                              <Tooltip title="Ajouter un diagnostic">
+                                <IconButton
+                                  size="small"
+                                  onClick={() => handleOpenDiagnosisDialog(consultation.id)}
+                                  disabled={userRole === 'MEDECIN' && (() => {
+                                    const userData = JSON.parse(sessionStorage.getItem('user') || '{}');
+                                    const currentUserId = userData.user?.id || userData.id;
+                                    const currentMedecin = medecins.find((m: any) => m.userId === currentUserId);
+                                    return consultation.medecinId !== currentMedecin?.id;
+                                  })()}
+                                  sx={{ mr: 1 }}
+                                >
+                                  <Plus size={18} />
+                                </IconButton>
+                              </Tooltip>
                               <IconButton
-                                size="small" 
-                                onClick={() => handleOpenDiagnosisDialog(consultation.id)}
+                                size="small"
+                                onClick={(event) => handleMenuClick(event, consultation.id)}
+                                // For MEDECIN, only allow actions on their own consultations
                                 disabled={userRole === 'MEDECIN' && (() => {
                                   const userData = JSON.parse(sessionStorage.getItem('user') || '{}');
                                   const currentUserId = userData.user?.id || userData.id;
                                   const currentMedecin = medecins.find((m: any) => m.userId === currentUserId);
                                   return consultation.medecinId !== currentMedecin?.id;
                                 })()}
-                                sx={{ mr: 1 }}
                               >
-                                <Plus size={18} />
+                                <MoreVertical size={18} />
                               </IconButton>
-                            </Tooltip>
-                            <IconButton 
-                              size="small" 
-                              onClick={(event) => handleMenuClick(event, consultation.id)}
-                              // For MEDECIN, only allow actions on their own consultations
-                              disabled={userRole === 'MEDECIN' && (() => {
-                                const userData = JSON.parse(sessionStorage.getItem('user') || '{}');
-                                const currentUserId = userData.user?.id || userData.id;
-                                const currentMedecin = medecins.find((m: any) => m.userId === currentUserId);
-                                return consultation.medecinId !== currentMedecin?.id;
-                              })()}
-                            >
-                              <MoreVertical size={18} />
-                            </IconButton>
-                          </>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <IconButton
-                          size="small"
-                          onClick={() => handleRowClick(consultation.id)}
-                        >
-                          {expandedRows.includes(consultation.id) ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-                        </IconButton>
-                      </TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell colSpan={7} style={{ paddingBottom: 0, paddingTop: 0 }}>
-                        <Collapse in={expandedRows.includes(consultation.id)} timeout="auto" unmountOnExit>
-                          <Box margin={1}>
-                            {consultation.diagnostiques && consultation.diagnostiques.map((diagnosis, index) => (
-                              <Typography key={index} variant="body2" paragraph>
-                                <strong>{diagnosis.type === 'PARODONTAIRE' ? 'Parodontal' : (diagnosis.type === 'ORTHODONTAIRE' ? 'Orthodontique' : diagnosis.type)}:</strong> {diagnosis.text}
-                                {diagnosis.Medecin && (
-                                  <Box component="span" sx={{ ml: 1, color: 'text.secondary', fontSize: '0.9em' }}>
-                                    (Dr. {diagnosis.Medecin.user
-                                      ? `${diagnosis.Medecin.user.name}`
-                                      : (diagnosis.medecinId)})
-                                  </Box>
-                                )}
-                              </Typography>
-                            ))}
-                            {(!consultation.diagnostiques || consultation.diagnostiques.length === 0) && (
-                              <Typography variant="body2" color="text.secondary">
-                                Aucun diagnostic
-                              </Typography>
-                            )}
-                          </Box>
-                        </Collapse>
-                      </TableCell>
-                    </TableRow>
-                  </React.Fragment>
-                )))}
+                            </>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleRowClick(consultation.id)}
+                          >
+                            {expandedRows.includes(consultation.id) ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                          </IconButton>
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell colSpan={7} style={{ paddingBottom: 0, paddingTop: 0 }}>
+                          <Collapse in={expandedRows.includes(consultation.id)} timeout="auto" unmountOnExit>
+                            <Box margin={1}>
+                              {consultation.diagnostiques && consultation.diagnostiques.map((diagnosis, index) => (
+                                <Box key={index} sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1 }}>
+                                  <Typography variant="body2" sx={{ flexGrow: 1 }}>
+                                    <strong>{diagnosis.type === 'PARODONTAIRE' ? 'Parodontal' : (diagnosis.type === 'ORTHODONTAIRE' ? 'Orthodontique' : diagnosis.type)}:</strong> {diagnosis.text}
+                                    {diagnosis.Medecin && (
+                                      <Box component="span" sx={{ ml: 1, color: 'text.secondary', fontSize: '0.9em' }}>
+                                        (Dr. {diagnosis.Medecin.user
+                                          ? `${diagnosis.Medecin.user.name}`
+                                          : (diagnosis.medecinId)})
+                                      </Box>
+                                    )}
+                                  </Typography>
+
+                                  {/* Edit capability: ADMIN or OWNER MEDECIN */}
+                                  <RoleBasedAccess requiredRoles={['ADMIN', 'MEDECIN']}>
+                                    {(() => {
+                                      // Check if user is owner
+                                      const isOwner = userRole === 'MEDECIN' ? (() => {
+                                        const userData = JSON.parse(sessionStorage.getItem('user') || '{}');
+                                        const currentUserId = userData.user?.id || userData.id;
+                                        const currentMedecin = medecins.find((m: any) => m.userId === currentUserId);
+                                        return diagnosis.medecinId === currentMedecin?.id;
+                                      })() : true; // Admin can always edit
+
+                                      if (isOwner) {
+                                        return (
+                                          <Tooltip title="Modifier le diagnostic">
+                                            <IconButton
+                                              size="small"
+                                              onClick={() => handleEditDiagnosis(consultation.id, diagnosis)}
+                                              sx={{ ml: 1, mt: -0.5 }}
+                                            >
+                                              <Pencil size={14} />
+                                            </IconButton>
+                                          </Tooltip>
+                                        );
+                                      }
+                                      return null;
+                                    })()}
+                                  </RoleBasedAccess>
+                                </Box>
+                              ))}
+                              {(!consultation.diagnostiques || consultation.diagnostiques.length === 0) && (
+                                <Typography variant="body2" color="text.secondary">
+                                  Aucun diagnostic
+                                </Typography>
+                              )}
+                            </Box>
+                          </Collapse>
+                        </TableCell>
+                      </TableRow>
+                    </React.Fragment>
+                  )))}
             </TableBody>
-            </Table>  
-          </TableContainer>
+          </Table>
+        </TableContainer>
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"
@@ -948,7 +997,7 @@ const Consultations: React.FC = () => {
           transformOrigin={{ horizontal: 'right', vertical: 'top' }}
           anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         >
-          
+
           <MenuItem onClick={() => handleDelete(selectedConsultation!)} sx={{ color: 'error.main' }}>
             <Trash2 size={16} style={{ marginRight: 8 }} />
             Supprimer
@@ -1010,9 +1059,9 @@ const Consultations: React.FC = () => {
                   ))}
                 </Select>
               </FormControl>
-              
+
               {/* Only ADMIN can choose medecin, MEDECIN is restricted to their own ID */}
-              <RoleBasedAccess 
+              <RoleBasedAccess
                 requiredRoles="ADMIN"
                 fallback={
                   <Alert severity="info" sx={{ mb: 2 }}>
@@ -1031,7 +1080,7 @@ const Consultations: React.FC = () => {
                   >
                     {Array.isArray(medecins) && medecins.map((medecin) => (
                       <MenuItem key={medecin.id} value={medecin.id}>
-                        {medecin.user?.name}- {(medecin.profession== 'PARODONTAIRE')?'Parodontie':'Orthodontie'}
+                        {medecin.user?.name}- {(medecin.profession == 'PARODONTAIRE') ? 'Parodontie' : 'Orthodontie'}
 
                       </MenuItem>
                     ))}
@@ -1045,10 +1094,10 @@ const Consultations: React.FC = () => {
             </DialogActions>
           </form>
         </Dialog>
-        
+
         {/* Diagnosis Dialog */}
         <Dialog open={openDiagnosisDialog} onClose={handleCloseDiagnosisDialog} maxWidth="sm" fullWidth>
-          <DialogTitle>Ajouter un diagnostic</DialogTitle>
+          <DialogTitle>{editingDiagnosisId ? 'Modifier le diagnostic' : 'Ajouter un diagnostic'}</DialogTitle>
           <form onSubmit={handleDiagnosisSubmit}>
             <DialogContent>
               <FormControl fullWidth sx={{ mb: 2 }}>
@@ -1067,7 +1116,7 @@ const Consultations: React.FC = () => {
                   ))}
                 </Select>
               </FormControl>
-              
+
               <TextField
                 fullWidth
                 label="Texte du diagnostic"
@@ -1079,9 +1128,9 @@ const Consultations: React.FC = () => {
                 required
                 sx={{ mb: 2 }}
               />
-              
+
               {/* Only ADMIN can choose medecin, MEDECIN is restricted to their own ID */}
-              <RoleBasedAccess 
+              <RoleBasedAccess
                 requiredRoles="ADMIN"
                 fallback={
                   <Alert severity="info" sx={{ mb: 2 }}>
@@ -1118,13 +1167,13 @@ const Consultations: React.FC = () => {
       <RoleBasedAccess requiredRoles={['ADMIN', 'MEDECIN']}>
         {/* Integrated Patient + Consultation + Diagnosis Form Dialog */}
         <Dialog open={openIntegratedDialog} onClose={handleCloseIntegratedDialog} maxWidth="md" fullWidth>
-          <DialogTitle>   
+          <DialogTitle>
             Créer un nouveau patient et une consultation
             <Typography variant="body2" color="text.secondary">
               Complétez toutes les étapes pour créer un dossier patient avec consultation
             </Typography>
           </DialogTitle>
-          
+
           <form onSubmit={handleIntegratedSubmit}>
             <DialogContent>
               <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
@@ -1138,7 +1187,7 @@ const Consultations: React.FC = () => {
                   <StepLabel>Diagnostic (optionnel)</StepLabel>
                 </Step>
               </Stepper>
-              
+
               {/* Step 1: Patient Information */}
               {activeStep === 0 && (
                 <Grid container spacing={2}>
@@ -1195,12 +1244,12 @@ const Consultations: React.FC = () => {
                       required
                     />
                   </Grid>
-                  
+
                   <Grid item xs={12}>
                     <Divider sx={{ my: 2 }} />
                     <Typography variant="h6" gutterBottom>Informations cliniques</Typography>
                   </Grid>
-                  
+
                   <Grid item xs={12} md={4}>
                     <FormControl fullWidth>
                       <InputLabel>Motif de consultation</InputLabel>
@@ -1217,7 +1266,7 @@ const Consultations: React.FC = () => {
                       </Select>
                     </FormControl>
                   </Grid>
-                  
+
                   <Grid item xs={12} md={4}>
                     <FormControl fullWidth>
                       <InputLabel>Hygiène bucco-dentaire</InputLabel>
@@ -1234,7 +1283,7 @@ const Consultations: React.FC = () => {
                       </Select>
                     </FormControl>
                   </Grid>
-                  
+
                   <Grid item xs={12} md={4}>
                     <FormControl fullWidth>
                       <InputLabel>Type de mastication</InputLabel>
@@ -1251,7 +1300,7 @@ const Consultations: React.FC = () => {
                       </Select>
                     </FormControl>
                   </Grid>
-                  
+
                   <Grid item xs={12}>
                     <TextField
                       fullWidth
@@ -1263,7 +1312,7 @@ const Consultations: React.FC = () => {
                       rows={2}
                     />
                   </Grid>
-                  
+
                   <Grid item xs={12}>
                     <TextField
                       fullWidth
@@ -1275,7 +1324,7 @@ const Consultations: React.FC = () => {
                       rows={2}
                     />
                   </Grid>
-                  
+
                   <Grid item xs={12}>
                     <TextField
                       fullWidth
@@ -1287,7 +1336,7 @@ const Consultations: React.FC = () => {
                       rows={2}
                     />
                   </Grid>
-                  
+
                   <Grid item xs={12}>
                     <TextField
                       fullWidth
@@ -1301,14 +1350,14 @@ const Consultations: React.FC = () => {
                   </Grid>
                 </Grid>
               )}
-              
+
               {/* Step 2: Consultation Details */}
               {activeStep === 1 && (
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
                     <Typography variant="h6" gutterBottom>Informations sur la consultation</Typography>
                   </Grid>
-                  
+
                   <Grid item xs={12}>
                     <TextField
                       fullWidth
@@ -1321,12 +1370,12 @@ const Consultations: React.FC = () => {
                       InputLabelProps={{ shrink: true }}
                     />
                   </Grid>
-                  
+
                   {/* Consultation ID is auto-generated and hidden from the user */}
-                  
+
                   {/* Only ADMIN can choose medecin, MEDECIN is restricted to their own ID */}
                   <Grid item xs={12} sx={{ mt: 2 }}>
-                    <RoleBasedAccess 
+                    <RoleBasedAccess
                       requiredRoles="ADMIN"
                       fallback={
                         <Alert severity="info">
@@ -1354,7 +1403,7 @@ const Consultations: React.FC = () => {
                   </Grid>
                 </Grid>
               )}
-              
+
               {/* Step 3: Diagnosis (Optional) */}
               {activeStep === 2 && (
                 <Grid container spacing={2}>
@@ -1375,7 +1424,7 @@ const Consultations: React.FC = () => {
                       </FormControl>
                     </Box>
                   </Grid>
-                  
+
                   {includesDiagnosis && (
                     <>
                       <Grid item xs={12}>
@@ -1396,7 +1445,7 @@ const Consultations: React.FC = () => {
                           </Select>
                         </FormControl>
                       </Grid>
-                      
+
                       <Grid item xs={12}>
                         <TextField
                           fullWidth
@@ -1410,10 +1459,10 @@ const Consultations: React.FC = () => {
                           sx={{ mb: 2 }}
                         />
                       </Grid>
-                      
+
                       {/* Only ADMIN can choose medecin, MEDECIN is restricted to their own ID */}
                       <Grid item xs={12}>
-                        <RoleBasedAccess 
+                        <RoleBasedAccess
                           requiredRoles="ADMIN"
                           fallback={
                             <Alert severity="info">
@@ -1441,7 +1490,7 @@ const Consultations: React.FC = () => {
                       </Grid>
                     </>
                   )}
-                  
+
                   {!includesDiagnosis && (
                     <Grid item xs={12}>
                       <Alert severity="info" sx={{ mt: 2 }}>
@@ -1452,7 +1501,7 @@ const Consultations: React.FC = () => {
                 </Grid>
               )}
             </DialogContent>
-            
+
             <DialogActions>
               <Button onClick={handleCloseIntegratedDialog}>Annuler</Button>
               {activeStep > 0 && (
@@ -1488,9 +1537,9 @@ const Consultations: React.FC = () => {
           <Button onClick={handleCloseDeleteDialog} color="primary">
             Annuler
           </Button>
-          <Button 
-            onClick={handleConfirmedDelete} 
-            color="error" 
+          <Button
+            onClick={handleConfirmedDelete}
+            color="error"
             variant="contained"
             disabled={isLoading}
           >
@@ -1505,9 +1554,9 @@ const Consultations: React.FC = () => {
         onClose={handleCloseFeedback}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert 
-          onClose={handleCloseFeedback} 
-          severity={feedbackType} 
+        <Alert
+          onClose={handleCloseFeedback}
+          severity={feedbackType}
           variant="filled"
           sx={{ width: '100%' }}
         >

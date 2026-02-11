@@ -11,6 +11,9 @@ import { Search, Plus, MoreVertical, Edit, Trash2, User, RefreshCw, Phone } from
 import { userService, UserData } from '../services/userService';
 import { medecinService, Profession } from '../services/medecinService';
 import { etudiantService } from '../services/etudiantService';
+import { patientService } from '../services/patientService';
+import { consultationService } from '../services/consultationService';
+import { seanceService } from '../services/seanceService';
 
 const Users: React.FC = () => {
   const [page, setPage] = useState(0);
@@ -32,7 +35,7 @@ const Users: React.FC = () => {
     password: '',
     role: '',
     // Additional fields for MEDECIN role
-    profession: 'PARODENTAIRE' as Profession,
+    profession: '' as any,
     isSpecialiste: false,
     // Additional field for ETUDIANT role
     niveau: 1,
@@ -40,6 +43,10 @@ const Users: React.FC = () => {
     phone: '',
   });
   const [users, setUsers] = useState<UserData[]>([]);
+  const [allPatients, setAllPatients] = useState<any[]>([]);
+  const [medecinPatientsCount, setMedecinPatientsCount] = useState<Record<string, number>>({});
+  const [medecinUserToEntity, setMedecinUserToEntity] = useState<Record<string, string>>({});
+  const [etudiantUserToEntity, setEtudiantUserToEntity] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -52,7 +59,7 @@ const Users: React.FC = () => {
     password: '',
     role: '',
     // Additional fields for MEDECIN role
-    profession: 'PARODENTAIRE' as Profession,
+    profession: 'PARODONTAIRE' as Profession,
     isSpecialiste: false,
     // Additional field for ETUDIANT role
     niveau: 1,
@@ -108,6 +115,70 @@ const Users: React.FC = () => {
     try {
       const data = await userService.getAll();
       setUsers(data);
+      // Fetch patients, consultations and seances needed to compute patient counts
+      try {
+        const [patientsData, consultationsData, seancesData, medecinsData, etudiantsData] = await Promise.all([
+          patientService.getAll(),
+          consultationService.getAll(),
+          seanceService.getAll(),
+          medecinService.getAll(),
+          etudiantService.getAll(),
+        ]);
+        setAllPatients(Array.isArray(patientsData) ? patientsData : []);
+
+        // Build medecinId -> set(patientId) mapping
+        const map: Record<string, Set<string>> = {};
+
+        if (Array.isArray(consultationsData)) {
+          consultationsData.forEach((c: any) => {
+            if (!c || !c.medecinId || !c.patientId) return;
+            map[c.medecinId] = map[c.medecinId] || new Set();
+            map[c.medecinId].add(c.patientId);
+          });
+        }
+
+        if (Array.isArray(seancesData)) {
+          seancesData.forEach((s: any) => {
+            if (!s || !s.medecinId || !s.patientId) return;
+            map[s.medecinId] = map[s.medecinId] || new Set();
+            map[s.medecinId].add(s.patientId);
+          });
+        }
+
+        // Convert to counts and map to both medecin entity id and medecin.userId (if available)
+        const counts: Record<string, number> = {};
+        Object.keys(map).forEach(k => counts[k] = map[k].size);
+
+        if (Array.isArray(medecinsData)) {
+          const mMap: Record<string, string> = {};
+          medecinsData.forEach((m: any) => {
+            if (!m) return;
+            // map userId -> medecin entity id
+            if (m.userId) mMap[m.userId] = m.id;
+            // also allow entity id to map to itself
+            mMap[m.id] = m.id;
+            // expose counts under userId as well (so UI keyed by user.id works)
+            const entityCount = counts[m.id] ?? 0;
+            if (m.userId) counts[m.userId] = entityCount;
+          });
+          setMedecinUserToEntity(mMap);
+        }
+
+        if (Array.isArray(etudiantsData)) {
+          const eMap: Record<string, string> = {};
+          etudiantsData.forEach((e: any) => {
+            if (!e) return;
+            if (e.userId) eMap[e.userId] = e.id;
+            eMap[e.id] = e.id;
+          });
+          setEtudiantUserToEntity(eMap);
+        }
+
+        setMedecinPatientsCount(counts);
+      } catch (innerErr) {
+        console.error('Failed to fetch patient/consultation/seance data:', innerErr);
+        // keep users list even if related data fails
+      }
     } catch (error: any) {
       console.error('Failed to fetch users:', error);
       setNetworkError(error.message || 'Échec du chargement des utilisateurs. Veuillez réessayer.');
@@ -146,20 +217,20 @@ const Users: React.FC = () => {
     setSelectedUserId(null);
   };
 
-  const handleOpenEditDialog = (userId: string) => {
+  const handleOpenEditDialog = async (userId: string) => {
     const user = users.find(u => u.id === userId);
     console.log('Editing user:', user);
     if (!user) return;
 
     setUserToEdit(user);
-    
+
     // Strip +212 prefix from phone number if present
     let phoneNumber = user.phone || '';
     if (phoneNumber.startsWith('+212')) {
       phoneNumber = phoneNumber.substring(4); // Remove +212 prefix
     }
-    
-    // Initialize form with current user data
+
+    // Initialize form with current user data (leave profession empty until loaded)
     setEditFormData({
       id: user.id,
       username: user.username,
@@ -168,15 +239,15 @@ const Users: React.FC = () => {
       email: user.email,
       password: '', // Leave password empty when editing
       role: user.role,
-      profession: 'PARODENTAIRE',
+      profession: '' as any,
       isSpecialiste: false,
       niveau: 1,
       phone: phoneNumber, // Initialize phone field with current value without country code
     });
 
-    // Load role-specific data
-    loadRoleSpecificData(user);
-    
+    // Load role-specific data and wait so fields (profession, niveau) are set before opening
+    await loadRoleSpecificData(user);
+
     setOpenEditDialog(true);
     handleMenuClose();
   };
@@ -184,20 +255,27 @@ const Users: React.FC = () => {
   const loadRoleSpecificData = async (user: UserData) => {
     try {
       if (user.role === 'MEDECIN') {
-        const medecinData = await medecinService.getById(user.id);
+        // Use medecin entity id mapped from user.id when available
+        const medecinId = medecinUserToEntity[user.id] ?? user.id;
+        const medecinData = await medecinService.getById(medecinId);
         if (medecinData) {
+          console.log('Loaded medecin data:', medecinData);
           setEditFormData(prev => ({
             ...prev,
             profession: medecinData.profession,
             isSpecialiste: medecinData.isSpecialiste || false,
+            // ensure the edit id references the medecin entity
+            id: medecinData.id || medecinId,
           }));
         }
       } else if (user.role === 'ETUDIANT') {
-        const etudiantData = await etudiantService.getById(user.id);
+        const etudiantId = etudiantUserToEntity[user.id] ?? user.id;
+        const etudiantData = await etudiantService.getById(etudiantId);
         if (etudiantData) {
           setEditFormData(prev => ({
             ...prev,
             niveau: etudiantData.niveau || 1,
+            id: etudiantData.id || etudiantId,
           }));
         }
       }
@@ -281,21 +359,35 @@ const Users: React.FC = () => {
         ...(password ? { password } : {}),  // Only include password if provided
       };
 
-      // Call appropriate service based on user role
+      // Determine correct id to call based on role
       if (userToEdit.role === 'MEDECIN') {
-        await medecinService.update(id, {
-          ...updateData,
-          profession: data.profession,
-          isSpecialiste: data.isSpecialiste,
-          ...(password ? { pwd: password } : {}),  // Medecin uses 'pwd' instead of 'password'
-        });
+        const medecinId = medecinUserToEntity[userToEdit.id] ?? id;
+        // Build a minimal, well-typed payload to satisfy backend validation
+        const medPayload: Record<string, any> = {};
+        if (updateData.username) medPayload.username = updateData.username;
+        if (updateData.email) medPayload.email = updateData.email;
+        if (updateData.firstName) medPayload.firstName = updateData.firstName;
+        if (updateData.lastName) medPayload.lastName = updateData.lastName;
+        // phone: only send if not empty
+        if (updateData.phone && updateData.phone.trim() !== '') medPayload.phone = updateData.phone;
+        if (data.profession && String(data.profession).trim() !== '') medPayload.profession = String(data.profession);
+        if (data.isSpecialiste !== undefined) medPayload.isSpecialiste = Boolean(data.isSpecialiste);
+        if (password && password.trim() !== '') medPayload.pwd = password; // medecin expects 'pwd'
+
+        // Log payload for debugging validation issues
+        // eslint-disable-next-line no-console
+        console.log('medecin update payload:', medecinId, medPayload);
+
+        await medecinService.update(medecinId, medPayload);
       } else if (userToEdit.role === 'ETUDIANT') {
-        await etudiantService.update(id, {
+        const etudiantId = etudiantUserToEntity[userToEdit.id] ?? id;
+        await etudiantService.update(etudiantId, {
           ...updateData,
-          niveau: data.niveau,
+          niveau: Number(data.niveau),
         });
       } else {
-        await userService.update(id, updateData);
+        // ADMIN and others: use the user id
+        await userService.update(userToEdit.id, updateData);
       }
 
       // Refresh users list and close dialog
@@ -324,7 +416,7 @@ const Users: React.FC = () => {
       email: '',
       password: '',
       role: '',
-      profession: 'PARODENTAIRE',
+      profession: 'PARODONTAIRE',
       isSpecialiste: false,
       niveau: 1,
       phone: '', // Reset phone field
@@ -398,7 +490,7 @@ const Users: React.FC = () => {
       // Always use email as username
       // Prepend +212 to the phone number for Moroccan format
       const formattedPhone = newUser.phone ? `+212${newUser.phone}` : '';
-      
+
       const baseUserData = {
         username: newUser.email,
         firstName: newUser.firstName,
@@ -407,7 +499,7 @@ const Users: React.FC = () => {
         pwd: newUser.password,
         phone: formattedPhone, // Include formatted phone number with country code
       };
-      
+
       if (newUser.role === 'MEDECIN') {
         // For MEDECIN, use medecinService
         const medecinData = {
@@ -422,7 +514,7 @@ const Users: React.FC = () => {
         const etudiantData = {
           ...baseUserData,
           role: 'ETUDIANT',
-          niveau: newUser.niveau,
+          niveau: Number(newUser.niveau), // Ensure niveau is a number
         };
         await etudiantService.create(etudiantData);
       } else {
@@ -469,17 +561,21 @@ const Users: React.FC = () => {
         throw new Error("Utilisateur introuvable");
       }
       
-      // Delete based on user role
+      // Delete based on user role — use entity id for medecin/etudiant
       switch (userToDeleteObj.role) {
-        case 'MEDECIN':
-          await medecinService.delete(userToDelete);
+        case 'MEDECIN': {
+          const medecinId = medecinUserToEntity[userToDelete] ?? userToDelete;
+          await medecinService.delete(medecinId);
           break;
-        case 'ETUDIANT':
-          await etudiantService.delete(userToDelete);
+        }
+        case 'ETUDIANT': {
+          const etudiantId = etudiantUserToEntity[userToDelete] ?? userToDelete;
+          await etudiantService.delete(etudiantId);
           break;
+        }
         case 'ADMIN':
         default:
-          // For ADMIN or any other role, use the generic user service
+          // For ADMIN or any other role, use the generic user service (user id)
           await userService.delete(userToDelete);
           break;
       }
@@ -610,6 +706,7 @@ const Users: React.FC = () => {
                 <TableCell>Téléphone</TableCell>
                 <TableCell>Rôle</TableCell>
                 <TableCell>Nom d'utilisateur</TableCell>
+                <TableCell>Nombre de patients</TableCell>
                 <TableCell align="right">Actions</TableCell>
               </TableRow>
             </TableHead>
@@ -653,6 +750,17 @@ const Users: React.FC = () => {
                       </TableCell>
                       <TableCell>{user.role || 'Aucun rôle'}</TableCell>
                       <TableCell>{user.username}</TableCell>
+                      <TableCell>
+                        {user.role === 'ETUDIANT' ? (
+                          '__'
+                        ) : user.role === 'ADMIN' ? (
+                          Array.isArray(allPatients) ? allPatients.length : 0
+                        ) : user.role === 'MEDECIN' ? (
+                          medecinPatientsCount[user.id] ?? 0
+                        ) : (
+                          0
+                        )}
+                      </TableCell>
                       <TableCell align="right">
                         <IconButton 
                           size="small" 
@@ -1029,8 +1137,8 @@ const Users: React.FC = () => {
                     required
                     disabled={isSubmitting}
                   >
-                    <MenuItem value="PARODENTAIRE">Parodontie</MenuItem>
-                    <MenuItem value="ORTHODENTAIRE">Orthodontie</MenuItem>
+                    <MenuItem value="PARODONTAIRE">Parodontie</MenuItem>
+                    <MenuItem value="ORTHODONTAIRE">Orthodontie</MenuItem>
                   </Select>
                 </FormControl>
                 

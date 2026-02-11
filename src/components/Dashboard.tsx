@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Box, 
-  Card, 
+  Card,
+  Chip, 
   Typography, 
   Table,
   TableBody,
@@ -17,7 +18,6 @@ import {
 import { User } from 'lucide-react';
 import {
   Chart as ChartJS,
-  Chip,
   CategoryScale,
   LinearScale,
   PointElement,

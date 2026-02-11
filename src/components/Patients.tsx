@@ -5,11 +5,11 @@ import { fetchWithAuth } from '../services/authService';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-import { 
-  Box, 
-  Typography, 
-  Card, 
-  CardContent, 
+import {
+  Box,
+  Typography,
+  Card,
+  CardContent,
   Button,
   TextField,
   InputAdornment,
@@ -37,11 +37,11 @@ import {
   Alert,
   Snackbar
 } from '@mui/material';
-import { 
-  Search, 
-  Plus, 
+import {
+  Search,
+  Plus,
   MoreVertical,
-  Edit, 
+  Edit,
   Trash2,
   User,
   RefreshCw,
@@ -82,12 +82,12 @@ const Patients: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [userRole] = useState(getUserRole());
   const [userProfession, setUserProfession] = useState<string | null>(null);
-  
+
   // New state for feedback notifications
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState('');
   const [feedbackType, setFeedbackType] = useState<FeedbackType>('success');
-  
+
   const [newPatient, setNewPatient] = useState<PatientData>({
     id: '',
     nom: '',
@@ -106,14 +106,14 @@ const Patients: React.FC = () => {
   });
 
   const [searchQuery, setSearchQuery] = useState<string>('');
-  
+
   // Show feedback notification
   const showFeedback = (message: string, type: FeedbackType = 'success') => {
     setFeedbackMessage(message);
     setFeedbackType(type);
     setFeedbackOpen(true);
   };
-  
+
   // Close feedback notification
   const handleCloseFeedback = () => {
     setFeedbackOpen(false);
@@ -126,12 +126,12 @@ const Patients: React.FC = () => {
         const userString = sessionStorage.getItem('user');
         if (userString) {
           const userData = JSON.parse(userString);
-          
+
           // Check all possible locations for profession information
-          const profession = userData.profession || 
-                            (userData.user && userData.user.profession) ||
-                            '';
-          
+          const profession = userData.profession ||
+            (userData.user && userData.user.profession) ||
+            '';
+
           setUserProfession(profession);
         }
       } catch (error) {
@@ -161,19 +161,19 @@ const Patients: React.FC = () => {
 
   const handleEditPatient = async () => {
     if (!selectedUserId) return;
-    
+
     setIsLoading(true);
     setError(null);
     try {
       // Fetch the selected patient data
       const patientData = await patientService.getById(selectedUserId);
-      
+
       // Set it to the form
       setNewPatient(patientData);
-      
+
       // Open dialog in edit mode
       setOpenDialog(true);
-      
+
       // Close menu
       handleMenuClose();
     } catch (error: any) {
@@ -282,7 +282,7 @@ const Patients: React.FC = () => {
   // Proceed with delete after confirmation
   const handleConfirmedDelete = async () => {
     if (!patientToDelete) return;
-    
+
     setIsLoading(true);
     setError(null);
     try {
@@ -321,13 +321,13 @@ const Patients: React.FC = () => {
   // Proceed with transfer after confirmation
   const handleConfirmedTransfer = async () => {
     if (!patientToTransfer) return;
-    
+
     setIsLoading(true);
     setError(null);
     try {
       // Get current user's ID (for medecin) or the first orthodontaire medecin for admin
       let medecinId = '';
-      
+
       if (userRole === 'MEDECIN') {
         const userData = JSON.parse(sessionStorage.getItem('user') || '{}');
         medecinId = userData.id || userData.user?.id;
@@ -341,18 +341,18 @@ const Patients: React.FC = () => {
         });
         const medecins = await response.json();
         const orthodontist = medecins.find((m: any) => m.profession === 'ORTHODONTAIRE');
-        
+
         if (orthodontist) {
           medecinId = orthodontist.id;
         } else {
           throw new Error('Aucun orthodontiste trouvé dans le système. Veuillez en ajouter un d\'abord.');
         }
       }
-      
+
       if (!medecinId) {
         throw new Error('Impossible de déterminer l\'ID du médecin pour le transfert');
       }
-      
+
       // Call the transfer service
       await patientService.transferParoToOrtho(patientToTransfer, medecinId);
       showFeedback('Patient transféré avec succès au service d\'Orthodontie');
@@ -389,13 +389,13 @@ const Patients: React.FC = () => {
   // Proceed with Ortho to Paro transfer after confirmation
   const handleConfirmedTransferOrthoToParo = async () => {
     if (!patientToTransferOrthoToParo) return;
-    
+
     setIsLoading(true);
     setError(null);
     try {
       // Get current user's ID (for medecin) or the first parodontaire medecin for admin
       let medecinId = '';
-      
+
       if (userRole === 'MEDECIN') {
         const userData = JSON.parse(sessionStorage.getItem('user') || '{}');
         medecinId = userData.id || userData.user?.id;
@@ -408,18 +408,18 @@ const Patients: React.FC = () => {
         });
         const medecins = await response.json();
         const parodontist = medecins.find((m: any) => m.profession === 'PARODONTAIRE');
-        
+
         if (parodontist) {
           medecinId = parodontist.id;
         } else {
           throw new Error('Aucun parodontiste trouvé dans le système. Veuillez en ajouter un d\'abord.');
         }
       }
-      
+
       if (!medecinId) {
         throw new Error('Impossible de déterminer l\'ID du médecin pour le transfert');
       }
-      
+
       // Call the transfer service
       await patientService.transferOrthoToParo(patientToTransferOrthoToParo, medecinId);
       showFeedback('Patient transféré avec succès au service de Parodontie');
@@ -446,11 +446,11 @@ const Patients: React.FC = () => {
     setNetworkError(null);
     try {
       const data = await patientService.getAll();
-      
+
       // If user is a médecin, filter patients based on their profession
       if (userRole === 'MEDECIN' && userProfession) {
         // Filter patients to match the médecin's profession
-        const filteredData = data.filter((patient: any) => 
+        const filteredData = data.filter((patient: any) =>
           patient.State === userProfession
         );
         setPatients(filteredData);
@@ -478,7 +478,7 @@ const Patients: React.FC = () => {
   useEffect(() => {
     fetchPatients();
   }, [userProfession]); // Refetch when userProfession changes
-  
+
   // Handle refresh button click with visual feedback
   const handleRefreshClick = async () => {
     setIsLoading(true);
@@ -493,15 +493,16 @@ const Patients: React.FC = () => {
 
   useEffect(() => {
     const fetchEnums = async () => {
-      try {        const token = authService.getToken()?.access_token;
+      try {
+        const token = authService.getToken()?.access_token;
         const headers = { "Authorization": `Bearer ${token}` };
-        
+
         const [motifsResponse, masticationsResponse, hygienesResponse] = await Promise.all([
           fetchWithAuth(`${BASE_URL}/enum/motif-consultation`, { headers }).then(res => res.json()),
           fetchWithAuth(`${BASE_URL}/enum/type-mastication`, { headers }).then(res => res.json()),
           fetchWithAuth(`${BASE_URL}/enum/hygiene-bucco-dentaire`, { headers }).then(res => res.json())
         ]);
-        
+
         setMotifs(motifsResponse);
         setTypeMastications(masticationsResponse);
         setHygienes(hygienesResponse);
@@ -513,13 +514,13 @@ const Patients: React.FC = () => {
         setHygienes([]);
       }
     };
-    
+
     fetchEnums();
   }, []);
 
   const filteredPatients = React.useMemo(() => {
     if (!Array.isArray(patients)) return [];
-    return patients.filter(patient => 
+    return patients.filter(patient =>
       patient.nom?.toLowerCase().includes(searchQuery?.toLowerCase() || '') ||
       patient.prenom?.toLowerCase().includes(searchQuery?.toLowerCase() || '') ||
       patient.numeroDeDossier?.toLowerCase().includes(searchQuery?.toLowerCase() || '')
@@ -530,10 +531,10 @@ const Patients: React.FC = () => {
     <Box sx={{ flexGrow: 1, p: 3 }}>
       {/* Show network error message at the top if present */}
       {networkError && (
-        <Box sx={{ 
-          mb: 4, 
-          p: 2, 
-          bgcolor: 'error.light', 
+        <Box sx={{
+          mb: 4,
+          p: 2,
+          bgcolor: 'error.light',
           color: 'error.dark',
           borderRadius: 1,
           display: 'flex',
@@ -543,9 +544,9 @@ const Patients: React.FC = () => {
           <Typography variant="body1">
             {networkError}
           </Typography>
-          <Button 
-            variant="outlined" 
-            color="error" 
+          <Button
+            variant="outlined"
+            color="error"
             size="small"
             onClick={() => handleRefreshClick()}
             disabled={isLoading}
@@ -554,16 +555,16 @@ const Patients: React.FC = () => {
           </Button>
         </Box>
       )}
-      
+
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
         <Box>
           <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
             Patients
           </Typography>
-          
+
         </Box>
-        <Button 
-          variant="contained" 
+        <Button
+          variant="contained"
           startIcon={<Plus size={18} />}
           sx={{ borderRadius: 2 }}
           onClick={handleOpenDialog}
@@ -575,7 +576,7 @@ const Patients: React.FC = () => {
 
       {userRole === 'MEDECIN' && userProfession && (
         <Alert severity="info" sx={{ mb: 2 }}>
-          Vous consultez les patients du service {(userProfession=="PARODONTAIRE")? "Parodontie":"Orthodontie"} selon votre spécialité.
+          Vous consultez les patients du service {(userProfession == "PARODONTAIRE") ? "Parodontie" : "Orthodontie"} selon votre spécialité.
         </Alert>
       )}
 
@@ -599,15 +600,15 @@ const Patients: React.FC = () => {
           <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1 }}>
             <Tooltip title="Rafraîchir la liste des patients">
               <Button
-              variant="outlined" 
-              size="small"
-              startIcon={<RefreshCw size={16} />}
-              onClick={handleRefreshClick}
-              disabled={isLoading}
-            >Rafraîchir
-            </Button>
+                variant="outlined"
+                size="small"
+                startIcon={<RefreshCw size={16} />}
+                onClick={handleRefreshClick}
+                disabled={isLoading}
+              >Rafraîchir
+              </Button>
             </Tooltip>
-           
+
           </Box>
         </CardContent>
       </Card>
@@ -649,7 +650,7 @@ const Patients: React.FC = () => {
                     <React.Fragment key={patient.id}>
                       <TableRow
                         onClick={() => handleRowClick(patient.id)}
-                        sx={{ 
+                        sx={{
                           '&:last-child td, &:last-child th': { border: 0 },
                           cursor: 'pointer',
                           '&:hover': {
@@ -667,17 +668,17 @@ const Patients: React.FC = () => {
                         <TableCell>{patient.tel}</TableCell>
                         {userRole === 'ADMIN' && (
                           <TableCell>
-                            <Chip 
+                            <Chip
                               label={patient.State === 'PARODONTAIRE' ? 'Parodontie' : (patient.State === 'ORTHODONTAIRE' ? 'Orthodontie' : 'Non affecté')}
                               size="small"
-                              color={patient.State === 'PARODONTAIRE' ? 'primary' : 'secondary'} 
+                              color={patient.State === 'PARODONTAIRE' ? 'primary' : 'secondary'}
                               variant="outlined"
                             />
                           </TableCell>
                         )}
                         <TableCell align="right">
-                          <IconButton 
-                            size="small" 
+                          <IconButton
+                            size="small"
                             onClick={(event) => {
                               event.stopPropagation();
                               handleMenuClick(event, patient.id);
@@ -764,19 +765,19 @@ const Patients: React.FC = () => {
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
-        <MenuItem onClick={handleEditPatient}>
+        <MenuItem onClick={handleEditPatient} sx={{ display: userRole === 'ETUDIANT' ? 'none' : 'flex' }}>
           <Edit size={16} style={{ marginRight: 8 }} />
           Modifier
         </MenuItem>
         {/* Add transfer option - show for PARODONTAIRE patients to transfer to ORTHODONTAIRE */}
         {selectedUserId && patients.find(p => p.id === selectedUserId)?.State === 'PARODONTAIRE' && (
-          <MenuItem 
+          <MenuItem
             onClick={() => selectedUserId && handleConfirmTransfer(selectedUserId)}
             sx={{ color: 'secondary.main' }}
           >
             <IconButton size="small" color="secondary" sx={{ mr: 1, p: 0 }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M17 8L21 12M21 12L17 16M21 12H3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M17 8L21 12M21 12L17 16M21 12H3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </IconButton>
             Transférer vers Orthodontie
@@ -784,21 +785,21 @@ const Patients: React.FC = () => {
         )}
         {/* Add transfer option - show for ORTHODONTAIRE patients to transfer to PARODONTAIRE */}
         {selectedUserId && patients.find(p => p.id === selectedUserId)?.State === 'ORTHODONTAIRE' && (
-          <MenuItem 
+          <MenuItem
             onClick={() => selectedUserId && handleConfirmTransferOrthoToParo(selectedUserId)}
             sx={{ color: 'primary.main' }}
           >
             <IconButton size="small" color="primary" sx={{ mr: 1, p: 0 }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M7 8L3 12M3 12L7 16M3 12H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M7 8L3 12M3 12L7 16M3 12H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </IconButton>
             Transférer vers Parodontie
           </MenuItem>
         )}
-        <MenuItem 
-          onClick={() => selectedUserId && handleConfirmDelete(selectedUserId)} 
-          sx={{ color: 'error.main' }}
+        <MenuItem
+          onClick={() => selectedUserId && handleConfirmDelete(selectedUserId)}
+          sx={{ display: userRole === 'ETUDIANT' ? 'none' : 'flex', color: 'error.main' }}
         >
           <Trash2 size={16} style={{ marginRight: 8 }} />
           Supprimer
@@ -824,9 +825,9 @@ const Patients: React.FC = () => {
           <Button onClick={handleCloseDeleteDialog} color="primary">
             Annuler
           </Button>
-          <Button 
-            onClick={handleConfirmedDelete} 
-            color="error" 
+          <Button
+            onClick={handleConfirmedDelete}
+            color="error"
             variant="contained"
             disabled={isLoading}
           >
@@ -854,9 +855,9 @@ const Patients: React.FC = () => {
           <Button onClick={handleCloseTransferDialog} color="primary">
             Annuler
           </Button>
-          <Button 
-            onClick={handleConfirmedTransfer} 
-            color="secondary" 
+          <Button
+            onClick={handleConfirmedTransfer}
+            color="secondary"
             variant="contained"
             disabled={isLoading}
           >
@@ -877,19 +878,19 @@ const Patients: React.FC = () => {
         </DialogTitle>
         <DialogContent>
           <Typography id="transfer-ortho-paro-dialog-description" paragraph>
-              Êtes-vous sûr de vouloir transférer ce patient au service de Parodontie ?
+            Êtes-vous sûr de vouloir transférer ce patient au service de Parodontie ?
           </Typography>
           <Typography variant="body2" color="text.secondary">
-              Cette action transférera le patient vers le service de parodontie et créera un dossier de transfert. Le transfert peut nécessiter une approbation.
+            Cette action transférera le patient vers le service de parodontie et créera un dossier de transfert. Le transfert peut nécessiter une approbation.
           </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseTransferOrthoToParoDialog} color="primary">
             Annuler
           </Button>
-          <Button 
-            onClick={handleConfirmedTransferOrthoToParo} 
-            color="primary" 
+          <Button
+            onClick={handleConfirmedTransferOrthoToParo}
+            color="primary"
             variant="contained"
             disabled={isLoading}
           >
@@ -904,10 +905,10 @@ const Patients: React.FC = () => {
           <DialogContent>
             {/* Show error message if present */}
             {error && (
-              <Box sx={{ 
+              <Box sx={{
                 mb: 3,
-                p: 2, 
-                bgcolor: 'error.light', 
+                p: 2,
+                bgcolor: 'error.light',
                 color: 'error.dark',
                 borderRadius: 1,
                 fontSize: '0.875rem'
@@ -915,7 +916,7 @@ const Patients: React.FC = () => {
                 {error}
               </Box>
             )}
-            
+
             <Box sx={{ display: 'flex', gap: 2 }}>
               {/* Left column - Text fields */}
               <Box sx={{ flex: 1 }}>
@@ -1107,7 +1108,7 @@ const Patients: React.FC = () => {
           </DialogActions>
         </form>
       </Dialog>
-      
+
       {/* Toast notification for providing user feedback */}
       <Snackbar
         open={feedbackOpen}
@@ -1116,9 +1117,9 @@ const Patients: React.FC = () => {
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         sx={{
           '& .MuiPaper-root': {
-            backgroundColor: 
-              feedbackType === 'success' ? 'success.main' : 
-              feedbackType === 'error' ? 'error.main' : 'info.main',
+            backgroundColor:
+              feedbackType === 'success' ? 'success.main' :
+                feedbackType === 'error' ? 'error.main' : 'info.main',
             color: 'white',
             display: 'flex',
             alignItems: 'center',
