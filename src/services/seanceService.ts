@@ -33,7 +33,8 @@ export interface MedecinData {
   };
 }
 
-export const seanceService = {  getAll: async () => {
+export const seanceService = {
+  getAll: async () => {
     const response = await fetchWithAuth(`${BASE_URL}/seance`);
     return response.json();
   },
@@ -53,18 +54,18 @@ export const seanceService = {  getAll: async () => {
       ...data,
       date: data.date instanceof Date ? data.date.toISOString() : data.date
     };
-    
+
     // If this is a REEVALUATION type, redirect to reevaluationService
     if (data.type === 'REEVALUATION' && data.Reevaluation) {
       const reevalData = new FormData();
-      
+
       // Add required fields for reevaluation
       reevalData.append('indiceDePlaque', data.Reevaluation.indiceDePlaque.toString());
       reevalData.append('indiceGingivale', data.Reevaluation.indiceGingivale.toString());
       reevalData.append('patientId', data.patientId);
       reevalData.append('medecinId', data.medecinId);
       reevalData.append('date', formattedData.date);
-      
+
       if (Array.isArray(data.Reevaluation.sondagePhotos)) {
         data.Reevaluation.sondagePhotos.forEach((file) => {
           if (file instanceof File) {
@@ -73,23 +74,23 @@ export const seanceService = {  getAll: async () => {
           }
         });
       }
-      
+
       // Create the reevaluation and return the result
       return reevaluationService.create(reevalData);
     }
-    
+
     // Otherwise use the regular seance endpoint
     try {
-      
-      
-        const response = await fetchWithAuth(`${BASE_URL}/seance`, {
+
+
+      const response = await fetchWithAuth(`${BASE_URL}/seance`, {
         method: 'POST',
         body: JSON.stringify(formattedData),
         headers: {
           'Content-Type': 'application/json',
         },
       });
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         let errorData;
@@ -99,13 +100,13 @@ export const seanceService = {  getAll: async () => {
           errorData = { error: errorText || 'Unknown error' };
         }
         console.error('Error response:', response.status, errorData);
-        throw Object.assign(new Error(errorData.error || `Failed with status: ${response.status}`), { 
+        throw Object.assign(new Error(errorData.error || `Failed with status: ${response.status}`), {
           response,
           status: response.status,
           data: errorData
         });
       }
-      
+
       return response.json();
     } catch (error) {
       console.error('Fetch error:', error);
@@ -119,7 +120,7 @@ export const seanceService = {  getAll: async () => {
       ...data,
       date: data.date instanceof Date ? data.date.toISOString() : data.date
     };
-    
+
     // If this is a REEVALUATION type and we have reevaluation data, redirect to reevaluationService
     if (data.type === 'REEVALUATION' && data.Reevaluation) {
       // First update the seance record
@@ -130,12 +131,12 @@ export const seanceService = {  getAll: async () => {
           'Content-Type': 'application/json',
         },
       });
-      
+
       if (!seanceResponse.ok) {
         const errorData = await seanceResponse.json().catch(() => ({}));
         throw Object.assign(new Error(errorData.error || 'Failed to update seance'), { response: seanceResponse });
       }
-      
+
       // Now handle the reevaluation update
       const reevalData = new FormData();
       reevalData.append('indiceDePlaque', data.Reevaluation.indiceDePlaque.toString());
@@ -144,7 +145,7 @@ export const seanceService = {  getAll: async () => {
       reevalData.append('medecinId', data.medecinId!);
       reevalData.append('date', formattedData.date);
       reevalData.append('seanceId', id);
-      
+
       if (Array.isArray(data.Reevaluation.sondagePhotos)) {
         data.Reevaluation.sondagePhotos.forEach((file) => {
           if (file instanceof File) {
@@ -152,14 +153,15 @@ export const seanceService = {  getAll: async () => {
           }
         });
       }
-      
+
       // Check if reevaluation already exists
       if (data.Reevaluation.id) {
         return reevaluationService.update(data.Reevaluation.id, reevalData);
       } else {
         return reevaluationService.create(reevalData);
-      }    }
-    
+      }
+    }
+
     // For non-reevaluation types, just update the seance
     const response = await fetchWithAuth(`${BASE_URL}/seance/${id}`, {
       method: 'PUT',
@@ -168,12 +170,12 @@ export const seanceService = {  getAll: async () => {
         'Content-Type': 'application/json',
       },
     });
-    
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw Object.assign(new Error(errorData.error || 'Failed to update seance'), { response });
     }
-    
+
     return response.json();
   },
 
@@ -185,7 +187,7 @@ export const seanceService = {  getAll: async () => {
         const reevaluations = await reevaluationService.getAll();
         // Find if there's a reevaluation associated with this seance
         const associatedReevaluation = reevaluations.find((r: ReevaluationData) => r.seanceId === id);
-        
+
         if (associatedReevaluation) {
           // Delete the reevaluation first
           await reevaluationService.delete(associatedReevaluation.id!);
@@ -195,9 +197,46 @@ export const seanceService = {  getAll: async () => {
         // Continue with deleting the seance even if reevaluation delete fails
       }
     }
-      // Now delete the seance
+    // Now delete the seance
     await fetchWithAuth(`${BASE_URL}/seance/${id}`, {
       method: 'DELETE',
     });
   }
 };
+
+// ============================================================================
+// CLIENT-SIDE HELPER FUNCTIONS
+// ============================================================================
+
+/**
+ * Check if a user owns a seance
+ * 
+ * NOTE: The API automatically filters seances server-side for MEDECIN users.
+ * This function is provided as a client-side helper for UI permission checks
+ * (e.g., showing/hiding edit/delete buttons).
+ * 
+ * @param seance - Seance to check
+ * @param userId - User ID to check ownership against
+ * @returns true if the user owns this seance
+ */
+export const isSeanceOwner = (
+  seance: { medecinId?: string },
+  userId: string
+): boolean => {
+  return seance.medecinId === userId;
+};
+
+/**
+ * Filter seances by owner (client-side helper)
+ * 
+ * @param seances - Array of seances to filter
+ * @param userId - User ID to filter by
+ * @returns Filtered array of seances owned by the user
+ */
+export const filterSeancesByOwner = (
+  seances: SeanceData[],
+  userId: string
+): SeanceData[] => {
+  return seances.filter(seance => seance.medecinId === userId);
+};
+

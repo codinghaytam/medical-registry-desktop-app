@@ -1,18 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import useInterval from '../utiles/useInterval';
-import { 
+import {
   Box, Typography, Card, CardContent, Button, TextField, InputAdornment,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   TablePagination, Paper, IconButton, Menu, MenuItem, Dialog,
   DialogTitle, DialogContent, DialogActions, FormControl, InputLabel,
   Select, SelectChangeEvent, CircularProgress, Tooltip, Switch, FormControlLabel
 } from '@mui/material';
-import { Search, Plus, MoreVertical, Edit, Trash2, User, RefreshCw, Phone } from 'lucide-react';
+import { Search, Plus, MoreVertical, Edit, Trash2, User, RefreshCw, Phone, Lock } from 'lucide-react';
 import { userService, UserData } from '../services/userService';
 import { medecinService, Profession } from '../services/medecinService';
 import { etudiantService } from '../services/etudiantService';
+import { canManageUsers, getUserRole } from '../utiles/RoleAccess';
 
 const Users: React.FC = () => {
+  // Check if user can manage other users (ADMIN only)
+  const canManage = canManageUsers();
+  const userRole = getUserRole();
+
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -83,7 +88,7 @@ const Users: React.FC = () => {
   // Handle phone input changes with validation
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    
+
     // Update the phone value
     if (name === 'phone' && openEditDialog) {
       setEditFormData(prev => ({
@@ -96,7 +101,7 @@ const Users: React.FC = () => {
         phone: value
       }));
     }
-    
+
     // Validate and set error
     const error = validatePhone(value);
     setPhoneError(error);
@@ -152,13 +157,13 @@ const Users: React.FC = () => {
     if (!user) return;
 
     setUserToEdit(user);
-    
+
     // Strip +212 prefix from phone number if present
     let phoneNumber = user.phone || '';
     if (phoneNumber.startsWith('+212')) {
       phoneNumber = phoneNumber.substring(4); // Remove +212 prefix
     }
-    
+
     // Initialize form with current user data
     setEditFormData({
       id: user.id,
@@ -176,7 +181,7 @@ const Users: React.FC = () => {
 
     // Load role-specific data
     loadRoleSpecificData(user);
-    
+
     setOpenEditDialog(true);
     handleMenuClose();
   };
@@ -254,24 +259,24 @@ const Users: React.FC = () => {
   const handleSubmitEdit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!userToEdit) return;
-    
+
     // Validate phone number before submitting
     const phoneValidationError = validatePhone(editFormData.phone);
     if (phoneValidationError) {
       setPhoneError(phoneValidationError);
       return;
     }
-    
+
     setIsSubmitting(true);
     setError(null);
 
     try {
       const { id, password, ...data } = editFormData;
-      
+
       // Prepare a base update object
       // Prepend +212 to the phone number for Moroccan format
       const formattedPhone = data.phone ? `+212${data.phone}` : '';
-      
+
       const updateData = {
         username: data.email,  // Always use email as username
         email: data.email,
@@ -313,7 +318,7 @@ const Users: React.FC = () => {
     setOpenDialog(true);
     setError(null);
   };
-  
+
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setError(null);
@@ -333,7 +338,7 @@ const Users: React.FC = () => {
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
-    
+
     // If email is changed, automatically update username with the same value
     if (name === 'email') {
       setNewUser(prev => ({
@@ -383,22 +388,22 @@ const Users: React.FC = () => {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    
+
     // Validate phone number before submitting
     const phoneValidationError = validatePhone(newUser.phone);
     if (phoneValidationError) {
       setPhoneError(phoneValidationError);
       return;
     }
-    
+
     setIsSubmitting(true);
     setError(null);
-    
+
     try {
       // Always use email as username
       // Prepend +212 to the phone number for Moroccan format
       const formattedPhone = newUser.phone ? `+212${newUser.phone}` : '';
-      
+
       const baseUserData = {
         username: newUser.email,
         firstName: newUser.firstName,
@@ -407,7 +412,7 @@ const Users: React.FC = () => {
         pwd: newUser.password,
         phone: formattedPhone, // Include formatted phone number with country code
       };
-      
+
       if (newUser.role === 'MEDECIN') {
         // For MEDECIN, use medecinService
         const medecinData = {
@@ -433,7 +438,7 @@ const Users: React.FC = () => {
         };
         await userService.create(userData);
       }
-      
+
       handleCloseDialog();
       fetchUsers();
     } catch (error: any) {
@@ -468,7 +473,7 @@ const Users: React.FC = () => {
       if (!userToDeleteObj) {
         throw new Error("Utilisateur introuvable");
       }
-      
+
       // Delete based on user role
       switch (userToDeleteObj.role) {
         case 'MEDECIN':
@@ -483,7 +488,7 @@ const Users: React.FC = () => {
           await userService.delete(userToDelete);
           break;
       }
-      
+
       // Refresh users list after deletion
       fetchUsers();
     } catch (error: any) {
@@ -502,10 +507,10 @@ const Users: React.FC = () => {
     if (!Array.isArray(users)) return [];
     return users.filter(user => {
       // For phone search, remove the +212 prefix from stored phone numbers to match user input format
-      const phoneForSearch = user.phone?.startsWith('+212') 
+      const phoneForSearch = user.phone?.startsWith('+212')
         ? user.phone.substring(4)  // Remove +212 prefix for comparison
         : user.phone || '';
-        
+
       return user.firstName?.toLowerCase().includes(searchQuery?.toLowerCase() || '') ||
         user.lastName?.toLowerCase().includes(searchQuery?.toLowerCase() || '') ||
         user.email?.toLowerCase().includes(searchQuery?.toLowerCase() || '') ||
@@ -518,10 +523,10 @@ const Users: React.FC = () => {
     <Box sx={{ flexGrow: 1, p: 3 }}>
       {/* Show network error message at the top if present */}
       {networkError && (
-        <Box sx={{ 
-          mb: 4, 
-          p: 2, 
-          bgcolor: 'error.light', 
+        <Box sx={{
+          mb: 4,
+          p: 2,
+          bgcolor: 'error.light',
           color: 'error.dark',
           borderRadius: 1,
           display: 'flex',
@@ -531,9 +536,9 @@ const Users: React.FC = () => {
           <Typography variant="body1">
             {networkError}
           </Typography>
-          <Button 
-            variant="outlined" 
-            color="error" 
+          <Button
+            variant="outlined"
+            color="error"
             size="small"
             onClick={() => window.location.reload()}
           >
@@ -541,7 +546,26 @@ const Users: React.FC = () => {
           </Button>
         </Box>
       )}
-      
+
+      {/* Show read-only message for non-ADMIN users */}
+      {!canManage && (
+        <Box sx={{
+          mb: 4,
+          p: 2,
+          bgcolor: 'info.light',
+          color: 'info.dark',
+          borderRadius: 1,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1
+        }}>
+          <Lock size={20} />
+          <Typography variant="body1">
+            <strong>Mode lecture seule:</strong> {userRole === 'ETUDIANT' ? 'Les étudiants' : 'Les médecins'} peuvent consulter la liste des utilisateurs mais ne peuvent pas créer, modifier ou supprimer des comptes. Seuls les administrateurs peuvent gérer les utilisateurs.
+          </Typography>
+        </Box>
+      )}
+
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
         <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
           Utilisateurs
@@ -549,21 +573,25 @@ const Users: React.FC = () => {
         <Box sx={{ display: 'flex', gap: 1 }}>
           <Tooltip title="Rafraîchir la liste des utilisateurs">
             <IconButton
-              size="small" 
+              size="small"
               onClick={fetchUsers}
               disabled={isLoading}
             >
             </IconButton>
           </Tooltip>
-          <Button 
-            variant="contained" 
-            size="small" 
-            startIcon={<Plus size={16} />}
-            onClick={handleOpenDialog}
-            disabled={isLoading}
-          >
-            Ajouter un utilisateur
-          </Button>
+          <Tooltip title={!canManage ? "Seuls les administrateurs peuvent ajouter des utilisateurs" : ""}>
+            <span>
+              <Button
+                variant="contained"
+                size="small"
+                startIcon={<Plus size={16} />}
+                onClick={handleOpenDialog}
+                disabled={isLoading || !canManage}
+              >
+                Ajouter un utilisateur
+              </Button>
+            </span>
+          </Tooltip>
         </Box>
       </Box>
 
@@ -586,8 +614,8 @@ const Users: React.FC = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
           <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1 }}>
-            <Button 
-              variant="outlined" 
+            <Button
+              variant="outlined"
               size="small"
               startIcon={<RefreshCw size={16} />}
               onClick={fetchUsers}
@@ -645,8 +673,8 @@ const Users: React.FC = () => {
                         {user.phone ? (
                           <Typography variant="body2">
                             <span style={{ color: 'gray' }}>+212 </span>
-                            {user.phone.startsWith('+212') 
-                              ? user.phone.substring(4) 
+                            {user.phone.startsWith('+212')
+                              ? user.phone.substring(4)
                               : user.phone}
                           </Typography>
                         ) : ''}
@@ -654,8 +682,8 @@ const Users: React.FC = () => {
                       <TableCell>{user.role || 'Aucun rôle'}</TableCell>
                       <TableCell>{user.username}</TableCell>
                       <TableCell align="right">
-                        <IconButton 
-                          size="small" 
+                        <IconButton
+                          size="small"
                           onClick={(event) => handleMenuClick(event, user.id)}
                           disabled={isLoading}
                         >
@@ -701,14 +729,17 @@ const Users: React.FC = () => {
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
-        <MenuItem onClick={() => selectedUserId && handleOpenEditDialog(selectedUserId.toString())}>
+        <MenuItem
+          onClick={() => selectedUserId && handleOpenEditDialog(selectedUserId.toString())}
+          disabled={!canManage}
+        >
           <Edit size={16} style={{ marginRight: 8 }} />
           Modifier
         </MenuItem>
-        <MenuItem 
-          onClick={() => selectedUserId && handleConfirmDelete(selectedUserId.toString())} 
+        <MenuItem
+          onClick={() => selectedUserId && handleConfirmDelete(selectedUserId.toString())}
           sx={{ color: 'error.main' }}
-          disabled={isLoading}
+          disabled={isLoading || !canManage}
         >
           <Trash2 size={16} style={{ marginRight: 8 }} />
           Supprimer
@@ -734,9 +765,9 @@ const Users: React.FC = () => {
           <Button onClick={handleCloseDeleteDialog} color="primary">
             Annuler
           </Button>
-          <Button 
-            onClick={handleConfirmedDelete} 
-            color="error" 
+          <Button
+            onClick={handleConfirmedDelete}
+            color="error"
             variant="contained"
             disabled={isLoading}
           >
@@ -752,10 +783,10 @@ const Users: React.FC = () => {
           <DialogContent>
             {/* Show error message if present */}
             {error && (
-              <Box sx={{ 
+              <Box sx={{
                 mb: 3,
-                p: 2, 
-                bgcolor: 'error.light', 
+                p: 2,
+                bgcolor: 'error.light',
                 color: 'error.dark',
                 borderRadius: 1,
                 fontSize: '0.875rem'
@@ -763,14 +794,14 @@ const Users: React.FC = () => {
                 {error}
               </Box>
             )}
-            
+
             {/* Username field is hidden as it will be auto-filled with email */}
             <TextField
               type="hidden"
               name="username"
               value={newUser.username}
             />
-            
+
             <TextField
               fullWidth
               label="Prénom"
@@ -850,7 +881,7 @@ const Users: React.FC = () => {
                 <MenuItem value="ETUDIANT">Étudiant</MenuItem>
               </Select>
             </FormControl>
-            
+
             {/* MEDECIN specific fields */}
             {newUser.role === 'MEDECIN' && (
               <>
@@ -867,7 +898,7 @@ const Users: React.FC = () => {
                     <MenuItem value="ORTHODONTAIRE">Orthodontie</MenuItem>
                   </Select>
                 </FormControl>
-                
+
                 <FormControlLabel
                   control={
                     <Switch
@@ -882,7 +913,7 @@ const Users: React.FC = () => {
                 />
               </>
             )}
-            
+
             {/* ETUDIANT specific fields */}
             {newUser.role === 'ETUDIANT' && (
               <TextField
@@ -900,12 +931,12 @@ const Users: React.FC = () => {
                 }}
               />
             )}
-            
+
           </DialogContent>
           <DialogActions>
             <Button onClick={handleCloseDialog} disabled={isSubmitting}>Annuler</Button>
             <Button
-              type="submit" 
+              type="submit"
               variant="contained"
               disabled={isSubmitting}
               startIcon={isSubmitting ? <CircularProgress size={20} /> : undefined}
@@ -922,10 +953,10 @@ const Users: React.FC = () => {
         <form onSubmit={handleSubmitEdit}>
           <DialogContent>
             {error && (
-              <Box sx={{ 
+              <Box sx={{
                 mb: 3,
-                p: 2, 
-                bgcolor: 'error.light', 
+                p: 2,
+                bgcolor: 'error.light',
                 color: 'error.dark',
                 borderRadius: 1,
                 fontSize: '0.875rem'
@@ -944,7 +975,7 @@ const Users: React.FC = () => {
               disabled={isSubmitting}
               sx={{ mb: 2 }}
             />
-            
+
             <TextField
               fullWidth
               label="Nom"
@@ -955,7 +986,7 @@ const Users: React.FC = () => {
               disabled={isSubmitting}
               sx={{ mb: 2 }}
             />
-            
+
             <TextField
               fullWidth
               label="E-mail"
@@ -967,7 +998,7 @@ const Users: React.FC = () => {
               disabled={isSubmitting}
               sx={{ mb: 2 }}
             />
-            
+
             <TextField
               fullWidth
               label="Mot de passe (laisser vide pour conserver l'actuel)"
@@ -978,7 +1009,7 @@ const Users: React.FC = () => {
               disabled={isSubmitting}
               sx={{ mb: 2 }}
             />
-            
+
             <TextField
               fullWidth
               label="Numéro de téléphone"
@@ -1002,7 +1033,7 @@ const Users: React.FC = () => {
                 ),
               }}
             />
-            
+
             {/* Role is shown but disabled for editing */}
             <FormControl fullWidth sx={{ mb: 2 }} disabled>
               <InputLabel>Rôle</InputLabel>
@@ -1016,7 +1047,7 @@ const Users: React.FC = () => {
                 <MenuItem value="ETUDIANT">Étudiant</MenuItem>
               </Select>
             </FormControl>
-            
+
             {/* MEDECIN specific fields */}
             {userToEdit && userToEdit.role === 'MEDECIN' && (
               <>
@@ -1033,7 +1064,7 @@ const Users: React.FC = () => {
                     <MenuItem value="ORTHODENTAIRE">Orthodontie</MenuItem>
                   </Select>
                 </FormControl>
-                
+
                 <FormControlLabel
                   control={
                     <Switch
@@ -1048,7 +1079,7 @@ const Users: React.FC = () => {
                 />
               </>
             )}
-            
+
             {/* ETUDIANT specific fields */}
             {userToEdit && userToEdit.role === 'ETUDIANT' && (
               <TextField
@@ -1066,14 +1097,14 @@ const Users: React.FC = () => {
                 }}
               />
             )}
-            
+
           </DialogContent>
           <DialogActions>
             <Button onClick={handleCloseEditDialog} disabled={isSubmitting}>
               Annuler
             </Button>
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               variant="contained"
               disabled={isSubmitting}
               startIcon={isSubmitting ? <CircularProgress size={20} /> : undefined}

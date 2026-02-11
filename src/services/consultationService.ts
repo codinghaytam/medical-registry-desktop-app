@@ -15,12 +15,13 @@ export interface DiagnosisData {
   medecinId: string;
 }
 
-export const consultationService = {  getAll: async () => {
+export const consultationService = {
+  getAll: async () => {
     try {
       const response = await fetchWithAuth(`${BASE_URL}/consultation`);
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw Object.assign(new Error(errorData.error || `Failed with status: ${response.status}`), { 
+        throw Object.assign(new Error(errorData.error || `Failed with status: ${response.status}`), {
           response,
           status: response.status
         });
@@ -40,15 +41,15 @@ export const consultationService = {  getAll: async () => {
           'Content-Type': 'application/json',
         },
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw Object.assign(new Error(errorData.error || `Failed with status: ${response.status}`), { 
+        throw Object.assign(new Error(errorData.error || `Failed with status: ${response.status}`), {
           response,
           status: response.status
         });
       }
-      
+
       return response.json();
     } catch (error) {
       console.error('Error creating consultation:', error);
@@ -64,15 +65,15 @@ export const consultationService = {  getAll: async () => {
           'Content-Type': 'application/json',
         },
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw Object.assign(new Error(errorData.error || `Failed with status: ${response.status}`), { 
+        throw Object.assign(new Error(errorData.error || `Failed with status: ${response.status}`), {
           response,
           status: response.status
         });
       }
-      
+
       return response.json();
     } catch (error) {
       console.error('Error updating consultation:', error);
@@ -84,15 +85,15 @@ export const consultationService = {  getAll: async () => {
       const response = await fetchWithAuth(`${BASE_URL}/consultation/${id}`, {
         method: 'DELETE',
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw Object.assign(new Error(errorData.error || `Failed with status: ${response.status}`), { 
+        throw Object.assign(new Error(errorData.error || `Failed with status: ${response.status}`), {
           response,
           status: response.status
         });
       }
-      
+
       return { success: true, id };
     } catch (error) {
       console.error('Error deleting consultation:', error);
@@ -108,15 +109,15 @@ export const consultationService = {  getAll: async () => {
           'Content-Type': 'application/json',
         },
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw Object.assign(new Error(errorData.error || `Failed with status: ${response.status}`), { 
+        throw Object.assign(new Error(errorData.error || `Failed with status: ${response.status}`), {
           response,
           status: response.status
         });
       }
-      
+
       return response.json();
     } catch (error) {
       console.error('Error adding diagnosis:', error);
@@ -132,15 +133,15 @@ export const consultationService = {  getAll: async () => {
           'Content-Type': 'application/json',
         },
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw Object.assign(new Error(errorData.error || `Failed with status: ${response.status}`), { 
+        throw Object.assign(new Error(errorData.error || `Failed with status: ${response.status}`), {
           response,
           status: response.status
         });
       }
-      
+
       return response.json();
     } catch (error) {
       console.error('Error updating diagnosis:', error);
@@ -150,15 +151,15 @@ export const consultationService = {  getAll: async () => {
   getById: async (id: string) => {
     try {
       const response = await fetchWithAuth(`${BASE_URL}/consultation/${id}`);
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw Object.assign(new Error(errorData.error || `Failed with status: ${response.status}`), { 
+        throw Object.assign(new Error(errorData.error || `Failed with status: ${response.status}`), {
           response,
           status: response.status
         });
       }
-      
+
       return response.json();
     } catch (error) {
       console.error('Error fetching consultation by ID:', error);
@@ -168,15 +169,15 @@ export const consultationService = {  getAll: async () => {
   getByPatientId: async (patientId: string) => {
     try {
       const response = await fetchWithAuth(`${BASE_URL}/consultation`);
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw Object.assign(new Error(errorData.error || `Failed with status: ${response.status}`), { 
+        throw Object.assign(new Error(errorData.error || `Failed with status: ${response.status}`), {
           response,
           status: response.status
         });
       }
-      
+
       const consultations = await response.json();
       return consultations.filter((consultation: any) => consultation.patientId === patientId);
     } catch (error) {
@@ -184,4 +185,40 @@ export const consultationService = {  getAll: async () => {
       throw error;
     }
   }
+};
+
+// ============================================================================
+// CLIENT-SIDE HELPER FUNCTIONS
+// ============================================================================
+
+/**
+ * Check if a user owns a consultation
+ * 
+ * NOTE: The API automatically filters consultations server-side for MEDECIN users.
+ * This function is provided as a client-side helper for UI permission checks
+ * (e.g., showing/hiding edit/delete buttons).
+ * 
+ * @param consultation - Consultation to check
+ * @param userId - User ID to check ownership against
+ * @returns true if the user owns this consultation
+ */
+export const isConsultationOwner = (
+  consultation: { medecinId?: string },
+  userId: string
+): boolean => {
+  return consultation.medecinId === userId;
+};
+
+/**
+ * Filter consultations by owner (client-side helper)
+ * 
+ * @param consultations - Array of consultations to filter
+ * @param userId - User ID to filter by
+ * @returns Filtered array of consultations owned by the user
+ */
+export const filterConsultationsByOwner = (
+  consultations: any[],
+  userId: string
+): any[] => {
+  return consultations.filter(consultation => consultation.medecinId === userId);
 };
